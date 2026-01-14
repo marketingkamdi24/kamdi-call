@@ -498,9 +498,10 @@ body {
 }
 
 .control-btn {
-    width: 60px;
-    height: 60px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     border: none;
     background: rgba(255, 255, 255, 0.1);
     color: white;
@@ -527,11 +528,13 @@ body {
 }
 
 .control-btn.end-call {
-    background: var(--danger-color);
+    background: #dc3545;
+    box-shadow: 0 4px 20px rgba(220, 53, 69, 0.5);
 }
 
 .control-btn.end-call:hover {
-    background: var(--primary-dark);
+    background: #c82333;
+    transform: scale(1.15);
 }
 
 .chat-panel {
