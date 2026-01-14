@@ -43,11 +43,21 @@ const fileInput = document.getElementById('file-input');
 const queueAudio = document.getElementById('queue-audio'); // May be null if audio element removed
 
 function initPeer() {
-    peer = new Peer(undefined, {
+    const isSecure = window.location.protocol === 'https:';
+    const peerConfig = {
         host: window.location.hostname,
-        port: window.location.port || 3000,
-        path: '/peerjs'
-    });
+        path: '/peerjs',
+        secure: isSecure
+    };
+    
+    if (window.location.port) {
+        peerConfig.port = parseInt(window.location.port);
+    } else {
+        peerConfig.port = isSecure ? 443 : 80;
+    }
+    
+    console.log('PeerJS config:', peerConfig);
+    peer = new Peer(undefined, peerConfig);
 
     peer.on('open', (id) => {
         console.log('My peer ID:', id);
