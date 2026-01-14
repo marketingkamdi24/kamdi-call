@@ -1,0 +1,20 @@
+{
+  "name": "kamdi-call",
+  "version": "1.0.0",
+  "description": "Video/Audio call system for kamdi24 - Connect customers with Berater",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "node server/index.js"
+  },
+  "keywords": ["peerjs", "video-call", "webrtc", "kamdi24"],
+  "author": "kamdi24",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "peer": "^1.0.2",
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.0"
+  }
+}

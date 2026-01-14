@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kamdi24 - Berater Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/berater.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="berater-body">
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🔥</span>
+                    <h1>kamdi<span class="accent">24</span></h1>
+                </div>
+                <p class="dashboard-label">Berater Dashboard</p>
+            </div>
+
+            <div id="berater-profile" class="berater-profile hidden">
+                <div class="profile-avatar">👔</div>
+                <h3 id="berater-name-display"></h3>
+                <div class="status-indicator">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">Verfügbar</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button id="toggle-status-btn" class="nav-btn hidden">
+                    <span>🔄</span> Status ändern
+                </button>
+                <button id="logout-btn" class="nav-btn hidden">
+                    <span>🚪</span> Abmelden
+                </button>
+            </nav>
+
+            <div class="queue-sidebar" id="queue-sidebar">
+                <h3>Warteschlange</h3>
+                <div id="queue-list" class="queue-list">
+                    <p class="empty-queue">Keine wartenden Kunden</p>
+                </div>
+            </div>
+
+            <div class="other-beraters">
+                <h3>Andere Berater</h3>
+                <div id="other-beraters-list" class="beraters-list"></div>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <section id="login-section" class="berater-login-section">
+                <div class="login-card">
+                    <h2>Berater Anmeldung</h2>
+                    <p>Melden Sie sich an, um Kundenanrufe zu empfangen</p>
+                    <div class="form-group">
+                        <label for="berater-name">Ihr Name</label>
+                        <input type="text" id="berater-name" placeholder="Geben Sie Ihren Namen ein" autocomplete="off">
+                    </div>
+                    <button id="login-btn" class="btn btn-primary btn-large">
+                        <span>🔑</span> Anmelden
+                    </button>
+                </div>
+            </section>
+
+            <section id="waiting-section" class="waiting-section hidden">
+                <div class="waiting-content">
+                    <div class="waiting-icon">☕</div>
+                    <h2>Bereit für Anrufe</h2>
+                    <p>Warten auf eingehende Kundenanrufe...</p>
+                </div>
+            </section>
+
+            <section id="incoming-call-section" class="incoming-call-section hidden">
+                <div class="incoming-call-card">
+                    <div class="ring-animation">
+                        <div class="ring-circle"></div>
+                        <div class="ring-circle"></div>
+                        <div class="ring-circle"></div>
+                        <span class="phone-icon">📞</span>
+                    </div>
+                    <h2>Eingehender Anruf</h2>
+                    <p class="caller-info">
+                        <span id="caller-name"></span>
+                        <span class="call-type-badge" id="call-type-badge"></span>
+                    </p>
+                    <div class="incoming-call-actions">
+                        <button id="accept-call-btn" class="btn btn-success btn-large">
+                            <span>✓</span> Annehmen
+                        </button>
+                        <button id="reject-call-btn" class="btn btn-danger btn-large">
+                            <span>✕</span> Ablehnen
+                        </button>
+                    </div>
+                </div>
+                <audio id="ringtone" loop>
+                    <source src="/audio/ringtone.mp3" type="audio/mpeg">
+                </audio>
+            </section>
+
+            <section id="call-section" class="call-section hidden">
+                <div class="call-layout">
+                    <div class="video-area">
+                        <div class="video-container-berater">
+                            <div class="remote-video-wrapper">
+                                <video id="remote-video" autoplay playsinline></video>
+                                <div id="remote-audio-only" class="audio-only-indicator hidden">
+                                    <span class="audio-icon">🎧</span>
+                                    <p id="remote-customer-name">Kunde</p>
+                                </div>
+                            </div>
+                            <div class="local-video-wrapper">
+                                <video id="local-video" autoplay playsinline muted></video>
+                            </div>
+                        </div>
+
+                        <div class="call-info-bar">
+                            <div class="caller-details">
+                                <span class="caller-avatar">👤</span>
+                                <span id="active-caller-name"></span>
+                            </div>
+                            <span id="call-timer">00:00</span>
+                        </div>
+
+                        <div class="call-controls">
+                            <button id="toggle-video-btn" class="control-btn active" title="Video ein/aus">
+                                <span>📹</span>
+                            </button>
+                            <button id="toggle-audio-btn" class="control-btn active" title="Mikrofon ein/aus">
+                                <span>🎤</span>
+                            </button>
+                            <button id="toggle-screen-btn" class="control-btn" title="Bildschirm teilen">
+                                <span>🖥️</span>
+                            </button>
+                            <button id="end-call-btn" class="control-btn end-call" title="Anruf beenden">
+                                <span>📵</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-area">
+                        <div class="chat-header">
+                            <h3>💬 Chat mit <span id="chat-customer-name"></span></h3>
+                        </div>
+                        <div id="chat-messages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Nachricht eingeben...">
+                            <label class="file-upload-btn" title="Datei senden">
+                                📎
+                                <input type="file" id="file-input" hidden>
+                            </label>
+                            <button id="send-message-btn" class="send-btn">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/berater.js"></script>
+</body>
+</html>

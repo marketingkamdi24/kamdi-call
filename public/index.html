@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kamdi24 - Kundenberatung</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🔥</span>
+                <h1>kamdi<span class="accent">24</span></h1>
+            </div>
+            <p class="tagline">Persönliche Beratung - Direkt und Unkompliziert</p>
+        </header>
+
+        <main class="main-content">
+            <section id="login-section" class="card login-card">
+                <h2>Starten Sie Ihre Beratung</h2>
+                <p class="subtitle">Verbinden Sie sich direkt mit unseren Experten</p>
+                
+                <div class="form-group">
+                    <label for="customer-name">Ihr Name</label>
+                    <input type="text" id="customer-name" placeholder="Geben Sie Ihren Namen ein" autocomplete="off">
+                </div>
+
+                <div class="call-buttons">
+                    <button id="video-call-btn" class="btn btn-primary btn-large">
+                        <span class="btn-icon">📹</span>
+                        <span>Videoanruf</span>
+                    </button>
+                    <button id="audio-call-btn" class="btn btn-secondary btn-large">
+                        <span class="btn-icon">📞</span>
+                        <span>Audioanruf</span>
+                    </button>
+                </div>
+
+                <div class="berater-status">
+                    <h3>Verfügbare Berater</h3>
+                    <div id="berater-list" class="berater-list">
+                        <p class="loading">Lade Berater...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="queue-section" class="card queue-card hidden">
+                <div class="queue-content">
+                    <div class="queue-animation">
+                        <div class="ripple"></div>
+                        <span class="queue-icon">📞</span>
+                    </div>
+                    <h2>Bitte warten...</h2>
+                    <p class="queue-message">Sie befinden sich in der Warteschlange</p>
+                    <div class="queue-position">
+                        Position: <span id="queue-position-number">1</span>
+                    </div>
+                    <button id="cancel-call-btn" class="btn btn-danger">Anruf abbrechen</button>
+                </div>
+                <audio id="queue-audio" loop>
+                    <source src="/audio/waiting.mp3" type="audio/mpeg">
+                </audio>
+            </section>
+
+            <section id="connecting-section" class="card connecting-card hidden">
+                <div class="connecting-content">
+                    <div class="connecting-animation">
+                        <div class="pulse"></div>
+                        <span class="connecting-icon">🔗</span>
+                    </div>
+                    <h2>Verbindung wird hergestellt...</h2>
+                    <p>Berater: <span id="connecting-berater-name"></span></p>
+                </div>
+            </section>
+
+            <section id="call-section" class="call-section hidden">
+                <div class="call-layout-customer">
+                    <div class="video-area-customer">
+                        <div class="video-container">
+                            <div class="remote-video-wrapper">
+                                <video id="remote-video" autoplay playsinline></video>
+                                <div id="remote-audio-only" class="audio-only-indicator hidden">
+                                    <span class="audio-icon">🎧</span>
+                                    <p id="remote-name">Berater</p>
+                                </div>
+                            </div>
+                            <div class="local-video-wrapper">
+                                <video id="local-video" autoplay playsinline muted></video>
+                            </div>
+                        </div>
+
+                        <div class="call-info">
+                            <span id="call-timer">00:00</span>
+                            <span id="call-berater-name"></span>
+                        </div>
+
+                        <div class="call-controls">
+                            <button id="toggle-video-btn" class="control-btn" title="Video ein/aus">
+                                <span>📹</span>
+                            </button>
+                            <button id="toggle-audio-btn" class="control-btn" title="Mikrofon ein/aus">
+                                <span>🎤</span>
+                            </button>
+                            <button id="end-call-btn" class="control-btn end-call" title="Anruf beenden">
+                                <span>📵</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="chat-panel" class="chat-panel-customer">
+                        <div class="chat-header">
+                            <h3>💬 Chat mit Berater</h3>
+                        </div>
+                        <div id="chat-messages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Nachricht eingeben...">
+                            <label class="file-upload-btn" title="Datei senden">
+                                📎
+                                <input type="file" id="file-input" hidden>
+                            </label>
+                            <button id="send-message-btn" class="send-btn">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="call-ended-section" class="card call-ended-card hidden">
+                <div class="call-ended-content">
+                    <span class="ended-icon">✅</span>
+                    <h2>Anruf beendet</h2>
+                    <p>Vielen Dank für Ihre Anfrage!</p>
+                    <button id="new-call-btn" class="btn btn-primary">Neuer Anruf</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 kamdi24 - Ihr Experte für Kamine und Öfen</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/customer.js"></script>
+</body>
+</html>

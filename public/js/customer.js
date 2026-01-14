@@ -1,0 +1,402 @@
+const socket = io();
+let peer = null;
+let localStream = null;
+let currentCall = null;
+let dataConnection = null;
+let callStartTime = null;
+let callTimerInterval = null;
+let currentBeraterSocketId = null;
+let isVideoEnabled = true;
+let isAudioEnabled = true;
+
+const loginSection = document.getElementById('login-section');
+const queueSection = document.getElementById('queue-section');
+const connectingSection = document.getElementById('connecting-section');
+const callSection = document.getElementById('call-section');
+const callEndedSection = document.getElementById('call-ended-section');
+
+const customerNameInput = document.getElementById('customer-name');
+const videoCallBtn = document.getElementById('video-call-btn');
+const audioCallBtn = document.getElementById('audio-call-btn');
+const cancelCallBtn = document.getElementById('cancel-call-btn');
+const endCallBtn = document.getElementById('end-call-btn');
+const newCallBtn = document.getElementById('new-call-btn');
+
+const beraterListEl = document.getElementById('berater-list');
+const queuePositionEl = document.getElementById('queue-position-number');
+const connectingBeraterNameEl = document.getElementById('connecting-berater-name');
+const callBeraterNameEl = document.getElementById('call-berater-name');
+
+const localVideo = document.getElementById('local-video');
+const remoteVideo = document.getElementById('remote-video');
+const remoteAudioOnly = document.getElementById('remote-audio-only');
+
+const toggleVideoBtn = document.getElementById('toggle-video-btn');
+const toggleAudioBtn = document.getElementById('toggle-audio-btn');
+
+const chatPanel = document.getElementById('chat-panel');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const sendMessageBtn = document.getElementById('send-message-btn');
+const fileInput = document.getElementById('file-input');
+
+const queueAudio = document.getElementById('queue-audio');
+
+function initPeer() {
+    peer = new Peer(undefined, {
+        host: window.location.hostname,
+        port: window.location.port || 3000,
+        path: '/peerjs'
+    });
+
+    peer.on('open', (id) => {
+        console.log('My peer ID:', id);
+    });
+
+    peer.on('call', handleIncomingCall);
+    peer.on('connection', handleDataConnection);
+    peer.on('error', (err) => {
+        console.error('Peer error:', err);
+        alert('Verbindungsfehler. Bitte versuchen Sie es erneut.');
+    });
+}
+
+function handleIncomingCall(call) {
+    currentCall = call;
+    
+    call.answer(localStream);
+    
+    call.on('stream', (remoteStream) => {
+        remoteVideo.srcObject = remoteStream;
+        
+        const hasVideo = remoteStream.getVideoTracks().length > 0 && 
+                         remoteStream.getVideoTracks()[0].enabled;
+        remoteAudioOnly.classList.toggle('hidden', hasVideo);
+    });
+
+    call.on('close', () => {
+        endCall();
+    });
+}
+
+function handleDataConnection(conn) {
+    dataConnection = conn;
+    
+    conn.on('open', () => {
+        console.log('Data connection established');
+    });
+
+    conn.on('data', (data) => {
+        if (data.type === 'chat') {
+            addChatMessage(data.message, data.senderName, false);
+        } else if (data.type === 'file') {
+            addFileMessage(data.fileName, data.fileData, data.fileType, data.senderName, false);
+        }
+    });
+
+    conn.on('close', () => {
+        console.log('Data connection closed');
+    });
+}
+
+async function startCall(callType) {
+    const name = customerNameInput.value.trim();
+    if (!name) {
+        customerNameInput.focus();
+        customerNameInput.classList.add('error');
+        setTimeout(() => customerNameInput.classList.remove('error'), 2000);
+        return;
+    }
+
+    try {
+        const constraints = {
+            audio: true,
+            video: callType === 'video'
+        };
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        localVideo.srcObject = localStream;
+        
+        if (callType === 'audio') {
+            isVideoEnabled = false;
+            toggleVideoBtn.classList.add('muted');
+        }
+
+        showSection('queue');
+        
+        if (queueAudio) {
+            queueAudio.play().catch(e => console.log('Audio autoplay blocked'));
+        }
+
+        socket.emit('customer-call', {
+            name,
+            peerId: peer.id,
+            callType
+        });
+
+    } catch (err) {
+        console.error('Media access error:', err);
+        alert('Bitte erlauben Sie den Zugriff auf Kamera und Mikrofon.');
+    }
+}
+
+function cancelCall() {
+    socket.emit('customer-cancel');
+    
+    if (queueAudio) {
+        queueAudio.pause();
+        queueAudio.currentTime = 0;
+    }
+    
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
+    showSection('login');
+}
+
+function endCall() {
+    if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+    }
+    
+    if (dataConnection) {
+        dataConnection.close();
+        dataConnection = null;
+    }
+    
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
+    if (callTimerInterval) {
+        clearInterval(callTimerInterval);
+        callTimerInterval = null;
+    }
+    
+    socket.emit('call-ended');
+    showSection('ended');
+}
+
+function showSection(section) {
+    loginSection.classList.add('hidden');
+    queueSection.classList.add('hidden');
+    connectingSection.classList.add('hidden');
+    callSection.classList.add('hidden');
+    callEndedSection.classList.add('hidden');
+
+    switch (section) {
+        case 'login':
+            loginSection.classList.remove('hidden');
+            break;
+        case 'queue':
+            queueSection.classList.remove('hidden');
+            break;
+        case 'connecting':
+            connectingSection.classList.remove('hidden');
+            break;
+        case 'call':
+            callSection.classList.remove('hidden');
+            break;
+        case 'ended':
+            callEndedSection.classList.remove('hidden');
+            break;
+    }
+}
+
+function startCallTimer() {
+    callStartTime = Date.now();
+    const timerEl = document.getElementById('call-timer');
+    
+    callTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const seconds = (elapsed % 60).toString().padStart(2, '0');
+        timerEl.textContent = `${minutes}:${seconds}`;
+    }, 1000);
+}
+
+function toggleVideo() {
+    if (localStream) {
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (videoTrack) {
+            isVideoEnabled = !isVideoEnabled;
+            videoTrack.enabled = isVideoEnabled;
+            toggleVideoBtn.classList.toggle('muted', !isVideoEnabled);
+        }
+    }
+}
+
+function toggleAudio() {
+    if (localStream) {
+        const audioTrack = localStream.getAudioTracks()[0];
+        if (audioTrack) {
+            isAudioEnabled = !isAudioEnabled;
+            audioTrack.enabled = isAudioEnabled;
+            toggleAudioBtn.classList.toggle('muted', !isAudioEnabled);
+        }
+    }
+}
+
+function sendChatMessage() {
+    const message = chatInput.value.trim();
+    if (!message || !dataConnection) return;
+
+    dataConnection.send({
+        type: 'chat',
+        message,
+        senderName: customerNameInput.value.trim()
+    });
+
+    addChatMessage(message, 'Sie', true);
+    chatInput.value = '';
+}
+
+function addChatMessage(message, senderName, isSent) {
+    const msgEl = document.createElement('div');
+    msgEl.className = `chat-message ${isSent ? 'sent' : 'received'}`;
+    msgEl.innerHTML = `
+        <div class="sender">${senderName}</div>
+        <div class="text">${escapeHtml(message)}</div>
+    `;
+    chatMessages.appendChild(msgEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file || !dataConnection) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        dataConnection.send({
+            type: 'file',
+            fileName: file.name,
+            fileData: reader.result,
+            fileType: file.type,
+            senderName: customerNameInput.value.trim()
+        });
+
+        addFileMessage(file.name, reader.result, file.type, 'Sie', true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+}
+
+function addFileMessage(fileName, fileData, fileType, senderName, isSent) {
+    const msgEl = document.createElement('div');
+    msgEl.className = `chat-message file ${isSent ? 'sent' : 'received'}`;
+    msgEl.innerHTML = `
+        <div class="sender">${senderName}</div>
+        <a href="${fileData}" download="${fileName}" class="file-link">
+            📄 ${escapeHtml(fileName)}
+        </a>
+    `;
+    chatMessages.appendChild(msgEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function updateBeraterList(beraters) {
+    if (beraters.length === 0) {
+        beraterListEl.innerHTML = '<p class="loading">Keine Berater verfügbar</p>';
+        return;
+    }
+
+    beraterListEl.innerHTML = beraters.map(b => `
+        <div class="berater-item">
+            <span class="berater-dot ${b.status}"></span>
+            <span>${escapeHtml(b.name)}</span>
+        </div>
+    `).join('');
+}
+
+socket.on('berater-list', updateBeraterList);
+
+socket.on('queue-position', (data) => {
+    queuePositionEl.textContent = data.position;
+});
+
+socket.on('call-connecting', (data) => {
+    if (queueAudio) {
+        queueAudio.pause();
+        queueAudio.currentTime = 0;
+    }
+    connectingBeraterNameEl.textContent = data.beraterName;
+    showSection('connecting');
+});
+
+socket.on('call-accepted', (data) => {
+    callBeraterNameEl.textContent = data.beraterName;
+    currentBeraterSocketId = data.beraterSocketId;
+    
+    const call = peer.call(data.beraterPeerId, localStream);
+    currentCall = call;
+    
+    call.on('stream', (remoteStream) => {
+        remoteVideo.srcObject = remoteStream;
+        
+        const hasVideo = remoteStream.getVideoTracks().length > 0;
+        remoteAudioOnly.classList.toggle('hidden', hasVideo);
+    });
+
+    call.on('close', () => {
+        endCall();
+    });
+
+    const conn = peer.connect(data.beraterPeerId);
+    conn.on('open', () => {
+        dataConnection = conn;
+        console.log('Data connection to berater established');
+    });
+
+    conn.on('data', (data) => {
+        if (data.type === 'chat') {
+            addChatMessage(data.message, data.senderName, false);
+        } else if (data.type === 'file') {
+            addFileMessage(data.fileName, data.fileData, data.fileType, data.senderName, false);
+        }
+    });
+
+    showSection('call');
+    startCallTimer();
+});
+
+socket.on('call-rejected', () => {
+    showSection('queue');
+    if (queueAudio) {
+        queueAudio.play().catch(e => console.log('Audio autoplay blocked'));
+    }
+});
+
+videoCallBtn.addEventListener('click', () => startCall('video'));
+audioCallBtn.addEventListener('click', () => startCall('audio'));
+cancelCallBtn.addEventListener('click', cancelCall);
+endCallBtn.addEventListener('click', endCall);
+newCallBtn.addEventListener('click', () => {
+    initPeer();
+    showSection('login');
+});
+
+toggleVideoBtn.addEventListener('click', toggleVideo);
+toggleAudioBtn.addEventListener('click', toggleAudio);
+
+sendMessageBtn.addEventListener('click', sendChatMessage);
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendChatMessage();
+});
+fileInput.addEventListener('change', handleFileSelect);
+
+customerNameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') startCall('video');
+});
+
+initPeer();
