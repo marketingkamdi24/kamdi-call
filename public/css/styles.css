@@ -376,16 +376,22 @@ body {
     flex-direction: column;
     background: #1a1a2e;
     border-radius: var(--border-radius) 0 0 var(--border-radius);
-    overflow: hidden;
 }
 
 .video-area-customer .video-container {
     flex: 1;
-    min-height: 0;
+    min-height: 200px;
+    overflow: hidden;
+}
+
+.video-area-customer .call-info {
+    flex-shrink: 0;
 }
 
 .video-area-customer .call-controls {
     flex-shrink: 0;
+    display: flex !important;
+    visibility: visible !important;
 }
 
 .chat-panel-customer {
