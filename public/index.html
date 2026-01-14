@@ -3,146 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>kamdi24 - Kundenberatung</title>
+    <title>kamdi24 - Video Call System</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .landing-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .landing-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .landing-header .logo {
+            margin-bottom: 16px;
+        }
+        
+        .landing-header .logo h1 {
+            font-size: 3rem;
+        }
+        
+        .landing-header .tagline {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+        
+        .portal-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .portal-card {
+            background: white;
+            border-radius: 20px;
+            padding: 48px 32px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .portal-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        .portal-icon {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            display: block;
+        }
+        
+        .portal-card h2 {
+            font-size: 1.5rem;
+            color: #1d3557;
+            margin-bottom: 12px;
+        }
+        
+        .portal-card p {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        .portal-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        
+        .portal-card.customer .portal-btn {
+            background: #e63946;
+            color: white;
+        }
+        
+        .portal-card.customer:hover .portal-btn {
+            background: #c1121f;
+        }
+        
+        .portal-card.berater .portal-btn {
+            background: #457b9d;
+            color: white;
+        }
+        
+        .portal-card.berater:hover .portal-btn {
+            background: #3a6a87;
+        }
+        
+        .landing-footer {
+            margin-top: 60px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
+    <div class="landing-container">
+        <header class="landing-header">
             <div class="logo">
                 <span class="logo-icon">🔥</span>
                 <h1>kamdi<span class="accent">24</span></h1>
             </div>
-            <p class="tagline">Persönliche Beratung - Direkt und Unkompliziert</p>
+            <p class="tagline">Video Call System - Persönliche Beratung</p>
         </header>
 
-        <main class="main-content">
-            <section id="login-section" class="card login-card">
-                <h2>Starten Sie Ihre Beratung</h2>
-                <p class="subtitle">Verbinden Sie sich direkt mit unseren Experten</p>
-                
-                <div class="form-group">
-                    <label for="customer-name">Ihr Name</label>
-                    <input type="text" id="customer-name" placeholder="Geben Sie Ihren Namen ein" autocomplete="off">
-                </div>
+        <div class="portal-cards">
+            <a href="/customer.html" class="portal-card customer">
+                <span class="portal-icon">👤</span>
+                <h2>Kunde</h2>
+                <p>Starten Sie einen Video- oder Audioanruf mit unseren Beratern. Schnell, direkt und unkompliziert.</p>
+                <span class="portal-btn">Beratung starten</span>
+            </a>
 
-                <div class="call-buttons">
-                    <button id="video-call-btn" class="btn btn-primary btn-large">
-                        <span class="btn-icon">📹</span>
-                        <span>Videoanruf</span>
-                    </button>
-                    <button id="audio-call-btn" class="btn btn-secondary btn-large">
-                        <span class="btn-icon">📞</span>
-                        <span>Audioanruf</span>
-                    </button>
-                </div>
+            <a href="/berater/" class="portal-card berater">
+                <span class="portal-icon">👔</span>
+                <h2>Berater</h2>
+                <p>Melden Sie sich an, um Kundenanrufe zu empfangen und Beratungen durchzuführen.</p>
+                <span class="portal-btn">Berater Login</span>
+            </a>
+        </div>
 
-                <div class="berater-status">
-                    <h3>Verfügbare Berater</h3>
-                    <div id="berater-list" class="berater-list">
-                        <p class="loading">Lade Berater...</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="queue-section" class="card queue-card hidden">
-                <div class="queue-content">
-                    <div class="queue-animation">
-                        <div class="ripple"></div>
-                        <span class="queue-icon">📞</span>
-                    </div>
-                    <h2>Bitte warten...</h2>
-                    <p class="queue-message">Sie befinden sich in der Warteschlange</p>
-                    <div class="queue-position">
-                        Position: <span id="queue-position-number">1</span>
-                    </div>
-                    <button id="cancel-call-btn" class="btn btn-danger">Anruf abbrechen</button>
-                </div>
-                <audio id="queue-audio" loop>
-                    <source src="/audio/waiting.mp3" type="audio/mpeg">
-                </audio>
-            </section>
-
-            <section id="connecting-section" class="card connecting-card hidden">
-                <div class="connecting-content">
-                    <div class="connecting-animation">
-                        <div class="pulse"></div>
-                        <span class="connecting-icon">🔗</span>
-                    </div>
-                    <h2>Verbindung wird hergestellt...</h2>
-                    <p>Berater: <span id="connecting-berater-name"></span></p>
-                </div>
-            </section>
-
-            <section id="call-section" class="call-section hidden">
-                <div class="call-layout-customer">
-                    <div class="video-area-customer">
-                        <div class="video-container">
-                            <div class="remote-video-wrapper">
-                                <video id="remote-video" autoplay playsinline></video>
-                                <div id="remote-audio-only" class="audio-only-indicator hidden">
-                                    <span class="audio-icon">🎧</span>
-                                    <p id="remote-name">Berater</p>
-                                </div>
-                            </div>
-                            <div class="local-video-wrapper">
-                                <video id="local-video" autoplay playsinline muted></video>
-                            </div>
-                        </div>
-
-                        <div class="call-info">
-                            <span id="call-timer">00:00</span>
-                            <span id="call-berater-name"></span>
-                        </div>
-
-                        <div class="call-controls">
-                            <button id="toggle-video-btn" class="control-btn" title="Video ein/aus">
-                                <span>📹</span>
-                            </button>
-                            <button id="toggle-audio-btn" class="control-btn" title="Mikrofon ein/aus">
-                                <span>🎤</span>
-                            </button>
-                            <button id="end-call-btn" class="control-btn end-call" title="Anruf beenden">
-                                <span>📵</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="chat-panel" class="chat-panel-customer">
-                        <div class="chat-header">
-                            <h3>💬 Chat mit Berater</h3>
-                        </div>
-                        <div id="chat-messages" class="chat-messages"></div>
-                        <div class="chat-input-container">
-                            <input type="text" id="chat-input" placeholder="Nachricht eingeben...">
-                            <label class="file-upload-btn" title="Datei senden">
-                                📎
-                                <input type="file" id="file-input" hidden>
-                            </label>
-                            <button id="send-message-btn" class="send-btn">➤</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="call-ended-section" class="card call-ended-card hidden">
-                <div class="call-ended-content">
-                    <span class="ended-icon">✅</span>
-                    <h2>Anruf beendet</h2>
-                    <p>Vielen Dank für Ihre Anfrage!</p>
-                    <button id="new-call-btn" class="btn btn-primary">Neuer Anruf</button>
-                </div>
-            </section>
-        </main>
-
-        <footer class="footer">
+        <footer class="landing-footer">
             <p>&copy; 2024 kamdi24 - Ihr Experte für Kamine und Öfen</p>
         </footer>
     </div>
-
-    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/customer.js"></script>
 </body>
 </html>

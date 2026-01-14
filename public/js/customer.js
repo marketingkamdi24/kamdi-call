@@ -40,7 +40,7 @@ const chatInput = document.getElementById('chat-input');
 const sendMessageBtn = document.getElementById('send-message-btn');
 const fileInput = document.getElementById('file-input');
 
-const queueAudio = document.getElementById('queue-audio');
+const queueAudio = document.getElementById('queue-audio'); // May be null if audio element removed
 
 function initPeer() {
     peer = new Peer(undefined, {
