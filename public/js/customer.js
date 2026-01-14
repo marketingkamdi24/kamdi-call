@@ -119,18 +119,37 @@ async function startCall(callType) {
     }
 
     try {
-        const constraints = {
-            audio: true,
-            video: callType === 'video'
-        };
-        
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        localVideo.srcObject = localStream;
-        
-        if (callType === 'audio') {
+        // Try to get media based on call type
+        if (callType === 'video') {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                });
+                isVideoEnabled = true;
+            } catch (videoErr) {
+                // Fallback to audio-only if video fails
+                console.log('Video not available, trying audio-only:', videoErr.message);
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                });
+                isVideoEnabled = false;
+                toggleVideoBtn.classList.add('muted');
+                callType = 'audio';
+            }
+        } else {
+            // Audio-only call
+            localStream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false
+            });
             isVideoEnabled = false;
             toggleVideoBtn.classList.add('muted');
         }
+        
+        localVideo.srcObject = localStream;
+        console.log('Media access granted - Audio:', localStream.getAudioTracks().length, 'Video:', localStream.getVideoTracks().length);
 
         showSection('queue');
         
@@ -146,7 +165,7 @@ async function startCall(callType) {
 
     } catch (err) {
         console.error('Media access error:', err);
-        alert('Bitte erlauben Sie den Zugriff auf Kamera und Mikrofon.');
+        alert('Mikrofon-Zugriff erforderlich. Bitte erlauben Sie den Zugriff in Ihren Browser-Einstellungen und laden Sie die Seite neu.');
     }
 }
 
