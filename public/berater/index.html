@@ -33,6 +33,9 @@
                 <button id="toggle-status-btn" class="nav-btn hidden">
                     <span>🔄</span> Status ändern
                 </button>
+                <button id="user-management-btn" class="nav-btn hidden">
+                    <span>👥</span> Nutzerverwaltung
+                </button>
                 <button id="logout-btn" class="nav-btn hidden">
                     <span>🚪</span> Abmelden
                 </button>
@@ -178,11 +181,7 @@
         </div>
         
         <div class="tools-panel-tabs">
-            <button class="tools-tab active" data-tab="configurator">
-                <span class="tab-icon">🔥</span>
-                <span>Konfigurator</span>
-            </button>
-            <button class="tools-tab" data-tab="drawing">
+            <button class="tools-tab active" data-tab="drawing">
                 <span class="tab-icon">✏️</span>
                 <span>Zeichnen</span>
             </button>
@@ -197,67 +196,8 @@
         </div>
         
         <div class="tools-panel-content">
-            <!-- Product Configurator -->
-            <div class="tools-section active" id="configurator-section">
-                <div class="config-group">
-                    <h4>🏭 Marke</h4>
-                    <div class="config-options brand-options" id="brand-options"></div>
-                </div>
-
-                <div class="config-group">
-                    <h4>🔥 Modell</h4>
-                    <div class="config-options model-grid" id="model-options">
-                        <p class="hint-text">Bitte zuerst eine Marke wählen</p>
-                    </div>
-                </div>
-                
-                <div class="config-group">
-                    <h4>🎨 Farbe</h4>
-                    <div class="config-options" id="color-options"></div>
-                </div>
-                
-                <div class="config-group">
-                    <h4>🧱 Verkleidung</h4>
-                    <div class="config-options" id="cladding-options"></div>
-                </div>
-                
-                <div class="config-group">
-                    <h4>🛒 Zubehör</h4>
-                    <div class="config-accessories" id="accessory-options"></div>
-                </div>
-                
-                <div class="compare-toggle">
-                    <label>
-                        <input type="checkbox" id="compare-mode">
-                        Vorher/Nachher Vergleich anzeigen
-                    </label>
-                </div>
-                
-                <div class="compare-view" id="compare-view">
-                    <div class="compare-item">
-                        <h5>Vorher</h5>
-                        <div class="preview" id="compare-before">🔥</div>
-                        <div class="details" id="compare-before-details">-</div>
-                    </div>
-                    <div class="compare-item">
-                        <h5>Nachher</h5>
-                        <div class="preview" id="compare-after">🔥</div>
-                        <div class="details" id="compare-after-details">-</div>
-                    </div>
-                </div>
-                
-                <div class="config-summary" id="config-summary">
-                    <h4>Zusammenfassung</h4>
-                    <div id="summary-items"></div>
-                    <div class="summary-total">
-                        <span>Gesamtpreis:</span>
-                        <span id="total-price">0 €</span>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Drawing Tools -->
-            <div class="tools-section" id="drawing-section">
+            <div class="tools-section active" id="drawing-section">
                 <div class="drawing-toolbar">
                     <button class="draw-tool-btn active" data-tool="line" title="Linie">📏</button>
                     <button class="draw-tool-btn" data-tool="measure" title="Messen">📐</button>
@@ -373,9 +313,67 @@
         </div>
     </div>
 
+    <!-- User Management Modal -->
+    <div id="user-management-modal" class="modal hidden">
+        <div class="modal-content user-management-content">
+            <div class="modal-header">
+                <h2>👥 Nutzerverwaltung</h2>
+                <button class="modal-close" id="close-user-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="user-actions">
+                    <button id="add-user-btn" class="btn btn-primary">
+                        <span>➕</span> Nutzer hinzufügen
+                    </button>
+                </div>
+                <table class="user-table" id="user-table">
+                    <thead>
+                        <tr>
+                            <th>Benutzername</th>
+                            <th>Erstellt am</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="user-form-modal" class="modal hidden">
+        <div class="modal-content user-form-content">
+            <div class="modal-header">
+                <h2 id="user-form-title">Nutzer hinzufügen</h2>
+                <button class="modal-close" id="close-user-form">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-group">
+                    <label for="user-username">Benutzername</label>
+                    <input type="text" id="user-username" placeholder="Benutzername eingeben">
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Passwort</label>
+                    <input type="password" id="user-password" placeholder="Passwort eingeben">
+                </div>
+                <div class="form-group">
+                    <label for="user-password-confirm">Passwort bestätigen</label>
+                    <input type="password" id="user-password-confirm" placeholder="Passwort bestätigen">
+                </div>
+                <div id="user-form-error" class="form-error hidden"></div>
+                <div class="form-actions">
+                    <button id="cancel-user-form" class="btn btn-secondary">Abbrechen</button>
+                    <button id="save-user-btn" class="btn btn-primary">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/products.js"></script>
     <script src="/js/drawing-tools.js"></script>
     <script src="/js/pdf-generator.js"></script>
     <script src="/js/berater.js"></script>

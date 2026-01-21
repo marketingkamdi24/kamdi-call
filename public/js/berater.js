@@ -19,6 +19,7 @@ const beraterNameInput = document.getElementById('berater-name');
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const toggleStatusBtn = document.getElementById('toggle-status-btn');
+const userManagementBtn = document.getElementById('user-management-btn');
 
 const beraterProfile = document.getElementById('berater-profile');
 const beraterNameDisplay = document.getElementById('berater-name-display');
@@ -192,6 +193,7 @@ async function login() {
         beraterProfile.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
         toggleStatusBtn.classList.remove('hidden');
+        userManagementBtn.classList.remove('hidden');
         
         showSection('waiting');
         updateStatus('available');
@@ -219,6 +221,7 @@ function logout() {
     beraterProfile.classList.add('hidden');
     logoutBtn.classList.add('hidden');
     toggleStatusBtn.classList.add('hidden');
+    userManagementBtn.classList.add('hidden');
     
     showSection('login');
 }
@@ -577,17 +580,6 @@ let consultationSummary = null;
 let chatHistory = [];
 
 function initTools() {
-    // Initialize Product Configurator
-    if (window.ProductConfigurator) {
-        configurator = new ProductConfigurator();
-        initConfiguratorUI();
-        configurator.onChange((config, prevConfig) => {
-            updateConfigSummary(config);
-            updateCompareView(config, prevConfig);
-            sendConfigToCustomer(config);
-        });
-    }
-
     // Initialize Drawing Canvas
     if (window.DrawingCanvas) {
         drawingCanvas = new DrawingCanvas('remote-video');
@@ -603,159 +595,6 @@ function initTools() {
 
     // Setup Tools Panel Events
     setupToolsPanelEvents();
-}
-
-function initConfiguratorUI() {
-    const brandOptions = document.getElementById('brand-options');
-    const modelOptions = document.getElementById('model-options');
-    const colorOptions = document.getElementById('color-options');
-    const claddingOptions = document.getElementById('cladding-options');
-    const accessoryOptions = document.getElementById('accessory-options');
-
-    if (!brandOptions) return;
-
-    // Render Brands
-    brandOptions.innerHTML = KAMIN_PRODUCTS.brands.map(b => `
-        <button class="config-option brand-option" data-id="${b.id}">
-            <span class="brand-name">${b.name}</span>
-            <small class="brand-country">${b.country}</small>
-        </button>
-    `).join('');
-
-    // Render Colors
-    colorOptions.innerHTML = KAMIN_PRODUCTS.colors.map(c => `
-        <button class="config-option color-swatch" data-id="${c.id}" style="background: ${c.hex};" title="${c.name}"></button>
-    `).join('');
-
-    // Render Claddings
-    claddingOptions.innerHTML = KAMIN_PRODUCTS.claddings.map(c => `
-        <button class="config-option" data-id="${c.id}">
-            ${c.name}<br><small>${c.heatStorage ? `Speicher: ${c.heatStorage}` : `+${c.price} €`}</small>
-        </button>
-    `).join('');
-
-    // Render Accessories
-    accessoryOptions.innerHTML = KAMIN_PRODUCTS.accessories.map(a => `
-        <div class="accessory-item" data-id="${a.id}">
-            <div class="accessory-icon">${a.icon}</div>
-            <div class="accessory-name">${a.name}</div>
-            <div class="accessory-price">+${a.price} €</div>
-        </div>
-    `).join('');
-
-    // Brand Selection - shows models for that brand
-    brandOptions.addEventListener('click', (e) => {
-        const btn = e.target.closest('.config-option');
-        if (btn) {
-            brandOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            configurator.setBrand(btn.dataset.id);
-            renderModelsForBrand(btn.dataset.id);
-        }
-    });
-
-    // Model Selection
-    modelOptions.addEventListener('click', (e) => {
-        const btn = e.target.closest('.config-option');
-        if (btn) {
-            modelOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            configurator.setModel(btn.dataset.id);
-        }
-    });
-
-    colorOptions.addEventListener('click', (e) => {
-        const btn = e.target.closest('.config-option');
-        if (btn) {
-            colorOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            configurator.setColor(btn.dataset.id);
-        }
-    });
-
-    claddingOptions.addEventListener('click', (e) => {
-        const btn = e.target.closest('.config-option');
-        if (btn) {
-            claddingOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            configurator.setCladding(btn.dataset.id);
-        }
-    });
-
-    accessoryOptions.addEventListener('click', (e) => {
-        const item = e.target.closest('.accessory-item');
-        if (item) {
-            item.classList.toggle('selected');
-            configurator.toggleAccessory(item.dataset.id);
-        }
-    });
-}
-
-function renderModelsForBrand(brandId) {
-    const modelOptions = document.getElementById('model-options');
-    if (!modelOptions) return;
-
-    const models = configurator.getModelsForBrand(brandId);
-    
-    if (models.length === 0) {
-        modelOptions.innerHTML = '<p class="hint-text">Keine Modelle für diese Marke</p>';
-        return;
-    }
-
-    modelOptions.innerHTML = models.map(m => `
-        <button class="config-option model-option" data-id="${m.id}">
-            <div class="model-name">${m.name}</div>
-            <div class="model-details">
-                <span class="model-power">${m.power}</span>
-                <span class="model-efficiency">${m.efficiency}</span>
-            </div>
-            <div class="model-style">${m.style}</div>
-            <div class="model-price">${m.price.toLocaleString('de-DE')} €</div>
-        </button>
-    `).join('');
-}
-
-function updateConfigSummary(config) {
-    const summaryItems = document.getElementById('summary-items');
-    const totalPrice = document.getElementById('total-price');
-    if (!summaryItems) return;
-
-    let html = '';
-    if (config.brand) html += `<div class="summary-item"><span>Marke</span><span>${config.brand.name}</span></div>`;
-    if (config.model) html += `<div class="summary-item"><span>Modell</span><span>${config.model.name}</span></div>`;
-    if (config.model?.power) html += `<div class="summary-item"><span>Leistung</span><span>${config.model.power}</span></div>`;
-    if (config.color) html += `<div class="summary-item"><span>Farbe</span><span>${config.color.name}</span></div>`;
-    if (config.cladding) html += `<div class="summary-item"><span>Verkleidung</span><span>${config.cladding.name}</span></div>`;
-    if (config.accessories.length > 0) {
-        html += `<div class="summary-item"><span>Zubehör</span><span>${config.accessories.length} Artikel</span></div>`;
-    }
-    
-    summaryItems.innerHTML = html;
-    totalPrice.textContent = `${config.totalPrice.toLocaleString('de-DE')} €`;
-}
-
-function updateCompareView(config, prevConfig) {
-    const compareView = document.getElementById('compare-view');
-    const compareBefore = document.getElementById('compare-before-details');
-    const compareAfter = document.getElementById('compare-after-details');
-    
-    if (!compareView || !prevConfig) return;
-
-    if (prevConfig.model) {
-        compareBefore.textContent = prevConfig.model.name;
-    }
-    if (config.model) {
-        compareAfter.textContent = config.model.name;
-    }
-}
-
-function sendConfigToCustomer(config) {
-    if (dataConnection && dataConnection.open) {
-        dataConnection.send({
-            type: 'config-update',
-            config: config
-        });
-    }
 }
 
 function sendDrawingsToCustomer(drawings) {
@@ -1002,3 +841,179 @@ function initDrawingCanvas() {
 
 // Initialize tools on load
 document.addEventListener('DOMContentLoaded', initTools);
+
+// ==================== USER MANAGEMENT ====================
+const userManagementModal = document.getElementById('user-management-modal');
+const userFormModal = document.getElementById('user-form-modal');
+const userTableBody = document.getElementById('user-table-body');
+const closeUserModal = document.getElementById('close-user-modal');
+const closeUserForm = document.getElementById('close-user-form');
+const addUserBtn = document.getElementById('add-user-btn');
+const cancelUserForm = document.getElementById('cancel-user-form');
+const saveUserBtn = document.getElementById('save-user-btn');
+const userFormTitle = document.getElementById('user-form-title');
+const editUserId = document.getElementById('edit-user-id');
+const userUsername = document.getElementById('user-username');
+const userPassword = document.getElementById('user-password');
+const userPasswordConfirm = document.getElementById('user-password-confirm');
+const userFormError = document.getElementById('user-form-error');
+
+if (userManagementBtn) {
+    userManagementBtn.addEventListener('click', openUserManagement);
+}
+
+if (closeUserModal) {
+    closeUserModal.addEventListener('click', closeUserManagement);
+}
+
+if (closeUserForm) {
+    closeUserForm.addEventListener('click', closeUserFormModal);
+}
+
+if (cancelUserForm) {
+    cancelUserForm.addEventListener('click', closeUserFormModal);
+}
+
+if (addUserBtn) {
+    addUserBtn.addEventListener('click', () => openUserForm());
+}
+
+if (saveUserBtn) {
+    saveUserBtn.addEventListener('click', saveUser);
+}
+
+if (userManagementModal) {
+    userManagementModal.addEventListener('click', (e) => {
+        if (e.target === userManagementModal) closeUserManagement();
+    });
+}
+
+if (userFormModal) {
+    userFormModal.addEventListener('click', (e) => {
+        if (e.target === userFormModal) closeUserFormModal();
+    });
+}
+
+async function openUserManagement() {
+    userManagementModal.classList.remove('hidden');
+    await loadUsers();
+}
+
+function closeUserManagement() {
+    userManagementModal.classList.add('hidden');
+}
+
+function openUserForm(user = null) {
+    editUserId.value = user ? user.id : '';
+    userUsername.value = user ? user.username : '';
+    userPassword.value = '';
+    userPasswordConfirm.value = '';
+    userFormError.classList.add('hidden');
+    userFormTitle.textContent = user ? 'Nutzer bearbeiten' : 'Nutzer hinzufügen';
+    userFormModal.classList.remove('hidden');
+}
+
+function closeUserFormModal() {
+    userFormModal.classList.add('hidden');
+}
+
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/users');
+        const users = await response.json();
+        renderUserTable(users);
+    } catch (err) {
+        console.error('Error loading users:', err);
+    }
+}
+
+function renderUserTable(users) {
+    userTableBody.innerHTML = users.map(user => `
+        <tr>
+            <td>${user.username}</td>
+            <td>${new Date(user.createdAt).toLocaleDateString('de-DE')}</td>
+            <td class="actions">
+                <button class="btn-edit" onclick="editUser('${user.id}', '${user.username}')">✏️ Bearbeiten</button>
+                <button class="btn-delete" onclick="deleteUser('${user.id}', '${user.username}')">🗑️ Löschen</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+window.editUser = function(id, username) {
+    openUserForm({ id, username });
+};
+
+window.deleteUser = async function(id, username) {
+    if (!confirm(`Möchten Sie den Nutzer "${username}" wirklich löschen?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/users/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            await loadUsers();
+        } else {
+            const data = await response.json();
+            alert(data.message || 'Fehler beim Löschen');
+        }
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        alert('Fehler beim Löschen des Nutzers');
+    }
+};
+
+async function saveUser() {
+    const id = editUserId.value;
+    const username = userUsername.value.trim();
+    const password = userPassword.value;
+    const passwordConfirm = userPasswordConfirm.value;
+    
+    if (!username) {
+        showUserFormError('Bitte Benutzername eingeben');
+        return;
+    }
+    
+    if (!id && !password) {
+        showUserFormError('Bitte Passwort eingeben');
+        return;
+    }
+    
+    if (password && password !== passwordConfirm) {
+        showUserFormError('Passwörter stimmen nicht überein');
+        return;
+    }
+    
+    try {
+        const url = id ? `/api/users/${id}` : '/api/users';
+        const method = id ? 'PUT' : 'POST';
+        const body = { username };
+        if (password) body.password = password;
+        
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            closeUserFormModal();
+            await loadUsers();
+        } else {
+            showUserFormError(data.message || 'Fehler beim Speichern');
+        }
+    } catch (err) {
+        console.error('Error saving user:', err);
+        showUserFormError('Fehler beim Speichern des Nutzers');
+    }
+}
+
+function showUserFormError(message) {
+    userFormError.textContent = message;
+    userFormError.classList.remove('hidden');
+}

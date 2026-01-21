@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import { ExpressPeerServer } from 'peer';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,25 +22,129 @@ app.use('/peerjs', peerServer);
 app.use(express.static(join(__dirname, '../public')));
 app.use(express.json());
 
-// Authorized Berater accounts (username: password)
-const authorizedBeraters = {
-    'Max Mustermann': 'kamdi2024',
-    'Anna Schmidt': 'kamdi2024',
-    'Thomas Weber': 'kamdi2024',
-    'Lisa Mueller': 'kamdi2024'
-};
+// User data file path
+const usersFilePath = join(__dirname, 'users.json');
+
+// Load users from JSON file or create default
+function loadUsers() {
+    if (existsSync(usersFilePath)) {
+        try {
+            const data = readFileSync(usersFilePath, 'utf8');
+            return JSON.parse(data);
+        } catch (e) {
+            console.error('Error loading users:', e);
+            return getDefaultUsers();
+        }
+    }
+    const defaultUsers = getDefaultUsers();
+    saveUsers(defaultUsers);
+    return defaultUsers;
+}
+
+function getDefaultUsers() {
+    return [
+        { id: '1', username: 'Max Mustermann', password: 'kamdi2024', createdAt: new Date().toISOString() },
+        { id: '2', username: 'Anna Schmidt', password: 'kamdi2024', createdAt: new Date().toISOString() }
+    ];
+}
+
+function saveUsers(users) {
+    try {
+        writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+    } catch (e) {
+        console.error('Error saving users:', e);
+    }
+}
+
+let users = loadUsers();
 
 // API endpoint for Berater authentication
 app.post('/api/berater/login', (req, res) => {
     const { username, password } = req.body;
+    const user = users.find(u => u.username === username && u.password === password);
     
-    if (authorizedBeraters[username] && authorizedBeraters[username] === password) {
+    if (user) {
         console.log(`Berater ${username} authenticated successfully`);
         res.json({ success: true, name: username });
     } else {
         console.log(`Failed login attempt for: ${username}`);
         res.status(401).json({ success: false, message: 'Ungültige Anmeldedaten' });
     }
+});
+
+// API endpoints for user management
+app.get('/api/users', (req, res) => {
+    const safeUsers = users.map(u => ({
+        id: u.id,
+        username: u.username,
+        createdAt: u.createdAt
+    }));
+    res.json(safeUsers);
+});
+
+app.post('/api/users', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Benutzername und Passwort erforderlich' });
+    }
+    
+    if (users.find(u => u.username === username)) {
+        return res.status(400).json({ success: false, message: 'Benutzername bereits vergeben' });
+    }
+    
+    const newUser = {
+        id: Date.now().toString(),
+        username,
+        password,
+        createdAt: new Date().toISOString()
+    };
+    
+    users.push(newUser);
+    saveUsers(users);
+    
+    console.log(`New user created: ${username}`);
+    res.json({ success: true, user: { id: newUser.id, username: newUser.username, createdAt: newUser.createdAt } });
+});
+
+app.put('/api/users/:id', (req, res) => {
+    const { id } = req.params;
+    const { username, password } = req.body;
+    
+    const userIndex = users.findIndex(u => u.id === id);
+    if (userIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Benutzer nicht gefunden' });
+    }
+    
+    if (username && username !== users[userIndex].username) {
+        if (users.find(u => u.username === username && u.id !== id)) {
+            return res.status(400).json({ success: false, message: 'Benutzername bereits vergeben' });
+        }
+        users[userIndex].username = username;
+    }
+    
+    if (password) {
+        users[userIndex].password = password;
+    }
+    
+    saveUsers(users);
+    console.log(`User updated: ${users[userIndex].username}`);
+    res.json({ success: true, user: { id: users[userIndex].id, username: users[userIndex].username, createdAt: users[userIndex].createdAt } });
+});
+
+app.delete('/api/users/:id', (req, res) => {
+    const { id } = req.params;
+    
+    const userIndex = users.findIndex(u => u.id === id);
+    if (userIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Benutzer nicht gefunden' });
+    }
+    
+    const deletedUser = users.splice(userIndex, 1)[0];
+    saveUsers(users);
+    
+    console.log(`User deleted: ${deletedUser.username}`);
+    res.json({ success: true });
 });
 
 const beraters = new Map();
