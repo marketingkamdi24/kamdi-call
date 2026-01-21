@@ -13,24 +13,72 @@ const KAMIN_PRODUCTS = {
         { id: 'edilkamin', name: 'Edilkamin', logo: '🏭', country: 'Italien' },
         { id: 'schmitzker', name: 'Schmitzker', logo: '🏭', country: 'Deutschland' }
     ],
-    // Modelle mit Marken-Zuordnung
+    // Modelle mit Marken-Zuordnung - kamdi24 Bestseller
     models: [
-        { id: 'wamsler-yuna', name: 'Yuna', brandId: 'wamsler', price: 899, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Kompakter Kaminofen mit Naturstein' },
-        { id: 'wamsler-opus', name: 'Opus', brandId: 'wamsler', price: 1299, power: '8 kW', efficiency: 'A+', style: 'Klassisch', description: 'Klassischer Dauerbrandofen' },
-        { id: 'wamsler-montafon', name: 'Montafon', brandId: 'wamsler', price: 1599, power: '8 kW', efficiency: 'A+', style: 'Landhaus', description: 'Kaminofen mit Speckstein' },
-        { id: 'haas-aruba', name: 'Aruba Easy', brandId: 'haas-sohn', price: 1199, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Schlanker Kaminofen mit Woodstone' },
-        { id: 'haas-rubus', name: 'Rubus', brandId: 'haas-sohn', price: 1899, power: '7 kW', efficiency: 'A+', style: 'Modern', description: 'Premium-Kaminofen mit Keramik' },
-        { id: 'haas-pico', name: 'Pico', brandId: 'haas-sohn', price: 999, power: '5 kW', efficiency: 'A', style: 'Kompakt', description: 'Platzsparender Kaminofen' },
-        { id: 'nordica-rossella', name: 'Rossella R1', brandId: 'la-nordica', price: 2499, power: '8 kW', efficiency: 'A+', style: 'Italienisch', description: 'Eleganter Kaminofen mit Majolika' },
-        { id: 'nordica-fulvia', name: 'Fulvia', brandId: 'la-nordica', price: 1799, power: '6 kW', efficiency: 'A+', style: 'Klassisch', description: 'Gusseisen-Kaminofen' },
-        { id: 'nordica-ester', name: 'Ester Forno', brandId: 'la-nordica', price: 2899, power: '9 kW', efficiency: 'A+', style: 'Küchenherd', description: 'Kaminofen mit Backfach' },
-        { id: 'justus-faro', name: 'Faro 2.0', brandId: 'justus', price: 1399, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Moderner Stahlkaminofen' },
-        { id: 'justus-usedom', name: 'Usedom 7', brandId: 'justus', price: 1699, power: '7 kW', efficiency: 'A+', style: 'Skandinavisch', description: 'Kaminofen mit Speckstein' },
-        { id: 'oranier-polar', name: 'Polar Neo', brandId: 'oranier', price: 2199, power: '7 kW', efficiency: 'A+', style: 'Modern', description: 'Premium-Kaminofen mit Glasfront' },
-        { id: 'oranier-arena', name: 'Arena Aqua', brandId: 'oranier', price: 3999, power: '10 kW', efficiency: 'A+', style: 'Wasserführend', description: 'Wasserführender Kaminofen' },
+        // WAMSLER - 5 Modelle
+        { id: 'wamsler-yuna', name: 'Yuna', brandId: 'wamsler', price: 899, power: '6 kW', efficiency: 'A+', style: 'Kompakt', description: 'Kompakter Kaminofen mit Naturstein und Warmhaltefach' },
+        { id: 'wamsler-atlas', name: 'Atlas', brandId: 'wamsler', price: 1499, power: '8 kW', efficiency: 'A+', style: 'Speicherofen', description: 'Leistungsstarker Speicherofen mit 60kg Speichersteinen' },
+        { id: 'wamsler-rocky', name: 'Rocky', brandId: 'wamsler', price: 1299, power: '7 kW', efficiency: 'A+', style: 'Klassisch', description: 'Massiver Gusseisen-Klassiker mit hoher Wärmespeicherung' },
+        { id: 'wamsler-nizza', name: 'Nizza', brandId: 'wamsler', price: 1899, power: '6 kW', efficiency: 'A+', style: 'Drehbar', description: '360° drehbarer Kaminofen für offene Wohnkonzepte' },
+        { id: 'wamsler-trion', name: 'Trion', brandId: 'wamsler', price: 1699, power: '8 kW', efficiency: 'A+', style: 'Panorama', description: 'Dreiseitige Verglasung für Flammengenuss' },
+        { id: 'wamsler-nevada', name: 'N-Line Nevada', brandId: 'wamsler', price: 799, power: '5 kW', efficiency: 'A', style: 'Budget', description: 'Preis-Leistungs-Sieger mit Naturstein' },
+        
+        // HAAS+SOHN - 5 Modelle
+        { id: 'haas-aruba', name: 'Aruba Easy', brandId: 'haas-sohn', price: 1199, power: '6 kW', efficiency: 'A+', style: 'Schmal', description: 'Nur 36,5cm tief - perfekt für kleine Räume' },
+        { id: 'haas-rubus', name: 'Rubus', brandId: 'haas-sohn', price: 1899, power: '7 kW', efficiency: 'A+', style: 'Premium', description: 'Premium-Kaminofen mit eleganter Keramik' },
+        { id: 'haas-pico', name: 'Pico', brandId: 'haas-sohn', price: 999, power: '5 kW', efficiency: 'A', style: 'Kompakt', description: 'Platzsparender Kaminofen für kleine Räume' },
+        { id: 'haas-tirol', name: 'Tirol', brandId: 'haas-sohn', price: 1599, power: '6 kW', efficiency: 'A+', style: 'Kachelofen', description: 'Rustikaler Kachelofen mit Holzfach' },
+        { id: 'haas-gastein', name: 'Gastein', brandId: 'haas-sohn', price: 2199, power: '8 kW', efficiency: 'A+', style: 'Speicher', description: 'Speicherofen mit langer Wärmeabgabe' },
+        
+        // LA NORDICA - 5 Modelle
+        { id: 'nordica-rossella', name: 'Rossella R1', brandId: 'la-nordica', price: 2499, power: '8 kW', efficiency: 'A+', style: 'Majolika', description: 'Eleganter Kaminofen mit handgefertigter Majolika' },
+        { id: 'nordica-fulvia', name: 'Fulvia', brandId: 'la-nordica', price: 1799, power: '6 kW', efficiency: 'A+', style: 'Gusseisen', description: 'Klassischer Gusseisen-Kaminofen' },
+        { id: 'nordica-ester', name: 'Ester Forno', brandId: 'la-nordica', price: 2899, power: '9 kW', efficiency: 'A+', style: 'Backfach', description: 'Kaminofen mit integriertem Backfach' },
+        { id: 'nordica-concita', name: 'Concita 2.0', brandId: 'la-nordica', price: 2299, power: '12 kW', efficiency: 'A+', style: 'Leistung', description: 'Starke 12kW Leistung mit Bordeaux-Majolika' },
+        { id: 'nordica-norma', name: 'Norma S Idro', brandId: 'la-nordica', price: 3499, power: '15 kW', efficiency: 'A+', style: 'Wasserführend', description: 'Wasserführend mit Majolika-Keramik' },
+        
+        // JUSTUS - 5 Modelle
+        { id: 'justus-faro', name: 'Faro 2.0', brandId: 'justus', price: 1399, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Moderner Stahlkaminofen mit Dreifach-Luftsystem' },
+        { id: 'justus-usedom', name: 'Usedom 7', brandId: 'justus', price: 1699, power: '7 kW', efficiency: 'A+', style: 'Speckstein', description: 'Kaminofen mit Speckstein-Verkleidung' },
+        { id: 'justus-austin', name: 'Austin 7', brandId: 'justus', price: 1299, power: '7 kW', efficiency: 'A+', style: 'Klassisch', description: 'Klassischer Kaminofen mit 24h-Dauerbrand' },
+        { id: 'justus-island', name: 'Island 7 Aqua', brandId: 'justus', price: 2999, power: '7 kW', efficiency: 'A+', style: 'Wasserführend', description: 'Wasserführender Kaminofen für Zentralheizung' },
+        { id: 'justus-seeland', name: 'Seeland 7', brandId: 'justus', price: 1599, power: '7 kW', efficiency: 'A+', style: 'Skandinavisch', description: 'Skandinavisches Design mit Speckstein' },
+        
+        // ORANIER - 5 Modelle
+        { id: 'oranier-polar', name: 'Polar Neo', brandId: 'oranier', price: 2199, power: '7 kW', efficiency: 'A+', style: 'Modern', description: 'Premium-Kaminofen mit großer Glasfront' },
+        { id: 'oranier-polar-eck', name: 'Polar Eck', brandId: 'oranier', price: 2969, power: '7 kW', efficiency: 'A+', style: 'Eckkamin', description: 'Eleganter Eckkamin mit Kacheln' },
+        { id: 'oranier-polar-aqua', name: 'Polar W+ 2.0', brandId: 'oranier', price: 2877, power: '8 kW', efficiency: 'A+', style: 'Wasserführend', description: 'Wasserführend mit Speckstein' },
+        { id: 'oranier-arena', name: 'Arena Aqua', brandId: 'oranier', price: 3999, power: '10 kW', efficiency: 'A+', style: 'Wasserführend', description: 'Leistungsstarker wasserführender Kaminofen' },
+        { id: 'oranier-rota', name: 'Rota Top 2.0', brandId: 'oranier', price: 2499, power: '5 kW', efficiency: 'A+', style: 'Drehbar', description: 'Drehbarer Kaminofen mit Backfach' },
+        
+        // OLSBERG - 4 Modelle
         { id: 'olsberg-palena', name: 'Palena Compact', brandId: 'olsberg', price: 1599, power: '5 kW', efficiency: 'A+', style: 'Kompakt', description: 'Raumluftunabhängiger Kaminofen' },
-        { id: 'spartherm-senso', name: 'Senso L', brandId: 'spartherm', price: 4499, power: '8 kW', efficiency: 'A+', style: 'Premium', description: 'Designer-Kaminofen mit Drehfunktion' },
-        { id: 'austroflamm-clou', name: 'Clou Compact', brandId: 'austroflamm', price: 3299, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Österreichischer Premium-Ofen' }
+        { id: 'olsberg-tipas', name: 'Tipas Compact', brandId: 'olsberg', price: 1799, power: '5 kW', efficiency: 'A+', style: 'Modern', description: 'Moderner raumluftunabhängiger Ofen' },
+        { id: 'olsberg-aracar', name: 'Aracar Compact', brandId: 'olsberg', price: 1999, power: '5 kW', efficiency: 'A+', style: 'Speicher', description: 'Speicherofen mit PowerBloc-System' },
+        { id: 'olsberg-ipala', name: 'Ipala Compact', brandId: 'olsberg', price: 2199, power: '6 kW', efficiency: 'A+', style: 'Premium', description: 'Premium-Kaminofen mit Kalkstein' },
+        
+        // SPARTHERM - 4 Modelle
+        { id: 'spartherm-senso', name: 'Senso L', brandId: 'spartherm', price: 4499, power: '8 kW', efficiency: 'A+', style: 'Designer', description: 'Designer-Kaminofen mit Drehfunktion' },
+        { id: 'spartherm-cubo', name: 'Cubo L', brandId: 'spartherm', price: 3999, power: '7 kW', efficiency: 'A+', style: 'Würfel', description: 'Würfelförmiger Design-Kaminofen' },
+        { id: 'spartherm-ambiente', name: 'Ambiente A7', brandId: 'spartherm', price: 4999, power: '7 kW', efficiency: 'A+', style: 'Premium', description: 'Premium-Kaminofen mit Ambiente-Licht' },
+        { id: 'spartherm-passo', name: 'Passo L', brandId: 'spartherm', price: 3799, power: '6 kW', efficiency: 'A+', style: 'Schmal', description: 'Schlanker Designer-Kaminofen' },
+        
+        // AUSTROFLAMM - 4 Modelle
+        { id: 'austroflamm-clou', name: 'Clou Compact', brandId: 'austroflamm', price: 3299, power: '6 kW', efficiency: 'A+', style: 'Kompakt', description: 'Österreichischer Premium-Ofen, kompakt' },
+        { id: 'austroflamm-slim', name: 'Slim 2.0', brandId: 'austroflamm', price: 2899, power: '4 kW', efficiency: 'A+', style: 'Ultra-Schmal', description: 'Nur 32cm tief - der Schmalste' },
+        { id: 'austroflamm-pi-ko', name: 'Pi-Ko', brandId: 'austroflamm', price: 3599, power: '5 kW', efficiency: 'A+', style: 'Designer', description: 'Preisgekröntes Design aus Österreich' },
+        { id: 'austroflamm-bell', name: 'Bell', brandId: 'austroflamm', price: 3199, power: '6 kW', efficiency: 'A+', style: 'Rund', description: 'Runder Kaminofen mit 360° Sicht' },
+        
+        // EDILKAMIN - 4 Modelle
+        { id: 'edilkamin-tally', name: 'Tally', brandId: 'edilkamin', price: 1899, power: '8 kW', efficiency: 'A+', style: 'Modern', description: 'Moderner italienischer Kaminofen' },
+        { id: 'edilkamin-aris', name: 'Aris Up', brandId: 'edilkamin', price: 2299, power: '9 kW', efficiency: 'A+', style: 'Panorama', description: 'Panorama-Kaminofen mit Keramik' },
+        { id: 'edilkamin-nara', name: 'Nara', brandId: 'edilkamin', price: 2499, power: '7 kW', efficiency: 'A+', style: 'Klassisch', description: 'Klassisch-eleganter Kaminofen' },
+        { id: 'edilkamin-cherie', name: 'Cherie Up', brandId: 'edilkamin', price: 1699, power: '8 kW', efficiency: 'A+', style: 'Budget', description: 'Gutes Preis-Leistungs-Verhältnis' },
+        
+        // SCHMITZKER - 3 Modelle
+        { id: 'schmitzker-classico', name: 'Classico', brandId: 'schmitzker', price: 2799, power: '8 kW', efficiency: 'A+', style: 'Klassisch', description: 'Klassischer deutscher Qualitätsofen' },
+        { id: 'schmitzker-vision', name: 'Vision', brandId: 'schmitzker', price: 3299, power: '7 kW', efficiency: 'A+', style: 'Modern', description: 'Moderner Kaminofen mit Panoramascheibe' },
+        { id: 'schmitzker-ambiente', name: 'Ambiente', brandId: 'schmitzker', price: 2999, power: '6 kW', efficiency: 'A+', style: 'Elegant', description: 'Eleganter Kaminofen made in Germany' }
     ],
     // Farben
     colors: [
