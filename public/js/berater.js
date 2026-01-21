@@ -388,6 +388,11 @@ async function toggleScreenShare() {
             }
             
             toggleScreenBtn.classList.remove('active');
+            
+            // Notify customer screen share ended
+            if (dataConnection && dataConnection.open) {
+                dataConnection.send({ type: 'screen-share-ended' });
+            }
         } else {
             // Start screen sharing
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
@@ -416,6 +421,11 @@ async function toggleScreenShare() {
                     currentCall.peerConnection.addTrack(screenTrack, localStream);
                     console.log('Screen track added to connection');
                 }
+            }
+            
+            // Notify customer about screen share
+            if (dataConnection && dataConnection.open) {
+                dataConnection.send({ type: 'screen-share-started' });
             }
             
             screenTrack.onended = () => {

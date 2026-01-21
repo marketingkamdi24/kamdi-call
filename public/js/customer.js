@@ -121,6 +121,12 @@ function handleDataConnection(conn) {
             showAppointmentNotification(data.appointment);
         } else if (data.type === 'consultation-summary') {
             showConsultationSummary(data);
+        } else if (data.type === 'screen-share-started') {
+            console.log('Berater started screen sharing');
+            refreshRemoteVideo();
+        } else if (data.type === 'screen-share-ended') {
+            console.log('Berater stopped screen sharing');
+            refreshRemoteVideo();
         }
     });
 
@@ -597,6 +603,28 @@ function showConsultationSummary(summary) {
         msgEl.innerHTML = summaryHtml;
         chatMessages.appendChild(msgEl);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+}
+
+function refreshRemoteVideo() {
+    // Force video element to refresh and pick up new track
+    if (currentCall && currentCall.peerConnection) {
+        const receivers = currentCall.peerConnection.getReceivers();
+        const videoReceiver = receivers.find(r => r.track && r.track.kind === 'video');
+        
+        if (videoReceiver && videoReceiver.track) {
+            console.log('Refreshing video with track:', videoReceiver.track.id);
+            const stream = new MediaStream([videoReceiver.track]);
+            
+            // Also add audio track if exists
+            const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
+            if (audioReceiver && audioReceiver.track) {
+                stream.addTrack(audioReceiver.track);
+            }
+            
+            remoteVideo.srcObject = stream;
+            remoteAudioOnly.classList.add('hidden');
+        }
     }
 }
 
