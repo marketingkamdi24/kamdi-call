@@ -124,12 +124,39 @@ function handleDataConnection(conn) {
 
 async function login() {
     const name = beraterNameInput.value.trim();
-    if (!name) {
-        beraterNameInput.focus();
+    const password = document.getElementById('berater-password').value;
+    const loginError = document.getElementById('login-error');
+    
+    if (!name || !password) {
+        if (!name) beraterNameInput.focus();
+        else document.getElementById('berater-password').focus();
         return;
     }
 
-    beraterName = name;
+    // Authenticate with server
+    try {
+        const response = await fetch('/api/berater/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name, password })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            loginError.classList.remove('hidden');
+            loginError.textContent = result.message || 'Ungültige Anmeldedaten';
+            return;
+        }
+        
+        loginError.classList.add('hidden');
+        beraterName = result.name;
+    } catch (err) {
+        console.error('Auth error:', err);
+        loginError.classList.remove('hidden');
+        loginError.textContent = 'Verbindungsfehler';
+        return;
+    }
     
     try {
         // First try to get both audio and video
@@ -161,7 +188,7 @@ async function login() {
         
         initPeer();
         
-        beraterNameDisplay.textContent = name;
+        beraterNameDisplay.textContent = beraterName;
         beraterProfile.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
         toggleStatusBtn.classList.remove('hidden');

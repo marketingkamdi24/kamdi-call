@@ -53,11 +53,18 @@
         <main class="main-area">
             <section id="login-section" class="berater-login-section">
                 <div class="login-card">
-                    <h2>Berater Anmeldung</h2>
-                    <p>Melden Sie sich an, um Kundenanrufe zu empfangen</p>
+                    <h2>🔐 Berater Anmeldung</h2>
+                    <p>Nur für autorisierte Mitarbeiter</p>
                     <div class="form-group">
-                        <label for="berater-name">Ihr Name</label>
-                        <input type="text" id="berater-name" placeholder="Geben Sie Ihren Namen ein" autocomplete="off">
+                        <label for="berater-name">Benutzername</label>
+                        <input type="text" id="berater-name" placeholder="Vor- und Nachname" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="berater-password">Passwort</label>
+                        <input type="password" id="berater-password" placeholder="Passwort eingeben" autocomplete="off">
+                    </div>
+                    <div id="login-error" class="login-error hidden">
+                        Ungültige Anmeldedaten
                     </div>
                     <button id="login-btn" class="btn btn-primary btn-large">
                         <span>🔑</span> Anmelden

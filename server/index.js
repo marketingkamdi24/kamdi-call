@@ -21,6 +21,27 @@ app.use('/peerjs', peerServer);
 app.use(express.static(join(__dirname, '../public')));
 app.use(express.json());
 
+// Authorized Berater accounts (username: password)
+const authorizedBeraters = {
+    'Max Mustermann': 'kamdi2024',
+    'Anna Schmidt': 'kamdi2024',
+    'Thomas Weber': 'kamdi2024',
+    'Lisa Mueller': 'kamdi2024'
+};
+
+// API endpoint for Berater authentication
+app.post('/api/berater/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (authorizedBeraters[username] && authorizedBeraters[username] === password) {
+        console.log(`Berater ${username} authenticated successfully`);
+        res.json({ success: true, name: username });
+    } else {
+        console.log(`Failed login attempt for: ${username}`);
+        res.status(401).json({ success: false, message: 'Ungültige Anmeldedaten' });
+    }
+});
+
 const beraters = new Map();
 const customerQueue = [];
 const activeConnections = new Map();
