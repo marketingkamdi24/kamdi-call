@@ -358,40 +358,68 @@ function toggleAudio() {
 async function toggleScreenShare() {
     try {
         if (toggleScreenBtn.classList.contains('active')) {
-            const videoTrack = localStream.getVideoTracks()[0];
-            if (videoTrack) {
+            // Stop screen sharing, return to camera
+            const screenTrack = localStream.getVideoTracks()[0];
+            if (screenTrack) {
+                screenTrack.stop();
+                localStream.removeTrack(screenTrack);
+            }
+            
+            try {
                 const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const newVideoTrack = newStream.getVideoTracks()[0];
-                
-                localStream.removeTrack(videoTrack);
                 localStream.addTrack(newVideoTrack);
                 localVideo.srcObject = localStream;
                 
-                if (currentCall) {
-                    const sender = currentCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                if (currentCall && currentCall.peerConnection) {
+                    const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                     if (sender) {
-                        sender.replaceTrack(newVideoTrack);
+                        await sender.replaceTrack(newVideoTrack);
                     }
                 }
+                isVideoEnabled = true;
+                toggleVideoBtn.classList.add('active');
+                toggleVideoBtn.classList.remove('muted');
+            } catch (camErr) {
+                console.log('Camera not available after screen share');
+                isVideoEnabled = false;
+                toggleVideoBtn.classList.remove('active');
+                toggleVideoBtn.classList.add('muted');
             }
+            
             toggleScreenBtn.classList.remove('active');
         } else {
-            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            // Start screen sharing
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                video: { cursor: 'always' },
+                audio: false 
+            });
             const screenTrack = screenStream.getVideoTracks()[0];
             
-            const videoTrack = localStream.getVideoTracks()[0];
-            localStream.removeTrack(videoTrack);
+            // Remove existing video track if any
+            const existingVideoTrack = localStream.getVideoTracks()[0];
+            if (existingVideoTrack) {
+                existingVideoTrack.stop();
+                localStream.removeTrack(existingVideoTrack);
+            }
+            
             localStream.addTrack(screenTrack);
             localVideo.srcObject = localStream;
             
-            if (currentCall) {
-                const sender = currentCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
+            if (currentCall && currentCall.peerConnection) {
+                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                 if (sender) {
-                    sender.replaceTrack(screenTrack);
+                    await sender.replaceTrack(screenTrack);
+                    console.log('Screen track replaced successfully');
+                } else {
+                    // No video sender exists, need to add track
+                    currentCall.peerConnection.addTrack(screenTrack, localStream);
+                    console.log('Screen track added to connection');
                 }
             }
             
             screenTrack.onended = () => {
+                console.log('Screen sharing ended by user');
                 toggleScreenShare();
             };
             
@@ -399,6 +427,7 @@ async function toggleScreenShare() {
         }
     } catch (err) {
         console.error('Screen share error:', err);
+        alert('Bildschirmfreigabe fehlgeschlagen: ' + err.message);
     }
 }
 

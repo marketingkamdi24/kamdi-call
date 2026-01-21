@@ -82,6 +82,18 @@ function handleIncomingCall(call) {
         const hasVideo = remoteStream.getVideoTracks().length > 0 && 
                          remoteStream.getVideoTracks()[0].enabled;
         remoteAudioOnly.classList.toggle('hidden', hasVideo);
+        
+        // Listen for track changes (e.g., screen sharing)
+        if (call.peerConnection) {
+            call.peerConnection.ontrack = (event) => {
+                console.log('Track received:', event.track.kind);
+                if (event.streams && event.streams[0]) {
+                    remoteVideo.srcObject = event.streams[0];
+                    const hasVideo = event.streams[0].getVideoTracks().length > 0;
+                    remoteAudioOnly.classList.toggle('hidden', hasVideo);
+                }
+            };
+        }
     });
 
     call.on('close', () => {
@@ -383,6 +395,18 @@ socket.on('call-accepted', (data) => {
         
         const hasVideo = remoteStream.getVideoTracks().length > 0;
         remoteAudioOnly.classList.toggle('hidden', hasVideo);
+        
+        // Listen for track changes (e.g., screen sharing)
+        if (call.peerConnection) {
+            call.peerConnection.ontrack = (event) => {
+                console.log('Track received:', event.track.kind);
+                if (event.streams && event.streams[0]) {
+                    remoteVideo.srcObject = event.streams[0];
+                    const hasVideo = event.streams[0].getVideoTracks().length > 0;
+                    remoteAudioOnly.classList.toggle('hidden', hasVideo);
+                }
+            };
+        }
     });
 
     call.on('close', () => {
