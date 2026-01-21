@@ -606,17 +606,19 @@ function initTools() {
 }
 
 function initConfiguratorUI() {
+    const brandOptions = document.getElementById('brand-options');
     const modelOptions = document.getElementById('model-options');
     const colorOptions = document.getElementById('color-options');
     const claddingOptions = document.getElementById('cladding-options');
     const accessoryOptions = document.getElementById('accessory-options');
 
-    if (!modelOptions) return;
+    if (!brandOptions) return;
 
-    // Render Models
-    modelOptions.innerHTML = KAMIN_PRODUCTS.models.map(m => `
-        <button class="config-option" data-id="${m.id}">
-            ${m.name}<br><small>${m.price.toLocaleString('de-DE')} €</small>
+    // Render Brands
+    brandOptions.innerHTML = KAMIN_PRODUCTS.brands.map(b => `
+        <button class="config-option brand-option" data-id="${b.id}">
+            <span class="brand-name">${b.name}</span>
+            <small class="brand-country">${b.country}</small>
         </button>
     `).join('');
 
@@ -628,7 +630,7 @@ function initConfiguratorUI() {
     // Render Claddings
     claddingOptions.innerHTML = KAMIN_PRODUCTS.claddings.map(c => `
         <button class="config-option" data-id="${c.id}">
-            ${c.name}<br><small>+${c.price} €</small>
+            ${c.name}<br><small>${c.heatStorage ? `Speicher: ${c.heatStorage}` : `+${c.price} €`}</small>
         </button>
     `).join('');
 
@@ -641,7 +643,18 @@ function initConfiguratorUI() {
         </div>
     `).join('');
 
-    // Event Listeners
+    // Brand Selection - shows models for that brand
+    brandOptions.addEventListener('click', (e) => {
+        const btn = e.target.closest('.config-option');
+        if (btn) {
+            brandOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            configurator.setBrand(btn.dataset.id);
+            renderModelsForBrand(btn.dataset.id);
+        }
+    });
+
+    // Model Selection
     modelOptions.addEventListener('click', (e) => {
         const btn = e.target.closest('.config-option');
         if (btn) {
@@ -678,13 +691,39 @@ function initConfiguratorUI() {
     });
 }
 
+function renderModelsForBrand(brandId) {
+    const modelOptions = document.getElementById('model-options');
+    if (!modelOptions) return;
+
+    const models = configurator.getModelsForBrand(brandId);
+    
+    if (models.length === 0) {
+        modelOptions.innerHTML = '<p class="hint-text">Keine Modelle für diese Marke</p>';
+        return;
+    }
+
+    modelOptions.innerHTML = models.map(m => `
+        <button class="config-option model-option" data-id="${m.id}">
+            <div class="model-name">${m.name}</div>
+            <div class="model-details">
+                <span class="model-power">${m.power}</span>
+                <span class="model-efficiency">${m.efficiency}</span>
+            </div>
+            <div class="model-style">${m.style}</div>
+            <div class="model-price">${m.price.toLocaleString('de-DE')} €</div>
+        </button>
+    `).join('');
+}
+
 function updateConfigSummary(config) {
     const summaryItems = document.getElementById('summary-items');
     const totalPrice = document.getElementById('total-price');
     if (!summaryItems) return;
 
     let html = '';
+    if (config.brand) html += `<div class="summary-item"><span>Marke</span><span>${config.brand.name}</span></div>`;
     if (config.model) html += `<div class="summary-item"><span>Modell</span><span>${config.model.name}</span></div>`;
+    if (config.model?.power) html += `<div class="summary-item"><span>Leistung</span><span>${config.model.power}</span></div>`;
     if (config.color) html += `<div class="summary-item"><span>Farbe</span><span>${config.color.name}</span></div>`;
     if (config.cladding) html += `<div class="summary-item"><span>Verkleidung</span><span>${config.cladding.name}</span></div>`;
     if (config.accessories.length > 0) {

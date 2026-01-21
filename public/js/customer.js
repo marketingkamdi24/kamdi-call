@@ -454,10 +454,22 @@ function updateConfigPreview(config) {
     // Show the preview panel
     preview.classList.add('active');
 
+    // Update brand
+    const brand = document.getElementById('preview-brand');
+    if (brand) {
+        brand.textContent = config.brand?.name || '-';
+    }
+
     // Update model
     const modelName = document.getElementById('preview-model-name');
     if (modelName) {
         modelName.textContent = config.model?.name || '-';
+    }
+
+    // Update model power
+    const modelPower = document.getElementById('preview-model-power');
+    if (modelPower) {
+        modelPower.textContent = config.model?.power || '';
     }
 
     // Update color

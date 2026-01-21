@@ -1,33 +1,70 @@
-// Kamin Product Database
+// Kamin Product Database - kamdi24 Sortiment
 const KAMIN_PRODUCTS = {
-    models: [
-        { id: 'klassik-500', name: 'Klassik 500', price: 2499, image: '🔥', description: 'Klassischer Kaminofen, 5kW' },
-        { id: 'modern-700', name: 'Modern 700', price: 3299, image: '🔥', description: 'Moderner Kaminofen, 7kW' },
-        { id: 'panorama-800', name: 'Panorama 800', price: 4499, image: '🔥', description: 'Panorama-Kamin, 8kW' },
-        { id: 'eck-600', name: 'Eck-Kamin 600', price: 3799, image: '🔥', description: 'Eckkamin, 6kW' },
-        { id: 'wasserführend-900', name: 'Wasserführend 900', price: 5999, image: '🔥', description: 'Wasserführend, 9kW' }
+    // Marken
+    brands: [
+        { id: 'wamsler', name: 'Wamsler', logo: '🏭', country: 'Deutschland' },
+        { id: 'haas-sohn', name: 'Haas+Sohn', logo: '🏭', country: 'Österreich' },
+        { id: 'la-nordica', name: 'La Nordica', logo: '🏭', country: 'Italien' },
+        { id: 'justus', name: 'Justus', logo: '🏭', country: 'Deutschland' },
+        { id: 'oranier', name: 'Oranier', logo: '🏭', country: 'Deutschland' },
+        { id: 'olsberg', name: 'Olsberg', logo: '🏭', country: 'Deutschland' },
+        { id: 'spartherm', name: 'Spartherm', logo: '🏭', country: 'Deutschland' },
+        { id: 'austroflamm', name: 'Austroflamm', logo: '🏭', country: 'Österreich' },
+        { id: 'edilkamin', name: 'Edilkamin', logo: '🏭', country: 'Italien' },
+        { id: 'schmitzker', name: 'Schmitzker', logo: '🏭', country: 'Deutschland' }
     ],
+    // Modelle mit Marken-Zuordnung
+    models: [
+        { id: 'wamsler-yuna', name: 'Yuna', brandId: 'wamsler', price: 899, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Kompakter Kaminofen mit Naturstein' },
+        { id: 'wamsler-opus', name: 'Opus', brandId: 'wamsler', price: 1299, power: '8 kW', efficiency: 'A+', style: 'Klassisch', description: 'Klassischer Dauerbrandofen' },
+        { id: 'wamsler-montafon', name: 'Montafon', brandId: 'wamsler', price: 1599, power: '8 kW', efficiency: 'A+', style: 'Landhaus', description: 'Kaminofen mit Speckstein' },
+        { id: 'haas-aruba', name: 'Aruba Easy', brandId: 'haas-sohn', price: 1199, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Schlanker Kaminofen mit Woodstone' },
+        { id: 'haas-rubus', name: 'Rubus', brandId: 'haas-sohn', price: 1899, power: '7 kW', efficiency: 'A+', style: 'Modern', description: 'Premium-Kaminofen mit Keramik' },
+        { id: 'haas-pico', name: 'Pico', brandId: 'haas-sohn', price: 999, power: '5 kW', efficiency: 'A', style: 'Kompakt', description: 'Platzsparender Kaminofen' },
+        { id: 'nordica-rossella', name: 'Rossella R1', brandId: 'la-nordica', price: 2499, power: '8 kW', efficiency: 'A+', style: 'Italienisch', description: 'Eleganter Kaminofen mit Majolika' },
+        { id: 'nordica-fulvia', name: 'Fulvia', brandId: 'la-nordica', price: 1799, power: '6 kW', efficiency: 'A+', style: 'Klassisch', description: 'Gusseisen-Kaminofen' },
+        { id: 'nordica-ester', name: 'Ester Forno', brandId: 'la-nordica', price: 2899, power: '9 kW', efficiency: 'A+', style: 'Küchenherd', description: 'Kaminofen mit Backfach' },
+        { id: 'justus-faro', name: 'Faro 2.0', brandId: 'justus', price: 1399, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Moderner Stahlkaminofen' },
+        { id: 'justus-usedom', name: 'Usedom 7', brandId: 'justus', price: 1699, power: '7 kW', efficiency: 'A+', style: 'Skandinavisch', description: 'Kaminofen mit Speckstein' },
+        { id: 'oranier-polar', name: 'Polar Neo', brandId: 'oranier', price: 2199, power: '7 kW', efficiency: 'A+', style: 'Modern', description: 'Premium-Kaminofen mit Glasfront' },
+        { id: 'oranier-arena', name: 'Arena Aqua', brandId: 'oranier', price: 3999, power: '10 kW', efficiency: 'A+', style: 'Wasserführend', description: 'Wasserführender Kaminofen' },
+        { id: 'olsberg-palena', name: 'Palena Compact', brandId: 'olsberg', price: 1599, power: '5 kW', efficiency: 'A+', style: 'Kompakt', description: 'Raumluftunabhängiger Kaminofen' },
+        { id: 'spartherm-senso', name: 'Senso L', brandId: 'spartherm', price: 4499, power: '8 kW', efficiency: 'A+', style: 'Premium', description: 'Designer-Kaminofen mit Drehfunktion' },
+        { id: 'austroflamm-clou', name: 'Clou Compact', brandId: 'austroflamm', price: 3299, power: '6 kW', efficiency: 'A+', style: 'Modern', description: 'Österreichischer Premium-Ofen' }
+    ],
+    // Farben
     colors: [
         { id: 'schwarz', name: 'Schwarz Matt', hex: '#1a1a1a', price: 0 },
         { id: 'anthrazit', name: 'Anthrazit', hex: '#383838', price: 0 },
         { id: 'grau', name: 'Grau', hex: '#6b6b6b', price: 50 },
         { id: 'weiss', name: 'Weiß', hex: '#f5f5f5', price: 100 },
-        { id: 'bordeaux', name: 'Bordeaux', hex: '#722f37', price: 150 }
+        { id: 'bordeaux', name: 'Bordeaux', hex: '#722f37', price: 150 },
+        { id: 'creme', name: 'Creme', hex: '#fffdd0', price: 100 },
+        { id: 'pergamon', name: 'Pergamon', hex: '#f1e9d2', price: 120 }
     ],
+    // Verkleidungen
     claddings: [
         { id: 'stahl', name: 'Stahl', price: 0, material: 'steel' },
-        { id: 'speckstein', name: 'Speckstein', price: 450, material: 'soapstone' },
+        { id: 'speckstein', name: 'Speckstein', price: 450, material: 'soapstone', heatStorage: '8-12h' },
         { id: 'keramik', name: 'Keramik', price: 350, material: 'ceramic' },
-        { id: 'naturstein', name: 'Naturstein', price: 650, material: 'natural-stone' },
-        { id: 'sandstein', name: 'Sandstein', price: 550, material: 'sandstone' }
+        { id: 'naturstein', name: 'Naturstein', price: 650, material: 'natural-stone', heatStorage: '6-10h' },
+        { id: 'sandstein', name: 'Sandstein', price: 550, material: 'sandstone', heatStorage: '4-8h' },
+        { id: 'majolika', name: 'Majolika', price: 750, material: 'majolica' },
+        { id: 'gusseisen', name: 'Gusseisen', price: 400, material: 'cast-iron', heatStorage: '2-4h' },
+        { id: 'woodstone', name: 'Woodstone', price: 300, material: 'woodstone' }
     ],
+    // Zubehör
     accessories: [
         { id: 'drehplatte', name: 'Drehplatte', price: 199, icon: '🔄' },
         { id: 'holzfach', name: 'Holzfach', price: 149, icon: '🪵' },
         { id: 'warmhaltefach', name: 'Warmhaltefach', price: 179, icon: '🍽️' },
         { id: 'externe-luft', name: 'Externe Luftzufuhr', price: 129, icon: '💨' },
         { id: 'glasscheibe', name: 'Seitliche Glasscheibe', price: 299, icon: '🪟' },
-        { id: 'kaminbesteck', name: 'Kaminbesteck-Set', price: 89, icon: '🧹' }
+        { id: 'kaminbesteck', name: 'Kaminbesteck-Set', price: 89, icon: '🧹' },
+        { id: 'bodenplatte', name: 'Funkenschutz-Bodenplatte', price: 149, icon: '🛡️' },
+        { id: 'ofenrohr-set', name: 'Ofenrohr-Set', price: 199, icon: '🔧' },
+        { id: 'aschesauger', name: 'Aschesauger', price: 129, icon: '🧹' },
+        { id: 'holzkorb', name: 'Holzkorb Leder', price: 79, icon: '🧺' }
     ]
 };
 
@@ -35,6 +72,7 @@ const KAMIN_PRODUCTS = {
 class ProductConfigurator {
     constructor() {
         this.config = {
+            brand: null,
             model: null,
             color: null,
             cladding: null,
@@ -50,9 +88,24 @@ class ProductConfigurator {
         this.listeners = [];
     }
 
+    setBrand(brandId) {
+        this.previousConfig = { ...this.config };
+        this.config.brand = KAMIN_PRODUCTS.brands.find(b => b.id === brandId);
+        this.config.model = null; // Reset model when brand changes
+        this.notifyChange();
+    }
+
+    getModelsForBrand(brandId) {
+        return KAMIN_PRODUCTS.models.filter(m => m.brandId === brandId);
+    }
+
     setModel(modelId) {
         this.previousConfig = { ...this.config };
         this.config.model = KAMIN_PRODUCTS.models.find(m => m.id === modelId);
+        // Auto-set brand if not set
+        if (this.config.model && !this.config.brand) {
+            this.config.brand = KAMIN_PRODUCTS.brands.find(b => b.id === this.config.model.brandId);
+        }
         this.notifyChange();
     }
 
@@ -117,6 +170,7 @@ class ProductConfigurator {
 
     getSummary() {
         const lines = [];
+        if (this.config.brand) lines.push(`Marke: ${this.config.brand.name}`);
         if (this.config.model) lines.push(`Modell: ${this.config.model.name}`);
         if (this.config.color) lines.push(`Farbe: ${this.config.color.name}`);
         if (this.config.cladding) lines.push(`Verkleidung: ${this.config.cladding.name}`);

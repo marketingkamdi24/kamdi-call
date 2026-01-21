@@ -769,3 +769,100 @@
 .system-message {
     background: transparent !important;
 }
+
+/* Brand Options Styling */
+.brand-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.brand-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 8px;
+    text-align: center;
+}
+
+.brand-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.brand-country {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Model Grid Styling */
+.model-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.model-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    text-align: left;
+    width: 100%;
+}
+
+.model-option .model-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.model-option .model-details {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.model-option .model-power {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.model-option .model-efficiency {
+    background: #dcfce7;
+    color: #166534;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.model-option .model-style {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.model-option .model-price {
+    font-weight: 700;
+    font-size: 15px;
+    color: #e85a24;
+    margin-top: 6px;
+}
+
+.model-option.selected .model-price {
+    color: white;
+}
+
+.hint-text {
+    color: #94a3b8;
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
