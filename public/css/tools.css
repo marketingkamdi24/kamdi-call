@@ -1,0 +1,771 @@
+/* Tools Panel Styles */
+.tools-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 380px;
+    height: 100vh;
+    background: white;
+    box-shadow: -5px 0 30px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.tools-panel.open {
+    transform: translateX(0);
+}
+
+.tools-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #1d3557, #457b9d);
+    color: white;
+}
+
+.tools-panel-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.tools-panel-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.tools-panel-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8f9fa;
+}
+
+.tools-tab {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #666;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.tools-tab .tab-icon {
+    font-size: 18px;
+}
+
+.tools-tab:hover {
+    background: #e2e8f0;
+}
+
+.tools-tab.active {
+    background: white;
+    color: #1d3557;
+    border-bottom: 2px solid #e63946;
+}
+
+.tools-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.tools-section {
+    display: none;
+}
+
+.tools-section.active {
+    display: block;
+}
+
+/* Product Configurator */
+.config-group {
+    margin-bottom: 24px;
+}
+
+.config-group h4 {
+    font-size: 13px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.config-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.config-option {
+    padding: 10px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+
+.config-option:hover {
+    border-color: #457b9d;
+}
+
+.config-option.selected {
+    border-color: #1d3557;
+    background: #1d3557;
+    color: white;
+}
+
+.config-option.color-swatch {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    position: relative;
+}
+
+.config-option.color-swatch.selected::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.config-accessories {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.accessory-item {
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.accessory-item:hover {
+    border-color: #457b9d;
+}
+
+.accessory-item.selected {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.accessory-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.accessory-name {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.accessory-price {
+    font-size: 11px;
+    color: #666;
+}
+
+.config-summary {
+    background: linear-gradient(135deg, #1d3557, #457b9d);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.config-summary h4 {
+    color: white;
+    margin-bottom: 12px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    margin-top: 8px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Drawing Tools */
+.drawing-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.draw-tool-btn {
+    width: 44px;
+    height: 44px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.draw-tool-btn:hover {
+    border-color: #457b9d;
+    background: #f0f7ff;
+}
+
+.draw-tool-btn.active {
+    border-color: #1d3557;
+    background: #1d3557;
+    color: white;
+}
+
+.color-picker-group {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.color-pick {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.color-pick:hover {
+    transform: scale(1.1);
+}
+
+.color-pick.active {
+    border-color: #1d3557;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #1d3557;
+}
+
+.drawing-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.drawing-actions button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.btn-undo {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.btn-clear {
+    background: #fee2e2;
+    color: #dc3545;
+}
+
+.btn-undo:hover, .btn-clear:hover {
+    opacity: 0.8;
+}
+
+/* Checklist */
+.checklist-container {
+    margin-bottom: 20px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checklist-item:hover {
+    background: #e2e8f0;
+}
+
+.checklist-item.checked {
+    background: #d4edda;
+}
+
+.checklist-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.checklist-item.checked .checklist-checkbox {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.checklist-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+.notes-textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #457b9d;
+}
+
+/* Follow-up Section */
+.followup-section {
+    margin-bottom: 24px;
+}
+
+.followup-section h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: #1d3557;
+}
+
+.appointment-picker {
+    display: grid;
+    gap: 12px;
+}
+
+.appointment-picker input {
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.appointment-picker input:focus {
+    outline: none;
+    border-color: #457b9d;
+}
+
+.next-steps-list {
+    margin-bottom: 16px;
+}
+
+.next-step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.next-step-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.add-step-btn {
+    width: 100%;
+    padding: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    background: none;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.add-step-btn:hover {
+    border-color: #457b9d;
+    color: #457b9d;
+}
+
+.followup-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.followup-actions button {
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-send-summary {
+    background: #1d3557;
+    color: white;
+}
+
+.btn-send-summary:hover {
+    background: #152638;
+}
+
+.btn-book-appointment {
+    background: #28a745;
+    color: white;
+}
+
+.btn-book-appointment:hover {
+    background: #218838;
+}
+
+.btn-export-pdf {
+    background: #e63946;
+    color: white;
+}
+
+.btn-export-pdf:hover {
+    background: #d62839;
+}
+
+/* Tools Toggle Button */
+.tools-toggle-btn {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1d3557, #457b9d);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 999;
+    transition: all 0.3s;
+}
+
+.tools-toggle-btn:hover {
+    transform: translateY(-50%) scale(1.1);
+}
+
+.tools-toggle-btn.panel-open {
+    right: 400px;
+}
+
+/* Compare View */
+.compare-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.compare-toggle label {
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.compare-view {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.compare-view.active {
+    display: grid;
+}
+
+.compare-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.compare-item h5 {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.compare-item .preview {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.compare-item .details {
+    font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tools-panel {
+        width: 100%;
+    }
+    
+    .tools-toggle-btn.panel-open {
+        right: 20px;
+        top: auto;
+        bottom: 20px;
+        transform: none;
+    }
+}
+
+/* Drawing Canvas Overlay */
+.drawing-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    cursor: crosshair;
+}
+
+.drawing-canvas-container {
+    position: relative;
+}
+
+.drawing-mode-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    z-index: 51;
+    display: none;
+}
+
+.drawing-mode-indicator.active {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Customer Config Preview */
+.customer-config-preview {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 320px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 100;
+    overflow: hidden;
+    display: none;
+}
+
+.customer-config-preview.active {
+    display: block;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.preview-header {
+    background: linear-gradient(135deg, #1d3557, #457b9d);
+    color: white;
+    padding: 16px;
+}
+
+.preview-header h4 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.preview-content {
+    padding: 16px;
+}
+
+.preview-model {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.preview-model .model-icon {
+    font-size: 64px;
+    margin-bottom: 8px;
+}
+
+.preview-model .model-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d3557;
+}
+
+.preview-details {
+    font-size: 13px;
+}
+
+.preview-details .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.preview-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1d3557;
+    text-align: right;
+    margin-top: 12px;
+}
+
+/* Appointment Notification */
+.appointment-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 350px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 1001;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+}
+
+.appointment-notification.hidden {
+    display: none;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 20px;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+}
+
+.notification-icon {
+    font-size: 32px;
+}
+
+.notification-text h4 {
+    margin: 0 0 8px;
+    color: #155724;
+}
+
+.notification-text p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+}
+
+.notification-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+}
+
+/* Consultation Summary in Chat */
+.consultation-summary-msg {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    padding: 15px;
+    border-radius: 12px;
+    margin: 10px 0;
+}
+
+.consultation-summary-msg h4 {
+    margin: 0 0 12px;
+    color: #1565c0;
+}
+
+.consultation-summary-msg p {
+    margin: 6px 0;
+    font-size: 14px;
+}
+
+.consultation-summary-msg ul {
+    margin: 8px 0 0 20px;
+    padding: 0;
+}
+
+.consultation-summary-msg li {
+    margin: 4px 0;
+    font-size: 13px;
+}
+
+.system-message {
+    background: transparent !important;
+}

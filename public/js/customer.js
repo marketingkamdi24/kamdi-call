@@ -101,6 +101,14 @@ function handleDataConnection(conn) {
             addChatMessage(data.message, data.senderName, false);
         } else if (data.type === 'file') {
             addFileMessage(data.fileName, data.fileData, data.fileType, data.senderName, false);
+        } else if (data.type === 'config-update') {
+            updateConfigPreview(data.config);
+        } else if (data.type === 'drawings-update') {
+            updateDrawings(data.drawings);
+        } else if (data.type === 'appointment-booked') {
+            showAppointmentNotification(data.appointment);
+        } else if (data.type === 'consultation-summary') {
+            showConsultationSummary(data);
         }
     });
 
@@ -427,5 +435,133 @@ fileInput.addEventListener('change', handleFileSelect);
 customerNameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') startCall('video');
 });
+
+// Close appointment notification
+document.getElementById('close-appointment-notification')?.addEventListener('click', () => {
+    document.getElementById('appointment-notification')?.classList.add('hidden');
+});
+
+// ============================================
+// TOOLS - Handle data from Berater
+// ============================================
+
+let customerDrawingCanvas = null;
+
+function updateConfigPreview(config) {
+    const preview = document.getElementById('config-preview');
+    if (!preview) return;
+
+    // Show the preview panel
+    preview.classList.add('active');
+
+    // Update model
+    const modelName = document.getElementById('preview-model-name');
+    if (modelName) {
+        modelName.textContent = config.model?.name || '-';
+    }
+
+    // Update color
+    const color = document.getElementById('preview-color');
+    if (color) {
+        color.textContent = config.color?.name || '-';
+    }
+
+    // Update cladding
+    const cladding = document.getElementById('preview-cladding');
+    if (cladding) {
+        cladding.textContent = config.cladding?.name || '-';
+    }
+
+    // Update accessories
+    const accessories = document.getElementById('preview-accessories');
+    if (accessories) {
+        if (config.accessories && config.accessories.length > 0) {
+            accessories.textContent = config.accessories.map(a => a.name).join(', ');
+        } else {
+            accessories.textContent = '-';
+        }
+    }
+
+    // Update price
+    const price = document.getElementById('preview-price');
+    if (price) {
+        price.textContent = `${(config.totalPrice || 0).toLocaleString('de-DE')} €`;
+    }
+}
+
+function updateDrawings(drawings) {
+    // Initialize canvas if not exists
+    if (!customerDrawingCanvas && window.DrawingCanvas) {
+        const remoteVideo = document.getElementById('remote-video');
+        if (remoteVideo) {
+            const wrapper = remoteVideo.parentElement;
+            if (wrapper) {
+                customerDrawingCanvas = new DrawingCanvas();
+                customerDrawingCanvas.init(wrapper.offsetWidth, wrapper.offsetHeight);
+                customerDrawingCanvas.attachToElement(wrapper);
+            }
+        }
+    }
+
+    // Load drawings from Berater
+    if (customerDrawingCanvas) {
+        customerDrawingCanvas.loadDrawings(drawings);
+    }
+}
+
+function showAppointmentNotification(appointment) {
+    const notification = document.getElementById('appointment-notification');
+    const details = document.getElementById('appointment-details');
+    
+    if (!notification || !details) return;
+
+    const dateStr = new Date(`${appointment.date}T${appointment.time}`).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    details.innerHTML = `
+        <strong>${dateStr}</strong><br>
+        ${appointment.note || ''}<br>
+        <small>Berater: ${appointment.beraterName}</small>
+    `;
+
+    notification.classList.remove('hidden');
+
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 10000);
+}
+
+function showConsultationSummary(summary) {
+    // Add summary to chat
+    const summaryHtml = `
+        <div class="consultation-summary-msg">
+            <h4>📋 Beratungs-Zusammenfassung</h4>
+            ${summary.config?.model ? `<p><strong>Modell:</strong> ${summary.config.model.name}</p>` : ''}
+            ${summary.config?.color ? `<p><strong>Farbe:</strong> ${summary.config.color.name}</p>` : ''}
+            ${summary.config?.cladding ? `<p><strong>Verkleidung:</strong> ${summary.config.cladding.name}</p>` : ''}
+            ${summary.config?.totalPrice ? `<p><strong>Preis:</strong> ${summary.config.totalPrice.toLocaleString('de-DE')} €</p>` : ''}
+            ${summary.nextSteps?.length > 0 ? `
+                <p><strong>Nächste Schritte:</strong></p>
+                <ul>${summary.nextSteps.map(s => `<li>${s}</li>`).join('')}</ul>
+            ` : ''}
+        </div>
+    `;
+    
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+        const msgEl = document.createElement('div');
+        msgEl.className = 'chat-message other system-message';
+        msgEl.innerHTML = summaryHtml;
+        chatMessages.appendChild(msgEl);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+}
 
 initPeer();

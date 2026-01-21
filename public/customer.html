@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>kamdi24 - Kundenberatung</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/tools.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -136,6 +137,46 @@
             </section>
         </main>
 
+        <!-- Product Configuration Preview (from Berater) -->
+        <div id="config-preview" class="customer-config-preview">
+            <div class="preview-header">
+                <h4>🔥 Kamin-Konfiguration</h4>
+            </div>
+            <div class="preview-content">
+                <div class="preview-model">
+                    <div class="model-icon">🔥</div>
+                    <div class="model-name" id="preview-model-name">-</div>
+                </div>
+                <div class="preview-details">
+                    <div class="detail-row">
+                        <span>Farbe:</span>
+                        <span id="preview-color">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Verkleidung:</span>
+                        <span id="preview-cladding">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Zubehör:</span>
+                        <span id="preview-accessories">-</span>
+                    </div>
+                </div>
+                <div class="preview-price" id="preview-price">0 €</div>
+            </div>
+        </div>
+
+        <!-- Appointment Notification -->
+        <div id="appointment-notification" class="appointment-notification hidden">
+            <div class="notification-content">
+                <span class="notification-icon">📅</span>
+                <div class="notification-text">
+                    <h4>Termin gebucht!</h4>
+                    <p id="appointment-details"></p>
+                </div>
+                <button class="notification-close" id="close-appointment-notification">×</button>
+            </div>
+        </div>
+
         <footer class="footer">
             <p>&copy; 2024 kamdi24 - Ihr Experte für Kamine und Öfen</p>
         </footer>
@@ -143,6 +184,7 @@
 
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/drawing-tools.js"></script>
     <script src="/js/customer.js"></script>
 </body>
 </html>

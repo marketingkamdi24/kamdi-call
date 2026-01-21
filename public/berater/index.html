@@ -6,6 +6,7 @@
     <title>kamdi24 - Berater Dashboard</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/berater.css">
+    <link rel="stylesheet" href="/css/tools.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="berater-body">
@@ -167,8 +168,209 @@
         </main>
     </div>
 
+    <!-- Tools Panel -->
+    <button id="tools-toggle-btn" class="tools-toggle-btn hidden">🛠️</button>
+    
+    <div id="tools-panel" class="tools-panel">
+        <div class="tools-panel-header">
+            <h3>🛠️ Beratungs-Tools</h3>
+            <button class="tools-panel-close" id="tools-panel-close">×</button>
+        </div>
+        
+        <div class="tools-panel-tabs">
+            <button class="tools-tab active" data-tab="configurator">
+                <span class="tab-icon">🔥</span>
+                <span>Konfigurator</span>
+            </button>
+            <button class="tools-tab" data-tab="drawing">
+                <span class="tab-icon">✏️</span>
+                <span>Zeichnen</span>
+            </button>
+            <button class="tools-tab" data-tab="checklist">
+                <span class="tab-icon">✅</span>
+                <span>Checkliste</span>
+            </button>
+            <button class="tools-tab" data-tab="followup">
+                <span class="tab-icon">📅</span>
+                <span>Follow-up</span>
+            </button>
+        </div>
+        
+        <div class="tools-panel-content">
+            <!-- Product Configurator -->
+            <div class="tools-section active" id="configurator-section">
+                <div class="config-group">
+                    <h4>Kamin-Modell</h4>
+                    <div class="config-options" id="model-options"></div>
+                </div>
+                
+                <div class="config-group">
+                    <h4>Farbe</h4>
+                    <div class="config-options" id="color-options"></div>
+                </div>
+                
+                <div class="config-group">
+                    <h4>Verkleidung</h4>
+                    <div class="config-options" id="cladding-options"></div>
+                </div>
+                
+                <div class="config-group">
+                    <h4>Zubehör</h4>
+                    <div class="config-accessories" id="accessory-options"></div>
+                </div>
+                
+                <div class="compare-toggle">
+                    <label>
+                        <input type="checkbox" id="compare-mode">
+                        Vorher/Nachher Vergleich anzeigen
+                    </label>
+                </div>
+                
+                <div class="compare-view" id="compare-view">
+                    <div class="compare-item">
+                        <h5>Vorher</h5>
+                        <div class="preview" id="compare-before">🔥</div>
+                        <div class="details" id="compare-before-details">-</div>
+                    </div>
+                    <div class="compare-item">
+                        <h5>Nachher</h5>
+                        <div class="preview" id="compare-after">🔥</div>
+                        <div class="details" id="compare-after-details">-</div>
+                    </div>
+                </div>
+                
+                <div class="config-summary" id="config-summary">
+                    <h4>Zusammenfassung</h4>
+                    <div id="summary-items"></div>
+                    <div class="summary-total">
+                        <span>Gesamtpreis:</span>
+                        <span id="total-price">0 €</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Drawing Tools -->
+            <div class="tools-section" id="drawing-section">
+                <div class="drawing-toolbar">
+                    <button class="draw-tool-btn active" data-tool="line" title="Linie">📏</button>
+                    <button class="draw-tool-btn" data-tool="measure" title="Messen">📐</button>
+                    <button class="draw-tool-btn" data-tool="arrow" title="Pfeil">➡️</button>
+                    <button class="draw-tool-btn" data-tool="rect" title="Rechteck">⬜</button>
+                    <button class="draw-tool-btn" data-tool="circle" title="Kreis">⭕</button>
+                    <button class="draw-tool-btn" data-tool="freehand" title="Freihand">✏️</button>
+                </div>
+                
+                <h4 style="margin-bottom: 8px; font-size: 13px; color: #666;">Farbe</h4>
+                <div class="color-picker-group">
+                    <div class="color-pick active" data-color="#ff0000" style="background: #ff0000;"></div>
+                    <div class="color-pick" data-color="#00ff00" style="background: #00ff00;"></div>
+                    <div class="color-pick" data-color="#0000ff" style="background: #0000ff;"></div>
+                    <div class="color-pick" data-color="#ffff00" style="background: #ffff00;"></div>
+                    <div class="color-pick" data-color="#ff00ff" style="background: #ff00ff;"></div>
+                    <div class="color-pick" data-color="#ffffff" style="background: #ffffff; border: 1px solid #ccc;"></div>
+                </div>
+                
+                <div class="drawing-actions">
+                    <button class="btn-undo" id="drawing-undo">↩️ Rückgängig</button>
+                    <button class="btn-clear" id="drawing-clear">🗑️ Löschen</button>
+                </div>
+                
+                <p style="margin-top: 16px; font-size: 12px; color: #666;">
+                    💡 Zeichnungen werden live zum Kunden übertragen
+                </p>
+            </div>
+            
+            <!-- Checklist -->
+            <div class="tools-section" id="checklist-section">
+                <div class="checklist-container" id="checklist-items">
+                    <div class="checklist-item" data-id="1">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Raumgröße besprochen</span>
+                    </div>
+                    <div class="checklist-item" data-id="2">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Schornstein vorhanden</span>
+                    </div>
+                    <div class="checklist-item" data-id="3">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Abstände zu brennbaren Materialien</span>
+                    </div>
+                    <div class="checklist-item" data-id="4">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Bodenplatte erforderlich</span>
+                    </div>
+                    <div class="checklist-item" data-id="5">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Externe Luftzufuhr möglich</span>
+                    </div>
+                    <div class="checklist-item" data-id="6">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Heizleistung passend</span>
+                    </div>
+                    <div class="checklist-item" data-id="7">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Budget besprochen</span>
+                    </div>
+                    <div class="checklist-item" data-id="8">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Lieferzeit erklärt</span>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 20px 0 12px; font-size: 14px;">📝 Notizen</h4>
+                <textarea class="notes-textarea" id="consultation-notes" placeholder="Notizen zur Beratung eingeben..."></textarea>
+            </div>
+            
+            <!-- Follow-up -->
+            <div class="tools-section" id="followup-section">
+                <div class="followup-section">
+                    <h4>📅 Termin vereinbaren</h4>
+                    <div class="appointment-picker">
+                        <input type="date" id="appointment-date">
+                        <input type="time" id="appointment-time">
+                        <input type="text" id="appointment-note" placeholder="Terminnotiz (z.B. Vor-Ort-Aufmaß)">
+                    </div>
+                </div>
+                
+                <div class="followup-section">
+                    <h4>📌 Nächste Schritte</h4>
+                    <div class="next-steps-list" id="next-steps-list">
+                        <div class="next-step-item">
+                            <input type="checkbox" checked>
+                            <span>Angebot zusenden</span>
+                        </div>
+                        <div class="next-step-item">
+                            <input type="checkbox">
+                            <span>Produktbilder senden</span>
+                        </div>
+                        <div class="next-step-item">
+                            <input type="checkbox">
+                            <span>Vor-Ort-Termin vereinbaren</span>
+                        </div>
+                    </div>
+                    <button class="add-step-btn" id="add-step-btn">+ Schritt hinzufügen</button>
+                </div>
+                
+                <div class="followup-actions">
+                    <button class="btn-send-summary" id="send-summary-btn">
+                        📧 Zusammenfassung senden
+                    </button>
+                    <button class="btn-book-appointment" id="book-appointment-btn">
+                        📅 Termin buchen
+                    </button>
+                    <button class="btn-export-pdf" id="export-pdf-btn">
+                        📄 PDF exportieren
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/products.js"></script>
+    <script src="/js/drawing-tools.js"></script>
+    <script src="/js/pdf-generator.js"></script>
     <script src="/js/berater.js"></script>
 </body>
 </html>

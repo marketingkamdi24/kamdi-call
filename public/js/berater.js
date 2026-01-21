@@ -559,3 +559,407 @@ toggleStatusBtn.addEventListener('click', () => {
     socket.emit('berater-status', newStatus);
     updateStatus(newStatus);
 });
+
+// ============================================
+// TOOLS PANEL FUNCTIONALITY
+// ============================================
+
+const toolsToggleBtn = document.getElementById('tools-toggle-btn');
+const toolsPanel = document.getElementById('tools-panel');
+const toolsPanelClose = document.getElementById('tools-panel-close');
+const toolsTabs = document.querySelectorAll('.tools-tab');
+const toolsSections = document.querySelectorAll('.tools-section');
+
+// Product Configurator
+let configurator = null;
+let drawingCanvas = null;
+let consultationSummary = null;
+let chatHistory = [];
+
+function initTools() {
+    // Initialize Product Configurator
+    if (window.ProductConfigurator) {
+        configurator = new ProductConfigurator();
+        initConfiguratorUI();
+        configurator.onChange((config, prevConfig) => {
+            updateConfigSummary(config);
+            updateCompareView(config, prevConfig);
+            sendConfigToCustomer(config);
+        });
+    }
+
+    // Initialize Drawing Canvas
+    if (window.DrawingCanvas) {
+        drawingCanvas = new DrawingCanvas('remote-video');
+        drawingCanvas.onChange((drawings) => {
+            sendDrawingsToCustomer(drawings);
+        });
+    }
+
+    // Initialize Consultation Summary
+    if (window.ConsultationSummary) {
+        consultationSummary = new ConsultationSummary();
+    }
+
+    // Setup Tools Panel Events
+    setupToolsPanelEvents();
+}
+
+function initConfiguratorUI() {
+    const modelOptions = document.getElementById('model-options');
+    const colorOptions = document.getElementById('color-options');
+    const claddingOptions = document.getElementById('cladding-options');
+    const accessoryOptions = document.getElementById('accessory-options');
+
+    if (!modelOptions) return;
+
+    // Render Models
+    modelOptions.innerHTML = KAMIN_PRODUCTS.models.map(m => `
+        <button class="config-option" data-id="${m.id}">
+            ${m.name}<br><small>${m.price.toLocaleString('de-DE')} €</small>
+        </button>
+    `).join('');
+
+    // Render Colors
+    colorOptions.innerHTML = KAMIN_PRODUCTS.colors.map(c => `
+        <button class="config-option color-swatch" data-id="${c.id}" style="background: ${c.hex};" title="${c.name}"></button>
+    `).join('');
+
+    // Render Claddings
+    claddingOptions.innerHTML = KAMIN_PRODUCTS.claddings.map(c => `
+        <button class="config-option" data-id="${c.id}">
+            ${c.name}<br><small>+${c.price} €</small>
+        </button>
+    `).join('');
+
+    // Render Accessories
+    accessoryOptions.innerHTML = KAMIN_PRODUCTS.accessories.map(a => `
+        <div class="accessory-item" data-id="${a.id}">
+            <div class="accessory-icon">${a.icon}</div>
+            <div class="accessory-name">${a.name}</div>
+            <div class="accessory-price">+${a.price} €</div>
+        </div>
+    `).join('');
+
+    // Event Listeners
+    modelOptions.addEventListener('click', (e) => {
+        const btn = e.target.closest('.config-option');
+        if (btn) {
+            modelOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            configurator.setModel(btn.dataset.id);
+        }
+    });
+
+    colorOptions.addEventListener('click', (e) => {
+        const btn = e.target.closest('.config-option');
+        if (btn) {
+            colorOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            configurator.setColor(btn.dataset.id);
+        }
+    });
+
+    claddingOptions.addEventListener('click', (e) => {
+        const btn = e.target.closest('.config-option');
+        if (btn) {
+            claddingOptions.querySelectorAll('.config-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            configurator.setCladding(btn.dataset.id);
+        }
+    });
+
+    accessoryOptions.addEventListener('click', (e) => {
+        const item = e.target.closest('.accessory-item');
+        if (item) {
+            item.classList.toggle('selected');
+            configurator.toggleAccessory(item.dataset.id);
+        }
+    });
+}
+
+function updateConfigSummary(config) {
+    const summaryItems = document.getElementById('summary-items');
+    const totalPrice = document.getElementById('total-price');
+    if (!summaryItems) return;
+
+    let html = '';
+    if (config.model) html += `<div class="summary-item"><span>Modell</span><span>${config.model.name}</span></div>`;
+    if (config.color) html += `<div class="summary-item"><span>Farbe</span><span>${config.color.name}</span></div>`;
+    if (config.cladding) html += `<div class="summary-item"><span>Verkleidung</span><span>${config.cladding.name}</span></div>`;
+    if (config.accessories.length > 0) {
+        html += `<div class="summary-item"><span>Zubehör</span><span>${config.accessories.length} Artikel</span></div>`;
+    }
+    
+    summaryItems.innerHTML = html;
+    totalPrice.textContent = `${config.totalPrice.toLocaleString('de-DE')} €`;
+}
+
+function updateCompareView(config, prevConfig) {
+    const compareView = document.getElementById('compare-view');
+    const compareBefore = document.getElementById('compare-before-details');
+    const compareAfter = document.getElementById('compare-after-details');
+    
+    if (!compareView || !prevConfig) return;
+
+    if (prevConfig.model) {
+        compareBefore.textContent = prevConfig.model.name;
+    }
+    if (config.model) {
+        compareAfter.textContent = config.model.name;
+    }
+}
+
+function sendConfigToCustomer(config) {
+    if (dataConnection && dataConnection.open) {
+        dataConnection.send({
+            type: 'config-update',
+            config: config
+        });
+    }
+}
+
+function sendDrawingsToCustomer(drawings) {
+    if (dataConnection && dataConnection.open) {
+        dataConnection.send({
+            type: 'drawings-update',
+            drawings: drawings
+        });
+    }
+}
+
+function setupToolsPanelEvents() {
+    // Toggle Panel
+    if (toolsToggleBtn) {
+        toolsToggleBtn.addEventListener('click', () => {
+            toolsPanel.classList.toggle('open');
+            toolsToggleBtn.classList.toggle('panel-open');
+        });
+    }
+
+    if (toolsPanelClose) {
+        toolsPanelClose.addEventListener('click', () => {
+            toolsPanel.classList.remove('open');
+            toolsToggleBtn.classList.remove('panel-open');
+        });
+    }
+
+    // Tab Switching
+    toolsTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.dataset.tab;
+            toolsTabs.forEach(t => t.classList.remove('active'));
+            toolsSections.forEach(s => s.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(`${tabId}-section`)?.classList.add('active');
+        });
+    });
+
+    // Compare Mode Toggle
+    const compareMode = document.getElementById('compare-mode');
+    const compareView = document.getElementById('compare-view');
+    if (compareMode && compareView) {
+        compareMode.addEventListener('change', () => {
+            compareView.classList.toggle('active', compareMode.checked);
+        });
+    }
+
+    // Drawing Tools
+    const drawToolBtns = document.querySelectorAll('.draw-tool-btn');
+    drawToolBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            drawToolBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (drawingCanvas) drawingCanvas.setTool(btn.dataset.tool);
+        });
+    });
+
+    const colorPicks = document.querySelectorAll('.color-pick');
+    colorPicks.forEach(pick => {
+        pick.addEventListener('click', () => {
+            colorPicks.forEach(p => p.classList.remove('active'));
+            pick.classList.add('active');
+            if (drawingCanvas) drawingCanvas.setColor(pick.dataset.color);
+        });
+    });
+
+    document.getElementById('drawing-undo')?.addEventListener('click', () => {
+        if (drawingCanvas) drawingCanvas.undo();
+    });
+
+    document.getElementById('drawing-clear')?.addEventListener('click', () => {
+        if (drawingCanvas) drawingCanvas.clear();
+    });
+
+    // Checklist
+    const checklistItems = document.querySelectorAll('.checklist-item');
+    checklistItems.forEach(item => {
+        item.addEventListener('click', () => {
+            item.classList.toggle('checked');
+        });
+    });
+
+    // Follow-up Actions
+    document.getElementById('add-step-btn')?.addEventListener('click', () => {
+        const stepText = prompt('Neuen Schritt eingeben:');
+        if (stepText) {
+            const stepsList = document.getElementById('next-steps-list');
+            const newStep = document.createElement('div');
+            newStep.className = 'next-step-item';
+            newStep.innerHTML = `<input type="checkbox"><span>${stepText}</span>`;
+            stepsList.appendChild(newStep);
+        }
+    });
+
+    document.getElementById('export-pdf-btn')?.addEventListener('click', exportPDF);
+    document.getElementById('send-summary-btn')?.addEventListener('click', sendSummaryToCustomer);
+    document.getElementById('book-appointment-btn')?.addEventListener('click', bookAppointment);
+}
+
+function getChecklist() {
+    const items = [];
+    document.querySelectorAll('.checklist-item').forEach(item => {
+        items.push({
+            text: item.querySelector('.checklist-text').textContent,
+            checked: item.classList.contains('checked')
+        });
+    });
+    return items;
+}
+
+function getNextSteps() {
+    const steps = [];
+    document.querySelectorAll('.next-step-item').forEach(item => {
+        if (item.querySelector('input').checked) {
+            steps.push(item.querySelector('span').textContent);
+        }
+    });
+    return steps;
+}
+
+function exportPDF() {
+    if (!consultationSummary) return;
+
+    consultationSummary.setCustomerInfo(currentCustomer?.customerName || 'Unbekannt');
+    consultationSummary.setBeraterInfo(beraterName);
+    consultationSummary.setCallInfo(document.getElementById('call-timer')?.textContent, currentCustomer?.callType);
+    consultationSummary.setChecklist(getChecklist());
+    consultationSummary.setChatMessages(chatHistory);
+    if (configurator) consultationSummary.setProductConfig(configurator.getConfig());
+    consultationSummary.setNotes(document.getElementById('consultation-notes')?.value || '');
+    consultationSummary.setNextSteps(getNextSteps());
+    
+    const appointmentDate = document.getElementById('appointment-date')?.value;
+    const appointmentTime = document.getElementById('appointment-time')?.value;
+    if (appointmentDate && appointmentTime) {
+        consultationSummary.setAppointment(new Date(`${appointmentDate}T${appointmentTime}`));
+    }
+
+    consultationSummary.downloadPDF();
+}
+
+function sendSummaryToCustomer() {
+    if (!dataConnection || !dataConnection.open) {
+        alert('Keine Verbindung zum Kunden');
+        return;
+    }
+
+    const summary = {
+        type: 'consultation-summary',
+        beraterName: beraterName,
+        config: configurator ? configurator.getConfig() : null,
+        checklist: getChecklist(),
+        nextSteps: getNextSteps(),
+        notes: document.getElementById('consultation-notes')?.value || ''
+    };
+
+    dataConnection.send(summary);
+    alert('Zusammenfassung wurde an den Kunden gesendet!');
+}
+
+function bookAppointment() {
+    const date = document.getElementById('appointment-date')?.value;
+    const time = document.getElementById('appointment-time')?.value;
+    const note = document.getElementById('appointment-note')?.value;
+
+    if (!date || !time) {
+        alert('Bitte Datum und Uhrzeit auswählen');
+        return;
+    }
+
+    const appointment = {
+        date: date,
+        time: time,
+        note: note,
+        customerName: currentCustomer?.customerName,
+        beraterName: beraterName
+    };
+
+    // Send to customer
+    if (dataConnection && dataConnection.open) {
+        dataConnection.send({
+            type: 'appointment-booked',
+            appointment: appointment
+        });
+    }
+
+    alert(`Termin gebucht: ${date} um ${time}\n${note || ''}`);
+}
+
+// Show tools button when in call
+function showToolsButton() {
+    if (toolsToggleBtn) toolsToggleBtn.classList.remove('hidden');
+}
+
+function hideToolsButton() {
+    if (toolsToggleBtn) toolsToggleBtn.classList.add('hidden');
+    if (toolsPanel) toolsPanel.classList.remove('open');
+}
+
+// Track chat messages for summary
+const originalAddMessage = window.addChatMessage;
+function addChatMessageWithTracking(text, senderName, isOwn) {
+    chatHistory.push({
+        text: text,
+        sender: senderName,
+        isCustomer: !isOwn,
+        timestamp: new Date()
+    });
+    
+    // Call original function
+    const messageEl = document.createElement('div');
+    messageEl.className = `chat-message ${isOwn ? 'own' : 'other'}`;
+    messageEl.innerHTML = `
+        <span class="sender">${senderName}</span>
+        <p>${text}</p>
+    `;
+    chatMessages.appendChild(messageEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Override the section show function to toggle tools
+const originalShowSection = showSection;
+window.showSection = function(section) {
+    originalShowSection(section);
+    if (section === 'call') {
+        showToolsButton();
+        initDrawingCanvas();
+    } else {
+        hideToolsButton();
+    }
+};
+
+function initDrawingCanvas() {
+    if (drawingCanvas && remoteVideo) {
+        setTimeout(() => {
+            const videoWrapper = remoteVideo.parentElement;
+            if (videoWrapper) {
+                drawingCanvas.init(videoWrapper.offsetWidth, videoWrapper.offsetHeight);
+                drawingCanvas.attachToElement(videoWrapper);
+            }
+        }, 500);
+    }
+}
+
+// Initialize tools on load
+document.addEventListener('DOMContentLoaded', initTools);
