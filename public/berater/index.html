@@ -355,12 +355,16 @@
                     <label for="user-username">Benutzername</label>
                     <input type="text" id="user-username" placeholder="Benutzername eingeben">
                 </div>
+                <div class="form-group" id="current-password-group" style="display: none;">
+                    <label for="user-current-password">Aktuelles Passwort</label>
+                    <input type="text" id="user-current-password" readonly class="readonly-input">
+                </div>
                 <div class="form-group">
-                    <label for="user-password">Passwort</label>
+                    <label for="user-password" id="password-label">Passwort</label>
                     <input type="password" id="user-password" placeholder="Passwort eingeben">
                 </div>
                 <div class="form-group">
-                    <label for="user-password-confirm">Passwort bestätigen</label>
+                    <label for="user-password-confirm" id="password-confirm-label">Passwort bestätigen</label>
                     <input type="password" id="user-password-confirm" placeholder="Passwort bestätigen">
                 </div>
                 <div id="user-form-error" class="form-error hidden"></div>

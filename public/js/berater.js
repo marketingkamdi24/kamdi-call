@@ -857,6 +857,10 @@ const userUsername = document.getElementById('user-username');
 const userPassword = document.getElementById('user-password');
 const userPasswordConfirm = document.getElementById('user-password-confirm');
 const userFormError = document.getElementById('user-form-error');
+const currentPasswordGroup = document.getElementById('current-password-group');
+const userCurrentPassword = document.getElementById('user-current-password');
+const passwordLabel = document.getElementById('password-label');
+const passwordConfirmLabel = document.getElementById('password-confirm-label');
 
 if (userManagementBtn) {
     userManagementBtn.addEventListener('click', openUserManagement);
@@ -909,7 +913,27 @@ function openUserForm(user = null) {
     userPassword.value = '';
     userPasswordConfirm.value = '';
     userFormError.classList.add('hidden');
-    userFormTitle.textContent = user ? 'Nutzer bearbeiten' : 'Nutzer hinzufügen';
+    
+    if (user) {
+        // Edit mode - show current password
+        userFormTitle.textContent = 'Nutzer bearbeiten';
+        currentPasswordGroup.style.display = 'block';
+        userCurrentPassword.value = user.password || '';
+        passwordLabel.textContent = 'Neues Passwort (optional)';
+        passwordConfirmLabel.textContent = 'Neues Passwort bestätigen';
+        userPassword.placeholder = 'Leer lassen um Passwort zu behalten';
+        userPasswordConfirm.placeholder = 'Leer lassen um Passwort zu behalten';
+    } else {
+        // Add mode
+        userFormTitle.textContent = 'Nutzer hinzufügen';
+        currentPasswordGroup.style.display = 'none';
+        userCurrentPassword.value = '';
+        passwordLabel.textContent = 'Passwort';
+        passwordConfirmLabel.textContent = 'Passwort bestätigen';
+        userPassword.placeholder = 'Passwort eingeben';
+        userPasswordConfirm.placeholder = 'Passwort bestätigen';
+    }
+    
     userFormModal.classList.remove('hidden');
 }
 
@@ -933,15 +957,15 @@ function renderUserTable(users) {
             <td>${user.username}</td>
             <td>${new Date(user.createdAt).toLocaleDateString('de-DE')}</td>
             <td class="actions">
-                <button class="btn-edit" onclick="editUser('${user.id}', '${user.username}')">✏️ Bearbeiten</button>
+                <button class="btn-edit" onclick="editUser('${user.id}', '${user.username}', '${user.password}')">✏️ Bearbeiten</button>
                 <button class="btn-delete" onclick="deleteUser('${user.id}', '${user.username}')">🗑️ Löschen</button>
             </td>
         </tr>
     `).join('');
 }
 
-window.editUser = function(id, username) {
-    openUserForm({ id, username });
+window.editUser = function(id, username, password) {
+    openUserForm({ id, username, password });
 };
 
 window.deleteUser = async function(id, username) {

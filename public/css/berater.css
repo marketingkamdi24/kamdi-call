@@ -653,3 +653,10 @@
 .btn-secondary:hover {
     background: #cbd5e1;
 }
+
+.readonly-input {
+    background: #f1f5f9;
+    color: #475569;
+    cursor: not-allowed;
+    border: 1px dashed #cbd5e1;
+}

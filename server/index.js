@@ -77,6 +77,7 @@ app.get('/api/users', (req, res) => {
     const safeUsers = users.map(u => ({
         id: u.id,
         username: u.username,
+        password: u.password,
         createdAt: u.createdAt
     }));
     res.json(safeUsers);
