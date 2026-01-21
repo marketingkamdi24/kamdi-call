@@ -669,8 +669,25 @@ function setupToolsPanelEvents() {
             toolsSections.forEach(s => s.classList.remove('active'));
             tab.classList.add('active');
             document.getElementById(`${tabId}-section`)?.classList.add('active');
+            
+            // Enable/disable drawing canvas based on active tab
+            if (drawingCanvas) {
+                if (tabId === 'drawing') {
+                    drawingCanvas.enable();
+                } else {
+                    drawingCanvas.disable();
+                }
+            }
         });
     });
+    
+    // Also disable drawing when panel is closed
+    if (toolsPanelClose) {
+        const originalClose = toolsPanelClose.onclick;
+        toolsPanelClose.addEventListener('click', () => {
+            if (drawingCanvas) drawingCanvas.disable();
+        });
+    }
 
     // Compare Mode Toggle
     const compareMode = document.getElementById('compare-mode');

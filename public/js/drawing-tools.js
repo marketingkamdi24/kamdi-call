@@ -5,6 +5,7 @@ class DrawingCanvas {
         this.canvas = null;
         this.ctx = null;
         this.isDrawing = false;
+        this.isEnabled = false;
         this.currentTool = 'line';
         this.color = '#ff0000';
         this.lineWidth = 3;
@@ -13,6 +14,23 @@ class DrawingCanvas {
         this.startPoint = null;
         this.listeners = [];
         this.scale = 1;
+    }
+
+    enable() {
+        this.isEnabled = true;
+        if (this.canvas) {
+            this.canvas.style.pointerEvents = 'auto';
+            this.canvas.style.cursor = 'crosshair';
+        }
+    }
+
+    disable() {
+        this.isEnabled = false;
+        this.isDrawing = false;
+        if (this.canvas) {
+            this.canvas.style.pointerEvents = 'none';
+            this.canvas.style.cursor = 'default';
+        }
     }
 
     init(width = 800, height = 600) {
@@ -35,7 +53,7 @@ class DrawingCanvas {
         this.canvas.style.position = 'absolute';
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
-        this.canvas.style.pointerEvents = 'auto';
+        this.canvas.style.pointerEvents = 'none';
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
         element.style.position = 'relative';
@@ -68,6 +86,7 @@ class DrawingCanvas {
     }
 
     onMouseDown(e) {
+        if (!this.isEnabled) return;
         this.isDrawing = true;
         this.startPoint = this.getPoint(e);
         

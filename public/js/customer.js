@@ -608,23 +608,40 @@ function showConsultationSummary(summary) {
 
 function refreshRemoteVideo() {
     // Force video element to refresh and pick up new track
+    console.log('Attempting to refresh remote video...');
+    
     if (currentCall && currentCall.peerConnection) {
         const receivers = currentCall.peerConnection.getReceivers();
+        console.log('Receivers:', receivers.length);
+        
         const videoReceiver = receivers.find(r => r.track && r.track.kind === 'video');
+        const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
         
         if (videoReceiver && videoReceiver.track) {
-            console.log('Refreshing video with track:', videoReceiver.track.id);
-            const stream = new MediaStream([videoReceiver.track]);
+            console.log('Found video track:', videoReceiver.track.id, 'readyState:', videoReceiver.track.readyState);
             
-            // Also add audio track if exists
-            const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
+            // Create new MediaStream with current tracks
+            const stream = new MediaStream();
+            stream.addTrack(videoReceiver.track);
+            
             if (audioReceiver && audioReceiver.track) {
                 stream.addTrack(audioReceiver.track);
             }
             
+            // Force video element update
+            remoteVideo.srcObject = null;
             remoteVideo.srcObject = stream;
+            remoteVideo.play().catch(e => console.log('Video play error:', e));
             remoteAudioOnly.classList.add('hidden');
+            
+            console.log('Remote video refreshed successfully');
+        } else {
+            console.log('No video receiver found, retrying in 500ms...');
+            // Retry after a short delay
+            setTimeout(refreshRemoteVideo, 500);
         }
+    } else {
+        console.log('No currentCall or peerConnection');
     }
 }
 
