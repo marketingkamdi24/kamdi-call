@@ -251,6 +251,10 @@ function showSection(section) {
     incomingCallSection.classList.add('hidden');
     callSection.classList.add('hidden');
 
+    // Hide mobile chat button by default
+    const mobileChatBtnEl = document.getElementById('mobile-chat-btn');
+    if (mobileChatBtnEl) mobileChatBtnEl.classList.add('hidden');
+
     switch (section) {
         case 'login':
             loginSection.classList.remove('hidden');
@@ -263,6 +267,10 @@ function showSection(section) {
             break;
         case 'call':
             callSection.classList.remove('hidden');
+            // Show mobile chat button on mobile when in call
+            if (mobileChatBtnEl && window.innerWidth <= 768) {
+                mobileChatBtnEl.classList.remove('hidden');
+            }
             break;
     }
 }
@@ -1201,3 +1209,60 @@ function showUserFormError(message) {
     userFormError.textContent = message;
     userFormError.classList.remove('hidden');
 }
+
+// ========== MOBILE NAVIGATION ==========
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const mobileChatBtn = document.getElementById('mobile-chat-btn');
+const chatArea = document.querySelector('.chat-area');
+
+function toggleMobileMenu() {
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('active');
+}
+
+function closeMobileMenu() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
+}
+
+function toggleMobileChat() {
+    if (chatArea) {
+        chatArea.classList.toggle('open');
+    }
+}
+
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+}
+
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', closeMobileMenu);
+}
+
+if (mobileChatBtn) {
+    mobileChatBtn.addEventListener('click', toggleMobileChat);
+}
+
+// Show mobile chat button when in call
+function updateMobileChatButton(show) {
+    if (mobileChatBtn) {
+        if (show && window.innerWidth <= 768) {
+            mobileChatBtn.classList.remove('hidden');
+        } else {
+            mobileChatBtn.classList.add('hidden');
+        }
+    }
+}
+
+// Update on resize
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        closeMobileMenu();
+        if (chatArea) chatArea.classList.remove('open');
+        if (mobileChatBtn) mobileChatBtn.classList.add('hidden');
+    } else if (!callSection.classList.contains('hidden')) {
+        updateMobileChatButton(true);
+    }
+});
