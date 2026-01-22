@@ -420,18 +420,7 @@ socket.on('call-accepted', (data) => {
     });
 
     const conn = peer.connect(data.beraterPeerId);
-    conn.on('open', () => {
-        dataConnection = conn;
-        console.log('Data connection to berater established');
-    });
-
-    conn.on('data', (data) => {
-        if (data.type === 'chat') {
-            addChatMessage(data.message, data.senderName, false);
-        } else if (data.type === 'file') {
-            addFileMessage(data.fileName, data.fileData, data.fileType, data.senderName, false);
-        }
-    });
+    handleDataConnection(conn);
 
     showSection('call');
     startCallTimer();
