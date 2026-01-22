@@ -33,6 +33,12 @@ const remoteAudioOnly = document.getElementById('remote-audio-only');
 
 const toggleVideoBtn = document.getElementById('toggle-video-btn');
 const toggleAudioBtn = document.getElementById('toggle-audio-btn');
+const toggleScreenBtn = document.getElementById('toggle-screen-btn');
+const swapVideoBtn = document.getElementById('swap-video-btn');
+
+let isScreenSharing = false;
+let originalVideoTrack = null;
+let isVideoSwapped = false;
 
 const chatPanel = document.getElementById('chat-panel');
 const chatMessages = document.getElementById('chat-messages');
@@ -319,6 +325,95 @@ function toggleAudio() {
     }
 }
 
+async function toggleScreenShare() {
+    try {
+        if (isScreenSharing) {
+            // Stop screen sharing, restore original video
+            const screenTrack = localStream.getVideoTracks()[0];
+            if (screenTrack) {
+                screenTrack.stop();
+                localStream.removeTrack(screenTrack);
+            }
+            
+            // Restore original or create new dummy track
+            if (originalVideoTrack && originalVideoTrack.readyState === 'live') {
+                localStream.addTrack(originalVideoTrack);
+            } else {
+                const dummyTrack = createDummyVideoTrack();
+                localStream.addTrack(dummyTrack);
+            }
+            
+            localVideo.srcObject = localStream;
+            
+            if (currentCall && currentCall.peerConnection) {
+                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) {
+                    await sender.replaceTrack(localStream.getVideoTracks()[0]);
+                }
+            }
+            
+            if (dataConnection && dataConnection.open) {
+                dataConnection.send({ type: 'screen-share-ended' });
+            }
+            
+            toggleScreenBtn.classList.remove('active');
+            isScreenSharing = false;
+        } else {
+            // Start screen sharing
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            const screenTrack = screenStream.getVideoTracks()[0];
+            
+            // Save original video track
+            originalVideoTrack = localStream.getVideoTracks()[0];
+            if (originalVideoTrack) {
+                localStream.removeTrack(originalVideoTrack);
+            }
+            
+            localStream.addTrack(screenTrack);
+            localVideo.srcObject = localStream;
+            
+            if (currentCall && currentCall.peerConnection) {
+                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) {
+                    await sender.replaceTrack(screenTrack);
+                }
+            }
+            
+            if (dataConnection && dataConnection.open) {
+                dataConnection.send({ type: 'screen-share-started' });
+            }
+            
+            screenTrack.onended = () => {
+                toggleScreenShare();
+            };
+            
+            toggleScreenBtn.classList.add('active');
+            isScreenSharing = true;
+        }
+    } catch (err) {
+        console.log('Screen share cancelled or error:', err.message);
+    }
+}
+
+function swapVideos() {
+    const localWrapper = document.querySelector('.local-video-wrapper');
+    const remoteWrapper = document.querySelector('.remote-video-wrapper');
+    
+    if (!localWrapper || !remoteWrapper) return;
+    
+    isVideoSwapped = !isVideoSwapped;
+    
+    if (isVideoSwapped) {
+        localWrapper.classList.add('video-large');
+        remoteWrapper.classList.add('video-small');
+        swapVideoBtn.classList.add('active');
+    } else {
+        localWrapper.classList.remove('video-large');
+        remoteWrapper.classList.remove('video-small');
+        swapVideoBtn.classList.remove('active');
+    }
+}
+
 function sendChatMessage() {
     const message = chatInput.value.trim();
     if (!message || !dataConnection) return;
@@ -467,6 +562,8 @@ newCallBtn.addEventListener('click', () => {
 
 toggleVideoBtn.addEventListener('click', toggleVideo);
 toggleAudioBtn.addEventListener('click', toggleAudio);
+toggleScreenBtn.addEventListener('click', toggleScreenShare);
+swapVideoBtn.addEventListener('click', swapVideos);
 
 sendMessageBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keypress', (e) => {

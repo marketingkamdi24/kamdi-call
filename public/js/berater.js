@@ -41,7 +41,10 @@ const chatCustomerName = document.getElementById('chat-customer-name');
 const toggleVideoBtn = document.getElementById('toggle-video-btn');
 const toggleAudioBtn = document.getElementById('toggle-audio-btn');
 const toggleScreenBtn = document.getElementById('toggle-screen-btn');
+const swapVideoBtn = document.getElementById('swap-video-btn');
 const endCallBtn = document.getElementById('end-call-btn');
+
+let isVideoSwapped = false;
 
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
@@ -115,6 +118,11 @@ function handleDataConnection(conn) {
             addChatMessage(data.message, data.senderName, false);
         } else if (data.type === 'file') {
             addFileMessage(data.fileName, data.fileData, data.fileType, data.senderName, false);
+        } else if (data.type === 'screen-share-started') {
+            console.log('Customer started screen sharing');
+            refreshRemoteVideo();
+        } else if (data.type === 'screen-share-ended') {
+            console.log('Customer stopped screen sharing');
         }
     });
 
@@ -367,6 +375,25 @@ function toggleAudio() {
     }
 }
 
+function swapVideos() {
+    const localWrapper = document.querySelector('.local-video-wrapper');
+    const remoteWrapper = document.querySelector('.remote-video-wrapper');
+    
+    if (!localWrapper || !remoteWrapper) return;
+    
+    isVideoSwapped = !isVideoSwapped;
+    
+    if (isVideoSwapped) {
+        localWrapper.classList.add('video-large');
+        remoteWrapper.classList.add('video-small');
+        swapVideoBtn.classList.add('active');
+    } else {
+        localWrapper.classList.remove('video-large');
+        remoteWrapper.classList.remove('video-small');
+        swapVideoBtn.classList.remove('active');
+    }
+}
+
 async function toggleScreenShare() {
     try {
         if (toggleScreenBtn.classList.contains('active')) {
@@ -521,6 +548,25 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function refreshRemoteVideo() {
+    if (!currentCall || !currentCall.peerConnection) return;
+    
+    const receivers = currentCall.peerConnection.getReceivers();
+    const videoReceiver = receivers.find(r => r.track && r.track.kind === 'video');
+    const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
+    
+    if (videoReceiver && videoReceiver.track) {
+        const stream = new MediaStream();
+        stream.addTrack(videoReceiver.track);
+        if (audioReceiver && audioReceiver.track) {
+            stream.addTrack(audioReceiver.track);
+        }
+        remoteVideo.srcObject = stream;
+        remoteVideo.play().catch(e => console.log('Video play:', e));
+        remoteAudioOnly.classList.add('hidden');
+    }
+}
+
 function updateQueueDisplay(queue) {
     if (queue.length === 0) {
         queueList.innerHTML = '<p class="empty-queue">Keine wartenden Kunden</p>';
@@ -600,6 +646,7 @@ endCallBtn.addEventListener('click', () => endCall(true));
 toggleVideoBtn.addEventListener('click', toggleVideo);
 toggleAudioBtn.addEventListener('click', toggleAudio);
 toggleScreenBtn.addEventListener('click', toggleScreenShare);
+swapVideoBtn.addEventListener('click', swapVideos);
 
 sendMessageBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keypress', (e) => {
