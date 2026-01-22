@@ -228,10 +228,21 @@ io.on('connection', (socket) => {
             const customer = activeConnections.get(customerId);
             if (customer) {
                 berater.currentCustomer = customer;
+                
+                // Remove customer from queue if they were in it
+                const queueIndex = customerQueue.findIndex(c => c.socketId === customerId);
+                if (queueIndex !== -1) {
+                    customerQueue.splice(queueIndex, 1);
+                    notifyBeratersOfQueue();
+                }
+                
                 io.to(customerId).emit('call-accepted', {
                     beraterName: berater.name,
-                    beraterPeerId: berater.peerId
+                    beraterPeerId: berater.peerId,
+                    beraterSocketId: berater.socketId
                 });
+                
+                broadcastBeraterList();
             }
         }
     });
