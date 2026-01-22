@@ -42,6 +42,18 @@ const fileInput = document.getElementById('file-input');
 
 const queueAudio = document.getElementById('queue-audio'); // May be null if audio element removed
 
+// Creates a black dummy video track for WebRTC negotiation
+function createDummyVideoTrack() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 480;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const stream = canvas.captureStream(1);
+    return stream.getVideoTracks()[0];
+}
+
 function initPeer() {
     const isSecure = window.location.protocol === 'https:';
     const peerConfig = {
@@ -161,6 +173,11 @@ async function startCall(callType) {
                     audio: true,
                     video: false
                 });
+                
+                // Add dummy video track so WebRTC negotiates video transceivers
+                const dummyTrack = createDummyVideoTrack();
+                localStream.addTrack(dummyTrack);
+                
                 isVideoEnabled = false;
                 toggleVideoBtn.classList.add('muted');
                 callType = 'audio';
@@ -171,6 +188,11 @@ async function startCall(callType) {
                 audio: true,
                 video: false
             });
+            
+            // Add dummy video track so WebRTC negotiates video transceivers
+            const dummyTrack = createDummyVideoTrack();
+            localStream.addTrack(dummyTrack);
+            
             isVideoEnabled = false;
             toggleVideoBtn.classList.add('muted');
         }
