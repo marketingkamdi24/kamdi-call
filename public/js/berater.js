@@ -41,9 +41,11 @@ const chatCustomerName = document.getElementById('chat-customer-name');
 const toggleVideoBtn = document.getElementById('toggle-video-btn');
 const toggleAudioBtn = document.getElementById('toggle-audio-btn');
 const toggleScreenBtn = document.getElementById('toggle-screen-btn');
+const flipCameraBtn = document.getElementById('flip-camera-btn');
 const endCallBtn = document.getElementById('end-call-btn');
 
 let isVideoSwapped = false;
+let currentFacingMode = 'user';
 
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
@@ -382,6 +384,43 @@ function toggleAudio() {
     }
 }
 
+async function flipCamera() {
+    if (!localStream || isScreenSharing) return;
+    
+    try {
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: currentFacingMode },
+            audio: false
+        });
+        
+        const newVideoTrack = newStream.getVideoTracks()[0];
+        const oldVideoTrack = localStream.getVideoTracks()[0];
+        
+        if (oldVideoTrack) {
+            oldVideoTrack.stop();
+            localStream.removeTrack(oldVideoTrack);
+        }
+        localStream.addTrack(newVideoTrack);
+        
+        localVideo.srcObject = localStream;
+        
+        if (currentCall && currentCall.peerConnection) {
+            const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+                await sender.replaceTrack(newVideoTrack);
+            }
+        }
+        
+        originalVideoTrack = newVideoTrack;
+        console.log('Camera flipped to:', currentFacingMode);
+    } catch (err) {
+        console.error('Error flipping camera:', err);
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+    }
+}
+
 function swapVideos() {
     const localWrapper = document.querySelector('.local-video-wrapper');
     const remoteWrapper = document.querySelector('.remote-video-wrapper');
@@ -693,6 +732,7 @@ endCallBtn.addEventListener('click', () => endCall(true));
 toggleVideoBtn.addEventListener('click', toggleVideo);
 toggleAudioBtn.addEventListener('click', toggleAudio);
 toggleScreenBtn.addEventListener('click', toggleScreenShare);
+if (flipCameraBtn) flipCameraBtn.addEventListener('click', flipCamera);
 
 // Setup click-to-swap on video elements
 setupVideoClickToSwap();

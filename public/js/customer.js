@@ -34,8 +34,10 @@ const remoteAudioOnly = document.getElementById('remote-audio-only');
 const toggleVideoBtn = document.getElementById('toggle-video-btn');
 const toggleAudioBtn = document.getElementById('toggle-audio-btn');
 const toggleScreenBtn = document.getElementById('toggle-screen-btn');
+const flipCameraBtn = document.getElementById('flip-camera-btn');
 
 let isScreenSharing = false;
+let currentFacingMode = 'user'; // 'user' = front camera, 'environment' = back camera
 let originalVideoTrack = null;
 let isVideoSwapped = false;
 
@@ -324,6 +326,51 @@ function toggleAudio() {
     }
 }
 
+async function flipCamera() {
+    if (!localStream || isScreenSharing) return;
+    
+    try {
+        // Switch facing mode
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        
+        // Get new video stream with opposite camera
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: currentFacingMode },
+            audio: false
+        });
+        
+        const newVideoTrack = newStream.getVideoTracks()[0];
+        const oldVideoTrack = localStream.getVideoTracks()[0];
+        
+        // Replace track in local stream
+        if (oldVideoTrack) {
+            oldVideoTrack.stop();
+            localStream.removeTrack(oldVideoTrack);
+        }
+        localStream.addTrack(newVideoTrack);
+        
+        // Update local video display
+        localVideo.srcObject = localStream;
+        
+        // Replace track in peer connection
+        if (currentCall && currentCall.peerConnection) {
+            const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+                await sender.replaceTrack(newVideoTrack);
+            }
+        }
+        
+        // Update originalVideoTrack reference
+        originalVideoTrack = newVideoTrack;
+        
+        console.log('Camera flipped to:', currentFacingMode);
+    } catch (err) {
+        console.error('Error flipping camera:', err);
+        // Revert facing mode on error
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+    }
+}
+
 async function toggleScreenShare() {
     try {
         if (isScreenSharing) {
@@ -577,6 +624,7 @@ newCallBtn.addEventListener('click', () => {
 toggleVideoBtn.addEventListener('click', toggleVideo);
 toggleAudioBtn.addEventListener('click', toggleAudio);
 toggleScreenBtn.addEventListener('click', toggleScreenShare);
+if (flipCameraBtn) flipCameraBtn.addEventListener('click', flipCamera);
 
 // Setup click-to-swap on video elements
 setupVideoClickToSwap();

@@ -801,10 +801,20 @@ body {
     font-size: 0.9rem;
 }
 
+/* Mobile-only elements - hidden on desktop */
+.mobile-only {
+    display: none !important;
+}
+
 /* ========== MOBILE STYLES ========== */
 
 /* Tablet */
 @media (max-width: 768px) {
+    /* Show mobile-only elements on mobile */
+    .mobile-only {
+        display: flex !important;
+    }
+
     .container {
         padding: 10px;
     }
