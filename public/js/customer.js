@@ -600,12 +600,12 @@ function refreshRemoteVideo() {
     console.log('=== REFRESH REMOTE VIDEO ===');
     
     if (!currentCall) {
-        console.error('No currentCall!');
+        console.log('No currentCall - waiting for new call');
         return;
     }
     
     if (!currentCall.peerConnection) {
-        console.error('No peerConnection!');
+        console.log('No peerConnection yet');
         return;
     }
     
@@ -613,18 +613,13 @@ function refreshRemoteVideo() {
     const receivers = pc.getReceivers();
     console.log('Total receivers:', receivers.length);
     
-    receivers.forEach((r, i) => {
-        console.log(`Receiver ${i}: kind=${r.track?.kind}, id=${r.track?.id}, readyState=${r.track?.readyState}, enabled=${r.track?.enabled}`);
-    });
-    
     const videoReceiver = receivers.find(r => r.track && r.track.kind === 'video');
     const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
     
     if (videoReceiver && videoReceiver.track) {
         const track = videoReceiver.track;
-        console.log('Video track found:', track.id, 'readyState:', track.readyState, 'enabled:', track.enabled, 'muted:', track.muted);
+        console.log('Video track found:', track.id, 'readyState:', track.readyState);
         
-        // Create new MediaStream
         const stream = new MediaStream();
         stream.addTrack(track);
         
@@ -632,27 +627,12 @@ function refreshRemoteVideo() {
             stream.addTrack(audioReceiver.track);
         }
         
-        console.log('New stream tracks:', stream.getTracks().map(t => `${t.kind}:${t.id}`));
-        
-        // Force video element update
-        remoteVideo.srcObject = null;
-        setTimeout(() => {
-            remoteVideo.srcObject = stream;
-            remoteVideo.play().then(() => {
-                console.log('Video playing successfully');
-            }).catch(e => console.error('Video play error:', e));
-            remoteAudioOnly.classList.add('hidden');
-            console.log('Remote video srcObject updated');
-        }, 100);
+        remoteVideo.srcObject = stream;
+        remoteVideo.play().catch(e => console.log('Video play:', e));
+        remoteAudioOnly.classList.add('hidden');
+        console.log('Screen share video displayed!');
     } else {
-        console.warn('No video receiver found, current srcObject:', remoteVideo.srcObject);
-        // Check if the original stream still has video
-        if (remoteVideo.srcObject) {
-            const tracks = remoteVideo.srcObject.getTracks();
-            console.log('Current srcObject tracks:', tracks.map(t => `${t.kind}:${t.id}:${t.readyState}`));
-        }
-        // Retry after delay
-        setTimeout(refreshRemoteVideo, 500);
+        console.log('No video receiver yet');
     }
 }
 

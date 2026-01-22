@@ -417,9 +417,26 @@ async function toggleScreenShare() {
                     await sender.replaceTrack(screenTrack);
                     console.log('Screen track replaced successfully');
                 } else {
-                    // No video sender exists, need to add track
-                    currentCall.peerConnection.addTrack(screenTrack, localStream);
-                    console.log('Screen track added to connection');
+                    // No video sender exists - need to make a new call with video
+                    console.log('No video sender - making new call with screen share');
+                    const remotePeerId = currentCall.peer;
+                    currentCall.close();
+                    
+                    // Make new call with stream that includes screen track
+                    const newCall = peer.call(remotePeerId, localStream);
+                    currentCall = newCall;
+                    
+                    newCall.on('stream', (remoteStream) => {
+                        remoteVideo.srcObject = remoteStream;
+                        const hasVideo = remoteStream.getVideoTracks().length > 0;
+                        remoteAudioOnly.classList.toggle('hidden', hasVideo);
+                    });
+                    
+                    newCall.on('close', () => {
+                        endCall(false);
+                    });
+                    
+                    console.log('New call initiated with screen share');
                 }
             } else {
                 console.warn('No currentCall or peerConnection!');
