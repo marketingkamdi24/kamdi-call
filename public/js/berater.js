@@ -169,13 +169,25 @@ async function login() {
             console.log('Camera and microphone activated successfully');
             isVideoEnabled = true;
         } catch (videoErr) {
-            // If video fails, try audio-only
+            // If video fails, try audio-only with dummy video track
             console.log('Camera not available, trying audio-only:', videoErr.message);
             localStream = await navigator.mediaDevices.getUserMedia({
                 audio: true,
                 video: false
             });
-            console.log('Microphone activated successfully (audio-only mode)');
+            
+            // Create a black dummy video track so screen sharing can replace it later
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const dummyStream = canvas.captureStream(1);
+            const dummyVideoTrack = dummyStream.getVideoTracks()[0];
+            localStream.addTrack(dummyVideoTrack);
+            
+            console.log('Microphone activated successfully (audio-only mode with dummy video)');
             isVideoEnabled = false;
             toggleVideoBtn.classList.remove('active');
             toggleVideoBtn.classList.add('muted');
@@ -417,26 +429,7 @@ async function toggleScreenShare() {
                     await sender.replaceTrack(screenTrack);
                     console.log('Screen track replaced successfully');
                 } else {
-                    // No video sender exists - need to make a new call with video
-                    console.log('No video sender - making new call with screen share');
-                    const remotePeerId = currentCall.peer;
-                    currentCall.close();
-                    
-                    // Make new call with stream that includes screen track
-                    const newCall = peer.call(remotePeerId, localStream);
-                    currentCall = newCall;
-                    
-                    newCall.on('stream', (remoteStream) => {
-                        remoteVideo.srcObject = remoteStream;
-                        const hasVideo = remoteStream.getVideoTracks().length > 0;
-                        remoteAudioOnly.classList.toggle('hidden', hasVideo);
-                    });
-                    
-                    newCall.on('close', () => {
-                        endCall(false);
-                    });
-                    
-                    console.log('New call initiated with screen share');
+                    console.warn('No video sender found - this should not happen with dummy track');
                 }
             } else {
                 console.warn('No currentCall or peerConnection!');
