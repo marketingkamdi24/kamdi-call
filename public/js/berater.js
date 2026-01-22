@@ -588,7 +588,7 @@ function updateQueueDisplay(queue) {
     }
 
     queueList.innerHTML = queue.map((customer, index) => `
-        <div class="queue-item">
+        <div class="queue-item" data-peer-id="${customer.peerId}" data-customer-name="${escapeHtml(customer.name)}" data-call-type="${customer.callType}">
             <div class="name">
                 <span>${customer.callType === 'video' ? '📹' : '📞'}</span>
                 <span>${escapeHtml(customer.name)}</span>
@@ -596,6 +596,29 @@ function updateQueueDisplay(queue) {
             <span class="wait-time">${formatWaitTime(customer.waitTime)}</span>
         </div>
     `).join('');
+
+    // Add click handlers to queue items
+    document.querySelectorAll('.queue-item').forEach(item => {
+        item.addEventListener('click', () => selectQueueCustomer(item));
+    });
+}
+
+function selectQueueCustomer(item) {
+    const peerId = item.dataset.peerId;
+    const customerName = item.dataset.customerName;
+    const callType = item.dataset.callType;
+    
+    currentCustomer = {
+        peerId: peerId,
+        customerName: customerName,
+        callType: callType
+    };
+    
+    callerNameEl.textContent = customerName;
+    callTypeBadgeEl.textContent = callType === 'video' ? '📹 Video' : '📞 Audio';
+    
+    showSection('incoming');
+    updateStatus('ringing');
 }
 
 function formatWaitTime(seconds) {
