@@ -122,10 +122,11 @@ function handleDataConnection(conn) {
         } else if (data.type === 'consultation-summary') {
             showConsultationSummary(data);
         } else if (data.type === 'screen-share-started') {
-            console.log('Berater started screen sharing');
+            console.log('=== SCREEN SHARE STARTED ===');
+            console.log('Calling refreshRemoteVideo...');
             refreshRemoteVideo();
         } else if (data.type === 'screen-share-ended') {
-            console.log('Berater stopped screen sharing');
+            console.log('=== SCREEN SHARE ENDED ===');
             refreshRemoteVideo();
         }
     });
@@ -596,41 +597,62 @@ function showConsultationSummary(summary) {
 }
 
 function refreshRemoteVideo() {
-    // Force video element to refresh and pick up new track
-    console.log('Attempting to refresh remote video...');
+    console.log('=== REFRESH REMOTE VIDEO ===');
     
-    if (currentCall && currentCall.peerConnection) {
-        const receivers = currentCall.peerConnection.getReceivers();
-        console.log('Receivers:', receivers.length);
+    if (!currentCall) {
+        console.error('No currentCall!');
+        return;
+    }
+    
+    if (!currentCall.peerConnection) {
+        console.error('No peerConnection!');
+        return;
+    }
+    
+    const pc = currentCall.peerConnection;
+    const receivers = pc.getReceivers();
+    console.log('Total receivers:', receivers.length);
+    
+    receivers.forEach((r, i) => {
+        console.log(`Receiver ${i}: kind=${r.track?.kind}, id=${r.track?.id}, readyState=${r.track?.readyState}, enabled=${r.track?.enabled}`);
+    });
+    
+    const videoReceiver = receivers.find(r => r.track && r.track.kind === 'video');
+    const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
+    
+    if (videoReceiver && videoReceiver.track) {
+        const track = videoReceiver.track;
+        console.log('Video track found:', track.id, 'readyState:', track.readyState, 'enabled:', track.enabled, 'muted:', track.muted);
         
-        const videoReceiver = receivers.find(r => r.track && r.track.kind === 'video');
-        const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
+        // Create new MediaStream
+        const stream = new MediaStream();
+        stream.addTrack(track);
         
-        if (videoReceiver && videoReceiver.track) {
-            console.log('Found video track:', videoReceiver.track.id, 'readyState:', videoReceiver.track.readyState);
-            
-            // Create new MediaStream with current tracks
-            const stream = new MediaStream();
-            stream.addTrack(videoReceiver.track);
-            
-            if (audioReceiver && audioReceiver.track) {
-                stream.addTrack(audioReceiver.track);
-            }
-            
-            // Force video element update
-            remoteVideo.srcObject = null;
-            remoteVideo.srcObject = stream;
-            remoteVideo.play().catch(e => console.log('Video play error:', e));
-            remoteAudioOnly.classList.add('hidden');
-            
-            console.log('Remote video refreshed successfully');
-        } else {
-            console.log('No video receiver found, retrying in 500ms...');
-            // Retry after a short delay
-            setTimeout(refreshRemoteVideo, 500);
+        if (audioReceiver && audioReceiver.track) {
+            stream.addTrack(audioReceiver.track);
         }
+        
+        console.log('New stream tracks:', stream.getTracks().map(t => `${t.kind}:${t.id}`));
+        
+        // Force video element update
+        remoteVideo.srcObject = null;
+        setTimeout(() => {
+            remoteVideo.srcObject = stream;
+            remoteVideo.play().then(() => {
+                console.log('Video playing successfully');
+            }).catch(e => console.error('Video play error:', e));
+            remoteAudioOnly.classList.add('hidden');
+            console.log('Remote video srcObject updated');
+        }, 100);
     } else {
-        console.log('No currentCall or peerConnection');
+        console.warn('No video receiver found, current srcObject:', remoteVideo.srcObject);
+        // Check if the original stream still has video
+        if (remoteVideo.srcObject) {
+            const tracks = remoteVideo.srcObject.getTracks();
+            console.log('Current srcObject tracks:', tracks.map(t => `${t.kind}:${t.id}:${t.readyState}`));
+        }
+        // Retry after delay
+        setTimeout(refreshRemoteVideo, 500);
     }
 }
 

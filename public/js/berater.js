@@ -421,11 +421,17 @@ async function toggleScreenShare() {
                     currentCall.peerConnection.addTrack(screenTrack, localStream);
                     console.log('Screen track added to connection');
                 }
+            } else {
+                console.warn('No currentCall or peerConnection!');
             }
             
             // Notify customer about screen share
+            console.log('DataConnection status:', dataConnection ? 'exists' : 'null', dataConnection?.open ? 'open' : 'not open');
             if (dataConnection && dataConnection.open) {
                 dataConnection.send({ type: 'screen-share-started' });
+                console.log('Sent screen-share-started to customer');
+            } else {
+                console.error('Cannot notify customer - dataConnection not ready!');
             }
             
             screenTrack.onended = () => {
