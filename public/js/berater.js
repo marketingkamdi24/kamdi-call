@@ -41,7 +41,6 @@ const chatCustomerName = document.getElementById('chat-customer-name');
 const toggleVideoBtn = document.getElementById('toggle-video-btn');
 const toggleAudioBtn = document.getElementById('toggle-audio-btn');
 const toggleScreenBtn = document.getElementById('toggle-screen-btn');
-const swapVideoBtn = document.getElementById('swap-video-btn');
 const endCallBtn = document.getElementById('end-call-btn');
 
 let isVideoSwapped = false;
@@ -386,11 +385,26 @@ function swapVideos() {
     if (isVideoSwapped) {
         localWrapper.classList.add('video-large');
         remoteWrapper.classList.add('video-small');
-        swapVideoBtn.classList.add('active');
     } else {
         localWrapper.classList.remove('video-large');
         remoteWrapper.classList.remove('video-small');
-        swapVideoBtn.classList.remove('active');
+    }
+}
+
+function setupVideoClickToSwap() {
+    const localWrapper = document.querySelector('.local-video-wrapper');
+    const remoteWrapper = document.querySelector('.remote-video-wrapper');
+    
+    if (localWrapper) {
+        localWrapper.addEventListener('click', () => {
+            if (!isVideoSwapped) swapVideos();
+        });
+    }
+    
+    if (remoteWrapper) {
+        remoteWrapper.addEventListener('click', () => {
+            if (isVideoSwapped) swapVideos();
+        });
     }
 }
 
@@ -646,7 +660,9 @@ endCallBtn.addEventListener('click', () => endCall(true));
 toggleVideoBtn.addEventListener('click', toggleVideo);
 toggleAudioBtn.addEventListener('click', toggleAudio);
 toggleScreenBtn.addEventListener('click', toggleScreenShare);
-swapVideoBtn.addEventListener('click', swapVideos);
+
+// Setup click-to-swap on video elements
+setupVideoClickToSwap();
 
 sendMessageBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keypress', (e) => {

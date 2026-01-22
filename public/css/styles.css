@@ -470,6 +470,13 @@ body {
     overflow: hidden;
     box-shadow: var(--shadow-lg);
     border: 2px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.local-video-wrapper:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .local-video-wrapper video {
@@ -508,6 +515,13 @@ body {
     box-shadow: var(--shadow-lg);
     border: 2px solid rgba(255, 255, 255, 0.2);
     z-index: 10;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.remote-video-wrapper.video-small:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .remote-video-wrapper.video-small video {

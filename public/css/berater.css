@@ -386,6 +386,12 @@
     border: 2px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.video-container-berater .local-video-wrapper:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .video-container-berater .remote-video-wrapper {
@@ -416,6 +422,12 @@
     border: 2px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     z-index: 10;
+    cursor: pointer;
+}
+
+.video-container-berater .remote-video-wrapper.video-small:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .call-info-bar {
