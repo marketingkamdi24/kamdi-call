@@ -344,7 +344,9 @@ function notifyBeratersOfQueue() {
     const queueInfo = customerQueue.map(c => ({
         name: c.name,
         callType: c.callType,
-        waitTime: Math.floor((Date.now() - c.timestamp) / 1000)
+        waitTime: Math.floor((Date.now() - c.timestamp) / 1000),
+        peerId: c.peerId,
+        socketId: c.socketId
     }));
     
     beraters.forEach((berater) => {

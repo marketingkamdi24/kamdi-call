@@ -588,7 +588,7 @@ function updateQueueDisplay(queue) {
     }
 
     queueList.innerHTML = queue.map((customer, index) => `
-        <div class="queue-item" data-peer-id="${customer.peerId}" data-customer-name="${escapeHtml(customer.name)}" data-call-type="${customer.callType}">
+        <div class="queue-item" data-peer-id="${customer.peerId}" data-socket-id="${customer.socketId}" data-customer-name="${escapeHtml(customer.name)}" data-call-type="${customer.callType}">
             <div class="name">
                 <span>${customer.callType === 'video' ? '📹' : '📞'}</span>
                 <span>${escapeHtml(customer.name)}</span>
@@ -605,11 +605,13 @@ function updateQueueDisplay(queue) {
 
 function selectQueueCustomer(item) {
     const peerId = item.dataset.peerId;
+    const socketId = item.dataset.socketId;
     const customerName = item.dataset.customerName;
     const callType = item.dataset.callType;
     
     currentCustomer = {
         peerId: peerId,
+        customerSocketId: socketId,
         customerName: customerName,
         callType: callType
     };
