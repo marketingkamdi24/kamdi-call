@@ -370,6 +370,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    transition: all 0.3s ease;
 }
 
 .video-container-berater .remote-video-wrapper video {
@@ -390,6 +391,13 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
+    z-index: 10;
+}
+
+.video-container-berater .local-video-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .video-container-berater .local-video-wrapper:hover {
@@ -397,20 +405,16 @@
     border-color: rgba(255, 255, 255, 0.6);
 }
 
-.video-container-berater .remote-video-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: all 0.3s ease;
-}
-
 .video-container-berater .local-video-wrapper.video-large {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     bottom: auto;
     right: auto;
-    border-radius: 12px;
+    border-radius: 0;
+    z-index: 1;
 }
 
 .video-container-berater .remote-video-wrapper.video-small {
