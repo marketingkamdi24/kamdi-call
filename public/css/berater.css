@@ -763,6 +763,37 @@
         align-items: center;
     }
 
+    .chat-area .chat-messages {
+        flex: 1;
+        min-height: 200px;
+        padding: 16px;
+    }
+
+    .chat-area .chat-input-container {
+        padding: 12px 16px;
+        display: flex;
+        gap: 8px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .chat-area .chat-input-container input {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .chat-area .chat-input-container .send-btn {
+        padding: 12px 16px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
     .chat-close-btn {
         background: rgba(255, 255, 255, 0.1);
         border: none;
@@ -783,7 +814,6 @@
 
     /* Chat toggle button for mobile */
     .mobile-chat-btn {
-        display: flex !important;
         position: fixed;
         bottom: 100px;
         right: 12px;
@@ -799,6 +829,23 @@
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .mobile-chat-btn:not(.hidden) {
+        display: flex !important;
+    }
+
+    .mobile-chat-btn.hidden {
+        display: none !important;
+    }
+
+    /* Tools button - respect hidden class */
+    .tools-toggle-btn.hidden {
+        display: none !important;
+    }
+
+    .tools-toggle-btn:not(.hidden) {
+        display: flex !important;
     }
 
     /* Tools panel mobile */
