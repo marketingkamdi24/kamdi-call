@@ -538,6 +538,11 @@
 }
 
 @media (max-width: 768px) {
+    /* Show mobile-only elements */
+    .mobile-only {
+        display: flex !important;
+    }
+
     .dashboard-container {
         grid-template-columns: 1fr;
     }
@@ -673,10 +678,20 @@
         border-radius: 12px 12px 0 0;
     }
 
+    .video-container-berater {
+        min-height: 250px;
+    }
+
     .video-container-berater .local-video-wrapper {
         width: 100px;
         bottom: 10px;
         right: 10px;
+        z-index: 20;
+        display: block !important;
+    }
+
+    .video-container-berater .local-video-wrapper video {
+        display: block !important;
     }
 
     .video-container-berater .remote-video-wrapper.video-small {
