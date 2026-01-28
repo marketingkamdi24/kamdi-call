@@ -906,23 +906,33 @@ body {
 
     .call-controls {
         gap: 12px;
-        padding: 12px 10px;
-        min-height: 70px;
-        flex-wrap: wrap;
+        padding: 16px;
+        min-height: 80px;
+        flex-wrap: nowrap;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(26, 26, 46, 0.95) 0%, rgba(15, 15, 35, 0.98) 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .control-btn {
         min-width: 60px;
-        padding: 10px 12px;
-        border-radius: 10px;
+        max-width: 75px;
+        padding: 12px 8px;
+        flex: 1;
+        border-radius: 14px;
     }
 
     .control-btn .btn-icon {
-        font-size: 1.25rem;
+        font-size: 1.4rem;
     }
 
     .control-btn .btn-label {
         font-size: 0.6rem;
+        margin-top: 4px;
+    }
+
+    .control-btn.end-call {
+        background: linear-gradient(135deg, #e63946, #c1121f);
     }
 
     .chat-panel-customer {

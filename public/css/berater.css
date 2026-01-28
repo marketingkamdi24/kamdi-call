@@ -709,22 +709,33 @@
     }
 
     .call-controls {
-        gap: 10px;
-        padding: 12px;
-        flex-wrap: wrap;
+        gap: 12px;
+        padding: 16px;
+        flex-wrap: nowrap;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(26, 26, 46, 0.95) 0%, rgba(15, 15, 35, 0.98) 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .control-btn {
-        min-width: 58px;
-        padding: 10px;
+        min-width: 60px;
+        max-width: 70px;
+        padding: 12px 8px;
+        flex: 1;
+        border-radius: 14px;
     }
 
     .control-btn .btn-icon {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
     }
 
     .control-btn .btn-label {
-        font-size: 0.55rem;
+        font-size: 0.6rem;
+        margin-top: 4px;
+    }
+
+    .control-btn.end-call {
+        background: linear-gradient(135deg, #e63946, #c1121f);
     }
 
     /* Chat area mobile - slide in panel */
@@ -747,6 +758,27 @@
 
     .chat-area .chat-header {
         padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-close-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chat-close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
     }
 
     /* Chat toggle button for mobile */

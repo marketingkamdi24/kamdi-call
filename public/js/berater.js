@@ -1285,6 +1285,14 @@ if (mobileChatBtn) {
     mobileChatBtn.addEventListener('click', toggleMobileChat);
 }
 
+// Chat close button for mobile
+const chatCloseBtn = document.getElementById('chat-close-btn');
+if (chatCloseBtn) {
+    chatCloseBtn.addEventListener('click', () => {
+        if (chatArea) chatArea.classList.remove('open');
+    });
+}
+
 // Show mobile chat button when in call
 function updateMobileChatButton(show) {
     if (mobileChatBtn) {
