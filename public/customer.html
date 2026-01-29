@@ -4,10 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>kamdi24 - Kundenberatung</title>
-    <link rel="stylesheet" href="/css/styles.css?v=20260129b">
-    <link rel="stylesheet" href="/css/tools.css?v=20260129b">
-    <link rel="stylesheet" href="/css/ipad.css?v=20260129b">
+    <link rel="stylesheet" href="/css/styles.css?v=1738171200">
+    <link rel="stylesheet" href="/css/tools.css?v=1738171200">
+    <link rel="stylesheet" href="/css/ipad.css?v=1738171200">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Critical iPhone/Mobile Styles - Inline for guaranteed loading -->
+    <style>
+        /* Mobile: Show flip camera button */
+        @media (max-width: 1024px) {
+            .control-btn.flip-camera {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            .chat-back-btn {
+                display: flex !important;
+                visibility: visible !important;
+            }
+        }
+        
+        /* iPhone specific */
+        @media (max-width: 480px) {
+            .chat-panel-customer .chat-input-container {
+                display: flex !important;
+                min-height: 60px !important;
+                padding: 10px 12px !important;
+                background: #fff !important;
+            }
+            .chat-panel-customer .chat-input-container input {
+                display: block !important;
+                flex: 1 !important;
+                font-size: 16px !important;
+                height: 40px !important;
+                min-height: 40px !important;
+            }
+            .chat-panel-customer .send-btn,
+            .chat-panel-customer .file-upload-btn {
+                display: flex !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
