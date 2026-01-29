@@ -329,6 +329,12 @@ function toggleAudio() {
 async function flipCamera() {
     if (!localStream || isScreenSharing) return;
     
+    // Add flipping animation
+    if (flipCameraBtn) {
+        flipCameraBtn.classList.add('flipping');
+        setTimeout(() => flipCameraBtn.classList.remove('flipping'), 600);
+    }
+    
     try {
         // Switch facing mode
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
@@ -625,6 +631,20 @@ toggleVideoBtn.addEventListener('click', toggleVideo);
 toggleAudioBtn.addEventListener('click', toggleAudio);
 toggleScreenBtn.addEventListener('click', toggleScreenShare);
 if (flipCameraBtn) flipCameraBtn.addEventListener('click', flipCamera);
+
+// Chat back button - scroll back to video on mobile
+const chatBackBtn = document.getElementById('chat-back-btn');
+if (chatBackBtn) {
+    chatBackBtn.addEventListener('click', () => {
+        // Scroll video area into view on mobile
+        const videoArea = document.querySelector('.video-area-customer');
+        if (videoArea) {
+            videoArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // Also blur the chat input to hide keyboard
+        chatInput.blur();
+    });
+}
 
 // Setup click-to-swap on video elements
 setupVideoClickToSwap();

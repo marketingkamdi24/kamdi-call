@@ -2,10 +2,11 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>kamdi24 - Kundenberatung</title>
-    <link rel="stylesheet" href="/css/styles.css?v=20260128">
-    <link rel="stylesheet" href="/css/tools.css?v=20260128">
+    <link rel="stylesheet" href="/css/styles.css?v=20260129b">
+    <link rel="stylesheet" href="/css/tools.css?v=20260129b">
+    <link rel="stylesheet" href="/css/ipad.css?v=20260129b">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -107,6 +108,18 @@
                                 <span class="btn-icon">🖥️</span>
                                 <span class="btn-label">Bildschirm</span>
                             </button>
+                            <button id="flip-camera-btn" class="control-btn flip-camera" title="Kamera wechseln">
+                                <span class="btn-icon">
+                                    <svg class="flip-camera-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/>
+                                        <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="m18 22-3-3 3-3"/>
+                                        <path d="m6 2 3 3-3 3"/>
+                                    </svg>
+                                </span>
+                                <span class="btn-label">Kamera</span>
+                            </button>
                             <button id="end-call-btn" class="control-btn end-call" title="Anruf beenden">
                                 <span class="btn-icon">📵</span>
                                 <span class="btn-label">Beenden</span>
@@ -116,6 +129,12 @@
 
                     <div id="chat-panel" class="chat-panel-customer">
                         <div class="chat-header">
+                            <button id="chat-back-btn" class="chat-back-btn" title="Zurück zum Video">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 12H5"/>
+                                    <path d="m12 19-7-7 7-7"/>
+                                </svg>
+                            </button>
                             <h3>💬 Chat mit Berater</h3>
                         </div>
                         <div id="chat-messages" class="chat-messages"></div>

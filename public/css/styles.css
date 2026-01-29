@@ -628,6 +628,75 @@ body {
     border-color: #c82333;
 }
 
+/* ===== Camera Flip Button ===== */
+.control-btn.flip-camera {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-color: #6366f1;
+    position: relative;
+    overflow: hidden;
+}
+
+.control-btn.flip-camera::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.control-btn.flip-camera:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border-color: #4f46e5;
+    transform: scale(1.08);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+}
+
+.control-btn.flip-camera:hover::before {
+    left: 100%;
+}
+
+.control-btn.flip-camera:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+.control-btn.flip-camera .flip-camera-icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-btn.flip-camera:hover .flip-camera-icon {
+    transform: rotateY(180deg);
+}
+
+.control-btn.flip-camera.flipping .flip-camera-icon {
+    animation: flipRotate 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes flipRotate {
+    0% { transform: rotateY(0deg) scale(1); }
+    50% { transform: rotateY(90deg) scale(0.8); }
+    100% { transform: rotateY(180deg) scale(1); }
+}
+
+/* Hide on desktop (only useful on mobile/tablet with multiple cameras) */
+@media (min-width: 1025px) {
+    .control-btn.flip-camera {
+        display: none;
+    }
+}
+
+/* Show and optimize for tablet/mobile */
+@media (max-width: 1024px) {
+    .control-btn.flip-camera {
+        display: flex;
+    }
+}
+
 .chat-panel {
     position: absolute;
     right: 0;
@@ -648,11 +717,39 @@ body {
     align-items: center;
     padding: 16px;
     border-bottom: 1px solid #e2e8f0;
+    gap: 12px;
 }
 
 .chat-header h3 {
     font-size: 1rem;
     color: var(--text-primary);
+    flex: 1;
+}
+
+/* Chat Back Button - Hidden on Desktop */
+.chat-back-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.chat-back-btn:hover {
+    background: #e2e8f0;
+}
+
+.chat-back-btn:active {
+    transform: scale(0.9);
+    background: #cbd5e1;
 }
 
 .close-btn {
@@ -935,6 +1032,16 @@ body {
         background: linear-gradient(135deg, #e63946, #c1121f);
     }
 
+    /* Show flip camera button on tablet */
+    .control-btn.flip-camera {
+        display: flex !important;
+    }
+
+    /* Show chat back button on tablet */
+    .chat-back-btn {
+        display: flex !important;
+    }
+
     .chat-panel-customer {
         border-radius: 0 0 8px 8px;
         border-left: none;
@@ -960,7 +1067,9 @@ body {
 
     .chat-input-container input {
         padding: 8px 12px;
-        font-size: 0.85rem;
+        font-size: 16px !important; /* Prevents iOS zoom on focus */
+        -webkit-appearance: none;
+        appearance: none;
     }
 
     .file-upload-btn,
@@ -1110,6 +1219,18 @@ body {
         font-size: 0.55rem;
     }
 
+    /* Show flip camera and back button on phones */
+    .control-btn.flip-camera {
+        display: flex !important;
+        min-width: 50px;
+    }
+
+    .chat-back-btn {
+        display: flex !important;
+        width: 36px;
+        height: 36px;
+    }
+
     .chat-panel-customer {
         max-height: 150px;
     }
@@ -1120,6 +1241,85 @@ body {
 
     .audio-icon {
         font-size: 3.5rem;
+    }
+}
+
+/* ===== iPhone / iOS Specific Fixes ===== */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari only */
+    .chat-panel-customer {
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .chat-panel-customer .chat-input-container {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        position: relative;
+        z-index: 10;
+    }
+
+    .call-controls {
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+
+    /* Ensure inputs don't zoom on iOS */
+    input, textarea, select {
+        font-size: 16px !important;
+        -webkit-text-size-adjust: 100%;
+    }
+    
+    /* Fix for iOS keyboard pushing content */
+    .call-section {
+        position: relative;
+    }
+}
+
+/* Mobile Chat Panel - Full Height Option */
+@media (max-width: 480px) {
+    .chat-panel-customer {
+        max-height: none !important;
+        min-height: 200px;
+        flex: 1;
+        display: flex !important;
+        flex-direction: column;
+    }
+    
+    .chat-panel-customer .chat-messages {
+        flex: 1;
+        min-height: 80px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .chat-panel-customer .chat-input-container {
+        display: flex !important;
+        flex-shrink: 0;
+        padding: 10px 12px;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        gap: 8px;
+        min-height: 60px;
+        align-items: center;
+    }
+    
+    .chat-panel-customer .chat-input-container input {
+        flex: 1;
+        min-width: 0;
+        height: 40px;
+        padding: 10px 14px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        font-size: 16px !important;
+    }
+    
+    .chat-panel-customer .file-upload-btn,
+    .chat-panel-customer .send-btn {
+        flex-shrink: 0;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 }
 
