@@ -734,6 +734,18 @@ toggleAudioBtn.addEventListener('click', toggleAudio);
 toggleScreenBtn.addEventListener('click', toggleScreenShare);
 if (flipCameraBtn) flipCameraBtn.addEventListener('click', flipCamera);
 
+// Chat back button - scroll back to video on mobile
+const chatBackBtn = document.getElementById('chat-back-btn');
+if (chatBackBtn) {
+    chatBackBtn.addEventListener('click', () => {
+        const videoArea = document.querySelector('.video-container-berater');
+        if (videoArea) {
+            videoArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        chatInput.blur();
+    });
+}
+
 // Setup click-to-swap on video elements
 setupVideoClickToSwap();
 
