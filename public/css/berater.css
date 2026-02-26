@@ -666,12 +666,14 @@
 
     /* Call section mobile */
     .call-section {
-        height: calc(100vh - 80px);
+        height: auto;
+        min-height: calc(100vh - 80px);
     }
 
     .call-layout {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr auto;
+        min-height: calc(100vh - 80px);
     }
 
     .video-area {
@@ -738,25 +740,28 @@
         background: linear-gradient(135deg, #e63946, #c1121f);
     }
 
-    /* Chat area mobile - slide in panel */
+    /* Chat area mobile - inline below video (like customer) */
     .chat-area {
-        position: fixed;
-        right: -100%;
-        top: 0;
-        width: 100%;
-        max-width: 320px;
-        height: 100vh;
-        border-radius: 0;
+        position: relative !important;
+        right: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        max-height: 200px;
+        border-radius: 0 0 12px 12px;
         transform: none !important;
-        transition: right 0.3s ease;
-        z-index: 100;
+        transition: none;
+        z-index: auto;
         display: flex;
         flex-direction: column;
+        border-top: 1px solid #e2e8f0;
+        overflow: hidden;
     }
 
     .chat-area.open {
-        right: 0;
         transform: none !important;
+        right: auto !important;
     }
 
     /* Show chat back button on mobile */
@@ -764,95 +769,64 @@
         display: flex !important;
     }
 
-    .chat-area .chat-input-container {
-        display: flex !important;
-        gap: 8px;
-        padding: 12px 16px;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        flex-shrink: 0;
-    }
-
     .chat-area .chat-header {
-        padding: 16px;
+        padding: 10px 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e2e8f0;
+        flex-shrink: 0;
     }
 
     .chat-area .chat-messages {
         flex: 1;
-        min-height: 200px;
-        padding: 16px;
+        min-height: 60px;
+        max-height: 80px;
+        padding: 8px 12px;
+        overflow-y: auto;
     }
 
     .chat-area .chat-input-container {
-        padding: 12px 16px;
-        display: flex;
+        padding: 8px 12px;
+        display: flex !important;
         gap: 8px;
         background: #f8fafc;
         border-top: 1px solid #e2e8f0;
+        flex-shrink: 0;
+        align-items: center;
     }
 
     .chat-area .chat-input-container input {
         flex: 1;
-        padding: 12px;
+        padding: 10px 12px;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
-        font-size: 1rem;
+        font-size: 16px !important;
+        min-width: 0;
     }
 
     .chat-area .chat-input-container .send-btn {
-        padding: 12px 16px;
+        padding: 10px 14px;
         background: var(--primary-color);
         color: white;
         border: none;
         border-radius: 8px;
         cursor: pointer;
+        flex-shrink: 0;
     }
 
+    .chat-area .chat-input-container .file-upload-btn {
+        flex-shrink: 0;
+    }
+
+    /* Hide close button - chat is always visible inline */
     .chat-close-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: white;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        font-size: 1.2rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: none !important;
     }
 
-    .chat-close-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Chat toggle button for mobile */
+    /* Hide mobile chat toggle button - chat is always visible inline */
     .mobile-chat-btn {
-        position: fixed;
-        bottom: 100px;
-        right: 12px;
-        z-index: 99;
-        width: 50px;
-        height: 50px;
-        background: var(--primary-color);
-        border: none;
-        border-radius: 50%;
-        color: white;
-        font-size: 1.5rem;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-
-    .mobile-chat-btn:not(.hidden) {
-        display: flex !important;
-    }
-
-    .mobile-chat-btn.hidden {
         display: none !important;
     }
 
@@ -998,13 +972,6 @@
         font-size: 0.5rem;
     }
 
-    .mobile-chat-btn {
-        width: 44px;
-        height: 44px;
-        bottom: 90px;
-        right: 8px;
-    }
-
     .tools-toggle-btn {
         width: 44px;
         height: 44px;
@@ -1013,7 +980,15 @@
     }
 
     .chat-area {
-        max-width: 100%;
+        max-height: none !important;
+        min-height: 180px;
+        flex: 1;
+    }
+
+    .chat-area .chat-messages {
+        flex: 1;
+        min-height: 60px;
+        max-height: none;
     }
 }
 
