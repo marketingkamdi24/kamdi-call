@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1",
+    "username": "Max Mustermann",
+    "password": "kamdi2024",
+    "createdAt": "2026-02-24T16:07:43.943Z"
+  },
+  {
+    "id": "2",
+    "username": "Anna Schmidt",
+    "password": "kamdi2024",
+    "createdAt": "2026-02-24T16:07:43.944Z"
+  }
+]
