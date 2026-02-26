@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>kamdi24 - Kundenberatung</title>
-    <link rel="stylesheet" href="/css/styles.css?v=1738171200">
-    <link rel="stylesheet" href="/css/tools.css?v=1738171200">
-    <link rel="stylesheet" href="/css/ipad.css?v=1738171200">
+    <link rel="stylesheet" href="/css/styles.css?v=1740600000">
+    <link rel="stylesheet" href="/css/tools.css?v=1740600000">
+    <link rel="stylesheet" href="/css/ipad.css?v=1740600000">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Critical iPhone/Mobile Styles - Inline for guaranteed loading -->
@@ -21,6 +21,26 @@
             .chat-back-btn {
                 display: flex !important;
                 visibility: visible !important;
+            }
+            /* Compact call control buttons on mobile/tablet */
+            .call-controls {
+                gap: 8px !important;
+                padding: 10px 8px !important;
+                min-height: 65px !important;
+            }
+            .control-btn {
+                min-width: 48px !important;
+                max-width: 60px !important;
+                padding: 8px 6px !important;
+                flex: 0 1 auto !important;
+                border-radius: 12px !important;
+            }
+            .control-btn .btn-icon {
+                font-size: 1.2rem !important;
+            }
+            .control-btn .btn-label {
+                font-size: 0.5rem !important;
+                margin-top: 2px !important;
             }
         }
         
