@@ -46,6 +46,8 @@ const endCallBtn = document.getElementById('end-call-btn');
 
 let isVideoSwapped = false;
 let currentFacingMode = 'user';
+let isScreenSharing = false;
+let originalVideoTrack = null;
 
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
@@ -457,7 +459,7 @@ function setupVideoClickToSwap() {
 
 async function toggleScreenShare() {
     try {
-        if (toggleScreenBtn.classList.contains('active')) {
+        if (isScreenSharing) {
             // Stop screen sharing, return to camera
             const screenTrack = localStream.getVideoTracks()[0];
             if (screenTrack) {
@@ -488,6 +490,7 @@ async function toggleScreenShare() {
             }
             
             toggleScreenBtn.classList.remove('active');
+            isScreenSharing = false;
             
             // Notify customer screen share ended
             if (dataConnection && dataConnection.open) {
@@ -501,11 +504,11 @@ async function toggleScreenShare() {
             });
             const screenTrack = screenStream.getVideoTracks()[0];
             
-            // Remove existing video track if any
-            const existingVideoTrack = localStream.getVideoTracks()[0];
-            if (existingVideoTrack) {
-                existingVideoTrack.stop();
-                localStream.removeTrack(existingVideoTrack);
+            // Save and remove existing video track
+            originalVideoTrack = localStream.getVideoTracks()[0];
+            if (originalVideoTrack) {
+                originalVideoTrack.stop();
+                localStream.removeTrack(originalVideoTrack);
             }
             
             localStream.addTrack(screenTrack);
@@ -538,6 +541,7 @@ async function toggleScreenShare() {
             };
             
             toggleScreenBtn.classList.add('active');
+            isScreenSharing = true;
         }
     } catch (err) {
         console.error('Screen share error:', err);
@@ -734,10 +738,14 @@ toggleAudioBtn.addEventListener('click', toggleAudio);
 toggleScreenBtn.addEventListener('click', toggleScreenShare);
 if (flipCameraBtn) flipCameraBtn.addEventListener('click', flipCamera);
 
-// Chat back button - scroll back to video on mobile
+// Chat back button - close chat panel on mobile and scroll back to video
 const chatBackBtn = document.getElementById('chat-back-btn');
 if (chatBackBtn) {
     chatBackBtn.addEventListener('click', () => {
+        const chatAreaEl = document.querySelector('.chat-area');
+        if (chatAreaEl) {
+            chatAreaEl.classList.remove('open');
+        }
         const videoArea = document.querySelector('.video-container-berater');
         if (videoArea) {
             videoArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
