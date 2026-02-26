@@ -711,8 +711,8 @@
     }
 
     .call-controls {
-        gap: 12px;
-        padding: 16px;
+        gap: 8px;
+        padding: 12px 8px;
         flex-wrap: nowrap;
         justify-content: center;
         background: linear-gradient(180deg, rgba(26, 26, 46, 0.95) 0%, rgba(15, 15, 35, 0.98) 100%);
@@ -720,20 +720,20 @@
     }
 
     .control-btn {
-        min-width: 60px;
-        max-width: 70px;
-        padding: 12px 8px;
-        flex: 1;
-        border-radius: 14px;
+        min-width: 50px;
+        max-width: 62px;
+        padding: 10px 6px;
+        flex: 0 1 auto;
+        border-radius: 12px;
     }
 
     .control-btn .btn-icon {
-        font-size: 1.4rem;
+        font-size: 1.25rem;
     }
 
     .control-btn .btn-label {
-        font-size: 0.6rem;
-        margin-top: 4px;
+        font-size: 0.55rem;
+        margin-top: 3px;
     }
 
     .control-btn.end-call {
