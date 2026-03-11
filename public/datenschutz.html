@@ -103,16 +103,8 @@
             Website: <a href="https://www.kamdi24.de" target="_blank" rel="noopener">www.kamdi24.de</a>
         </p>
 
-        <!-- ===== § 2 DATENSCHUTZBEAUFTRAGTER (Art. 13 Abs. 1 lit. b DSGVO) ===== -->
-        <h2>2. Datenschutzbeauftragter</h2>
-        <p>
-            <!-- TODO: Falls ein DSB bestellt ist, hier eintragen. Falls kein DSB bestellt ist, diesen Absatz anpassen. -->
-            Sofern Sie Fragen zum Datenschutz haben, wenden Sie sich bitte an:<br>
-            E-Mail: <a href="mailto:marketing@kamdi24.de">marketing@kamdi24.de</a>
-        </p>
-
-        <!-- ===== § 3 ÜBERSICHT (Art. 13 Abs. 1 lit. c DSGVO) ===== -->
-        <h2>3. Allgemeines zur Datenverarbeitung</h2>
+        <!-- ===== § 2 ÜBERSICHT (Art. 13 Abs. 1 lit. c DSGVO) ===== -->
+        <h2>2. Allgemeines zur Datenverarbeitung</h2>
         <p>
             Diese Anwendung (&bdquo;kamdi24 Videoberatung&ldquo;) ermöglicht eine Echtzeit-Videoberatung zwischen Kunden und Beratern der kamdi24 GmbH. 
             Die Kommunikation (Video, Audio, Bildschirmfreigabe) erfolgt dabei verschlüsselt und <strong>direkt zwischen den Endgeräten</strong> (Peer-to-Peer via WebRTC). 
@@ -124,10 +116,10 @@
             Es werden keine externen Dienste (z.&thinsp;B. Google, Facebook, Analyse-Tools) eingebunden.
         </div>
 
-        <!-- ===== § 4 DATENVERARBEITUNGEN IM DETAIL ===== -->
-        <h2>4. Datenverarbeitungen im Detail</h2>
+        <!-- ===== § 3 DATENVERARBEITUNGEN IM DETAIL ===== -->
+        <h2>3. Datenverarbeitungen im Detail</h2>
 
-        <h3>4.1 Bereitstellung der Anwendung und Server-Logs</h3>
+        <h3>3.1 Bereitstellung der Anwendung und Server-Logs</h3>
         <p>Beim Aufruf dieser Anwendung erhebt unser Hosting-Provider automatisch technische Zugriffsdaten:</p>
         <table>
             <tr><th>Datum</th><th>Rechtsgrundlage</th><th>Speicherdauer</th></tr>
@@ -146,7 +138,7 @@
         </table>
         <p>Diese Daten werden nicht mit anderen Datenquellen zusammengeführt. Eine Zuordnung zu bestimmten Personen findet nicht statt.</p>
 
-        <h3>4.2 Eingabe Ihres Namens (Kundenseite)</h3>
+        <h3>3.2 Eingabe Ihres Namens (Kundenseite)</h3>
         <p>
             Vor Beginn der Videoberatung geben Sie einen Namen ein. Dieser Name dient <strong>ausschließlich</strong> dazu, Sie während des Gesprächs gegenüber dem Berater zu identifizieren.
         </p>
@@ -160,7 +152,7 @@
         </table>
         <p>Der Name wird <strong>nicht</strong> an andere Kunden weitergegeben. Gegenüber Berater-Nutzern wird der Name nur angezeigt, sofern ein Beratungsgespräch zustande kommt oder der Kunde sich in der Warteschlange befindet.</p>
 
-        <h3>4.3 WebRTC-Signaling (Verbindungsaufbau)</h3>
+        <h3>3.3 WebRTC-Signaling (Verbindungsaufbau)</h3>
         <p>
             Für den Aufbau der Peer-to-Peer-Verbindung zwischen Kunde und Berater ist ein sogenannter Signaling-Prozess erforderlich. 
             Dabei werden technische Verbindungsparameter (sog. SDP-Daten und ICE-Candidates) über unseren Server ausgetauscht. 
@@ -179,7 +171,7 @@
             Es werden keine externen STUN/TURN-Server von Drittanbietern eingesetzt, die über den Standard-Browser-STUN hinausgehen.
         </p>
 
-        <h3>4.4 Video- und Audiodaten</h3>
+        <h3>3.4 Video- und Audiodaten</h3>
         <p>
             Die eigentliche Video- und Audioübertragung erfolgt <strong>direkt zwischen Ihrem Endgerät und dem des Beraters</strong> (Peer-to-Peer) mittels WebRTC-Technologie.
         </p>
@@ -197,14 +189,14 @@
             </tr>
         </table>
 
-        <h3>4.5 Bildschirmfreigabe</h3>
+        <h3>3.5 Bildschirmfreigabe</h3>
         <p>
             Sowohl Kunde als auch Berater können ihren Bildschirminhalt teilen. Diese Funktion muss aktiv vom Nutzer gestartet werden und erfordert eine explizite Bestätigung im Browser.
             Die Übertragung erfolgt ebenfalls direkt per Peer-to-Peer und wird <strong>nicht aufgezeichnet</strong>.
         </p>
         <p><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch aktive Freigabe im Browser-Dialog).</p>
 
-        <h3>4.6 Chat-Nachrichten</h3>
+        <h3>3.6 Chat-Nachrichten</h3>
         <p>Während der Beratung können textbasierte Nachrichten ausgetauscht werden.</p>
         <table>
             <tr><th>Verarbeitung</th><th>Rechtsgrundlage</th><th>Speicherdauer</th></tr>
@@ -215,7 +207,7 @@
             </tr>
         </table>
 
-        <h3>4.7 Dateiübertragung</h3>
+        <h3>3.7 Dateiübertragung</h3>
         <p>
             Während der Beratung können Dateien (z.&thinsp;B. Bilder, PDFs) zwischen Kunde und Berater ausgetauscht werden. 
             Die Dateien werden über eine direkte Datenverbindung (WebRTC DataChannel) zwischen den Endgeräten übertragen.
@@ -223,15 +215,15 @@
         <p><strong>Speicherdauer:</strong> Die übertragenen Dateien werden <strong>nicht auf dem Server gespeichert</strong>. Nach Schließen des Browserfensters sind die Dateien nicht mehr verfügbar.</p>
         <p><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. b DSGVO (Durchführung der Beratung).</p>
 
-        <h3>4.8 Websocket-Verbindung (Socket.IO)</h3>
+        <h3>3.8 Websocket-Verbindung (Socket.IO)</h3>
         <p>
             Für die Echtzeitkommunikation (Warteschlange, Anrufsignalisierung, Chat) wird eine dauerhafte WebSocket-Verbindung zwischen Ihrem Browser und unserem Server aufgebaut.
             Über diese Verbindung werden <strong>keine personenbezogenen Daten dauerhaft gespeichert</strong>. 
             Die Verbindung wird beim Verlassen der Seite automatisch beendet und alle zugehörigen Daten werden aus dem Arbeitsspeicher gelöscht.
         </p>
 
-        <!-- ===== § 5 KAMERA/MIKROFON ===== -->
-        <h2>5. Zugriff auf Kamera und Mikrofon</h2>
+        <!-- ===== § 4 KAMERA/MIKROFON ===== -->
+        <h2>4. Zugriff auf Kamera und Mikrofon</h2>
         <p>
             Für die Videoberatung ist der Zugriff auf Ihre Kamera und/oder Ihr Mikrofon erforderlich. 
             Ihr Browser wird Sie <strong>vor dem ersten Zugriff um ausdrückliche Erlaubnis bitten</strong>. 
@@ -246,8 +238,8 @@
             Eine Deaktivierung während des Gesprächs ist über die Steuerungsbuttons in der Anwendung möglich.
         </p>
 
-        <!-- ===== § 6 COOKIES ===== -->
-        <h2>6. Cookies, Tracking und lokale Speicherung</h2>
+        <!-- ===== § 5 COOKIES ===== -->
+        <h2>5. Cookies, Tracking und lokale Speicherung</h2>
         <p>Diese Anwendung verwendet:</p>
         <ul>
             <li><strong>Keine Cookies</strong> (weder technisch notwendige noch Tracking-Cookies)</li>
@@ -261,8 +253,8 @@
             (vgl. § 25 Abs. 2 TDDDG / ehemals TTDSG).
         </p>
 
-        <!-- ===== § 7 EXTERNE DIENSTE ===== -->
-        <h2>7. Externe Ressourcen und Drittanbieter</h2>
+        <!-- ===== § 6 EXTERNE DIENSTE ===== -->
+        <h2>6. Externe Ressourcen und Drittanbieter</h2>
         <p>
             Diese Anwendung lädt <strong>keine externen Ressourcen von Drittanbieter-Servern</strong>. 
             Insbesondere werden:
@@ -277,8 +269,8 @@
             (vgl. EuGH-Urteil vom 20.01.2022, Az. 3 O 17493/20 &ndash; Google Fonts).
         </p>
 
-        <!-- ===== § 8 VERSCHLÜSSELUNG ===== -->
-        <h2>8. Verschlüsselung und Sicherheitsmaßnahmen</h2>
+        <!-- ===== § 7 VERSCHLÜSSELUNG ===== -->
+        <h2>7. Verschlüsselung und Sicherheitsmaßnahmen</h2>
         <p>Wir setzen folgende technische und organisatorische Maßnahmen (TOMs) gemäß Art. 32 DSGVO ein:</p>
         <table>
             <tr><th>Maßnahme</th><th>Umsetzung</th></tr>
@@ -312,8 +304,8 @@
             </tr>
         </table>
 
-        <!-- ===== § 9 HOSTING ===== -->
-        <h2>9. Hosting und Auftragsverarbeitung</h2>
+        <!-- ===== § 8 HOSTING ===== -->
+        <h2>8. Hosting und Auftragsverarbeitung</h2>
         <p>Diese Anwendung wird gehostet bei:</p>
         <p>
             <strong>Render Services, Inc.</strong><br>
@@ -337,8 +329,8 @@
             Data Processing Agreement: <a href="https://render.com/legal/dpa" target="_blank" rel="noopener">https://render.com/legal/dpa</a>
         </p>
 
-        <!-- ===== § 10 EMPFÄNGER ===== -->
-        <h2>10. Empfänger personenbezogener Daten</h2>
+        <!-- ===== § 9 EMPFÄNGER ===== -->
+        <h2>9. Empfänger personenbezogener Daten</h2>
         <p>Personenbezogene Daten werden an folgende Empfänger bzw. Kategorien von Empfängern weitergegeben:</p>
         <table>
             <tr><th>Empfänger</th><th>Zweck</th><th>Grundlage</th></tr>
@@ -358,8 +350,8 @@
             Insbesondere werden keine Daten an Werbetreibende, Analyseunternehmen oder soziale Netzwerke übermittelt.
         </p>
 
-        <!-- ===== § 11 SPEICHERDAUER ===== -->
-        <h2>11. Speicherdauer und Löschung</h2>
+        <!-- ===== § 10 SPEICHERDAUER ===== -->
+        <h2>10. Speicherdauer und Löschung</h2>
         <table>
             <tr><th>Datenkategorie</th><th>Speicherdauer</th></tr>
             <tr><td>Kundenname (Sitzung)</td><td>Nur im RAM; Löschung bei Sitzungsende / Verbindungsabbruch</td></tr>
@@ -370,8 +362,8 @@
             <tr><td>Berater-Accounts</td><td>Bis zur manuellen Löschung durch den Administrator</td></tr>
         </table>
 
-        <!-- ===== § 12 BETROFFENENRECHTE ===== -->
-        <h2>12. Ihre Rechte als betroffene Person</h2>
+        <!-- ===== § 11 BETROFFENENRECHTE ===== -->
+        <h2>11. Ihre Rechte als betroffene Person</h2>
         <p>Ihnen stehen folgende Rechte nach der DSGVO zu:</p>
         <table>
             <tr><th>Recht</th><th>Artikel</th><th>Beschreibung</th></tr>
@@ -417,8 +409,8 @@
             <strong>Post:</strong> kamdi24 GmbH, Breitscheidstraße 78, 01237 Dresden
         </p>
 
-        <!-- ===== § 13 BESCHWERDERECHT ===== -->
-        <h2>13. Beschwerderecht bei einer Aufsichtsbehörde</h2>
+        <!-- ===== § 12 BESCHWERDERECHT ===== -->
+        <h2>12. Beschwerderecht bei einer Aufsichtsbehörde</h2>
         <p>
             Unbeschadet eines anderweitigen verwaltungsrechtlichen oder gerichtlichen Rechtsbehelfs steht Ihnen das Recht auf Beschwerde bei einer Aufsichtsbehörde zu, 
             wenn Sie der Ansicht sind, dass die Verarbeitung Ihrer personenbezogenen Daten gegen die DSGVO verstößt (Art. 77 DSGVO).
@@ -433,8 +425,8 @@
             Website: <a href="https://www.sdtb.sachsen.de" target="_blank" rel="noopener">www.sdtb.sachsen.de</a>
         </p>
 
-        <!-- ===== § 14 PFLICHT ZUR BEREITSTELLUNG ===== -->
-        <h2>14. Pflicht zur Bereitstellung personenbezogener Daten</h2>
+        <!-- ===== § 13 PFLICHT ZUR BEREITSTELLUNG ===== -->
+        <h2>13. Pflicht zur Bereitstellung personenbezogener Daten</h2>
         <p>
             Die Bereitstellung Ihres Namens vor der Beratung ist <strong>freiwillig</strong>. Sie können auch einen Pseudonym verwenden.
             Ohne Eingabe eines Namens ist die Nutzung der Beratungsfunktion jedoch nicht möglich, da der Berater Sie nicht identifizieren kann.
@@ -443,14 +435,14 @@
             Die Freigabe von Kamera und Mikrofon ist freiwillig. Eine reine Audio-Beratung ist möglich.
         </p>
 
-        <!-- ===== § 15 AUTOMATISIERTE ENTSCHEIDUNGSFINDUNG ===== -->
-        <h2>15. Automatisierte Entscheidungsfindung / Profiling</h2>
+        <!-- ===== § 14 AUTOMATISIERTE ENTSCHEIDUNGSFINDUNG ===== -->
+        <h2>14. Automatisierte Entscheidungsfindung / Profiling</h2>
         <p>
             Es findet <strong>keine automatisierte Entscheidungsfindung</strong> einschließlich Profiling gemäß Art. 22 Abs. 1 und 4 DSGVO statt.
         </p>
 
-        <!-- ===== § 16 AKTUALITÄT ===== -->
-        <h2>16. Aktualität und Änderung dieser Datenschutzerklärung</h2>
+        <!-- ===== § 15 AKTUALITÄT ===== -->
+        <h2>15. Aktualität und Änderung dieser Datenschutzerklärung</h2>
         <p>
             Diese Datenschutzerklärung hat den Stand März 2026. 
             Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um sie stets den aktuellen rechtlichen Anforderungen entsprechend zu halten 
