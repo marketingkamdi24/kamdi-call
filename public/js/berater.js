@@ -9,6 +9,7 @@ let currentCustomer = null;
 let isVideoEnabled = true;
 let isAudioEnabled = true;
 let beraterName = '';
+let authToken = '';
 
 const loginSection = document.getElementById('login-section');
 const waitingSection = document.getElementById('waiting-section');
@@ -73,11 +74,9 @@ function initPeer() {
         peerConfig.port = isSecure ? 443 : 80;
     }
     
-    console.log('PeerJS config:', peerConfig);
     peer = new Peer(undefined, peerConfig);
 
     peer.on('open', (id) => {
-        console.log('Berater peer ID:', id);
         socket.emit('berater-login', {
             name: beraterName,
             peerId: id
@@ -110,13 +109,6 @@ function handleIncomingPeerCall(call) {
     call.answer(localStream);
     
     call.on('stream', (remoteStream) => {
-        console.log('=== BERATER: Remote stream received ===');
-        console.log('Remote video tracks:', remoteStream.getVideoTracks().length);
-        console.log('Remote audio tracks:', remoteStream.getAudioTracks().length);
-        console.log('Remote stream ID:', remoteStream.id);
-        console.log('Local stream ID:', localStream ? localStream.id : 'null');
-        console.log('Same stream?', localStream && remoteStream.id === localStream.id);
-        
         remoteVideo.srcObject = remoteStream;
         
         const hasVideo = remoteStream.getVideoTracks().length > 0 && 
@@ -126,9 +118,7 @@ function handleIncomingPeerCall(call) {
         // Listen for track changes (e.g., screen sharing)
         if (call.peerConnection) {
             call.peerConnection.ontrack = (event) => {
-                console.log('=== BERATER: Track change ===', event.track.kind);
                 if (event.streams && event.streams[0]) {
-                    console.log('New stream ID:', event.streams[0].id);
                     remoteVideo.srcObject = event.streams[0];
                     const hasVideo = event.streams[0].getVideoTracks().length > 0;
                     remoteAudioOnly.classList.toggle('hidden', hasVideo);
@@ -197,6 +187,7 @@ async function login() {
         
         loginError.classList.add('hidden');
         beraterName = result.name;
+        authToken = result.token || '';
     } catch (err) {
         console.error('Auth error:', err);
         loginError.classList.remove('hidden');
@@ -239,10 +230,6 @@ async function login() {
         }
         
         localVideo.srcObject = localStream;
-        
-        // Log active tracks for debugging
-        console.log('Audio tracks:', localStream.getAudioTracks().length);
-        console.log('Video tracks:', localStream.getVideoTracks().length);
         
         initPeer();
         
@@ -1271,7 +1258,7 @@ function closeUserFormModal() {
 async function loadUsers() {
     try {
         const response = await fetch('/api/users', {
-            headers: { 'x-admin-auth': beraterName }
+            headers: { 'x-admin-auth': authToken }
         });
         const users = await response.json();
         renderUserTable(users);
@@ -1305,7 +1292,7 @@ window.deleteUser = async function(id, username) {
     try {
         const response = await fetch(`/api/users/${id}`, {
             method: 'DELETE',
-            headers: { 'x-admin-auth': beraterName }
+            headers: { 'x-admin-auth': authToken }
         });
         
         if (response.ok) {
@@ -1349,7 +1336,7 @@ async function saveUser() {
         
         const response = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json', 'x-admin-auth': beraterName },
+            headers: { 'Content-Type': 'application/json', 'x-admin-auth': authToken },
             body: JSON.stringify(body)
         });
         

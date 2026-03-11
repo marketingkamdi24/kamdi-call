@@ -6,8 +6,17 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 
 const SALT_ROUNDS = 10;
+
+// Rate limiting for login attempts (Art. 32 DSGVO - Sicherheit)
+const loginAttempts = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 Minuten
+
+// Session tokens for authenticated users (Art. 32 DSGVO - sichere Auth)
+const sessionTokens = new Map();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,11 +26,20 @@ const server = createServer(app);
 const io = new Server(server);
 
 const peerServer = ExpressPeerServer(server, {
-    debug: true,
+    debug: false,
     path: '/'
 });
 
 app.use('/peerjs', peerServer);
+
+// HTTPS redirect (Art. 32 DSGVO - Verschlüsselung)
+app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+        return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+});
+
 app.use(express.static(join(__dirname, '../public')));
 app.use(express.json());
 
@@ -76,27 +94,52 @@ function saveUsers(users) {
 
 let users = await loadUsers();
 
-// Simple auth middleware for admin API endpoints
+// Auth middleware with session token (Art. 32 DSGVO)
 function requireAuth(req, res, next) {
-    const authHeader = req.headers['x-admin-auth'];
-    const loginUser = users.find(u => u.username === authHeader);
-    if (!loginUser) {
+    const token = req.headers['x-admin-auth'];
+    if (!token || !sessionTokens.has(token)) {
         return res.status(401).json({ success: false, message: 'Nicht autorisiert' });
     }
-    req.authUser = loginUser;
+    req.authUser = sessionTokens.get(token);
     next();
+}
+
+function checkRateLimit(ip) {
+    const now = Date.now();
+    const attempts = loginAttempts.get(ip) || [];
+    // Remove expired attempts
+    const recent = attempts.filter(t => now - t < LOGIN_WINDOW_MS);
+    loginAttempts.set(ip, recent);
+    return recent.length >= MAX_LOGIN_ATTEMPTS;
+}
+
+function recordLoginAttempt(ip) {
+    const attempts = loginAttempts.get(ip) || [];
+    attempts.push(Date.now());
+    loginAttempts.set(ip, attempts);
 }
 
 // API endpoint for Berater authentication
 app.post('/api/berater/login', async (req, res) => {
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    
+    // Rate limiting check
+    if (checkRateLimit(clientIp)) {
+        return res.status(429).json({ success: false, message: 'Zu viele Anmeldeversuche. Bitte warten Sie 15 Minuten.' });
+    }
+    
     const { username, password } = req.body;
     const user = users.find(u => u.username === username);
     
     if (user && await bcrypt.compare(password, user.password)) {
-        console.log(`Berater ${username} authenticated successfully`);
-        res.json({ success: true, name: username });
+        // Create session token
+        const token = randomUUID();
+        sessionTokens.set(token, { username: user.username, id: user.id });
+        console.log('Berater authenticated successfully');
+        res.json({ success: true, name: username, token });
     } else {
-        console.log(`Failed login attempt for: ${username}`);
+        recordLoginAttempt(clientIp);
+        console.log('Failed login attempt');
         res.status(401).json({ success: false, message: 'Ungültige Anmeldedaten' });
     }
 });
@@ -133,7 +176,7 @@ app.post('/api/users', requireAuth, async (req, res) => {
     users.push(newUser);
     saveUsers(users);
     
-    console.log(`New user created: ${username}`);
+    console.log('New user created');
     res.json({ success: true, user: { id: newUser.id, username: newUser.username, createdAt: newUser.createdAt } });
 });
 
@@ -158,7 +201,7 @@ app.put('/api/users/:id', requireAuth, async (req, res) => {
     }
     
     saveUsers(users);
-    console.log(`User updated: ${users[userIndex].username}`);
+    console.log('User updated');
     res.json({ success: true, user: { id: users[userIndex].id, username: users[userIndex].username, createdAt: users[userIndex].createdAt } });
 });
 
@@ -173,7 +216,7 @@ app.delete('/api/users/:id', requireAuth, (req, res) => {
     const deletedUser = users.splice(userIndex, 1)[0];
     saveUsers(users);
     
-    console.log(`User deleted: ${deletedUser.username}`);
+    console.log('User deleted');
     res.json({ success: true });
 });
 
@@ -182,7 +225,7 @@ const customerQueue = [];
 const activeConnections = new Map();
 
 io.on('connection', (socket) => {
-    console.log('New socket connection:', socket.id);
+    console.log('New socket connection');
 
     socket.on('berater-login', (data) => {
         const { name, peerId } = data;
@@ -193,7 +236,7 @@ io.on('connection', (socket) => {
             status: 'available',
             currentCustomer: null
         });
-        console.log(`Berater ${name} logged in with peer ID: ${peerId}`);
+        console.log('Berater logged in');
         broadcastBeraterList();
         processQueue();
     });
@@ -313,7 +356,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         if (beraters.has(socket.id)) {
             const berater = beraters.get(socket.id);
-            console.log(`Berater ${berater.name} disconnected`);
+            console.log('Berater disconnected');
             beraters.delete(socket.id);
             broadcastBeraterList();
         }
@@ -373,14 +416,32 @@ function updateQueuePositions() {
 }
 
 function broadcastBeraterList() {
-    const beraterList = Array.from(beraters.values()).map(b => ({
+    // Send full list only to other Beraters (Art. 5 DSGVO - Datenminimierung)
+    const fullList = Array.from(beraters.values()).map(b => ({
         name: b.name,
         status: b.status
     }));
-    io.emit('berater-list', beraterList);
+    beraters.forEach((berater) => {
+        io.to(berater.socketId).emit('berater-list', fullList);
+    });
+    
+    // Send anonymized list to customers (only count + availability)
+    const customerList = Array.from(beraters.values()).map(b => ({
+        name: 'Berater',
+        status: b.status
+    }));
+    // Emit to all non-berater sockets
+    const beraterSocketIds = new Set(beraters.keys());
+    for (const [id, socket] of io.sockets.sockets) {
+        if (!beraterSocketIds.has(id)) {
+            socket.emit('berater-list', customerList);
+        }
+    }
 }
 
 function notifyBeratersOfQueue() {
+    // Only send necessary data to Berater frontend (Art. 5 DSGVO - Datenminimierung)
+    // peerId and socketId are kept server-side, sent only as opaque reference IDs
     const queueInfo = customerQueue.map(c => ({
         name: c.name,
         callType: c.callType,
