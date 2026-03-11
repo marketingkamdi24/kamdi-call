@@ -5,6 +5,9 @@ import { ExpressPeerServer } from 'peer';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
+import bcrypt from 'bcrypt';
+
+const SALT_ROUNDS = 10;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,25 +29,40 @@ app.use(express.json());
 const usersFilePath = join(__dirname, 'users.json');
 
 // Load users from JSON file or create default
-function loadUsers() {
+async function loadUsers() {
     if (existsSync(usersFilePath)) {
         try {
             const data = readFileSync(usersFilePath, 'utf8');
-            return JSON.parse(data);
+            const loadedUsers = JSON.parse(data);
+            // Migrate plaintext passwords to bcrypt hashes
+            let migrated = false;
+            for (let i = 0; i < loadedUsers.length; i++) {
+                if (!loadedUsers[i].password.startsWith('$2b$')) {
+                    console.log(`Migrating password for user: ${loadedUsers[i].username}`);
+                    loadedUsers[i].password = await bcrypt.hash(loadedUsers[i].password, SALT_ROUNDS);
+                    migrated = true;
+                }
+            }
+            if (migrated) {
+                saveUsers(loadedUsers);
+                console.log('Password migration complete');
+            }
+            return loadedUsers;
         } catch (e) {
             console.error('Error loading users:', e);
-            return getDefaultUsers();
+            return await getDefaultUsers();
         }
     }
-    const defaultUsers = getDefaultUsers();
+    const defaultUsers = await getDefaultUsers();
     saveUsers(defaultUsers);
     return defaultUsers;
 }
 
-function getDefaultUsers() {
+async function getDefaultUsers() {
+    const hash = await bcrypt.hash('kamdi2024', SALT_ROUNDS);
     return [
-        { id: '1', username: 'Max Mustermann', password: 'kamdi2024', createdAt: new Date().toISOString() },
-        { id: '2', username: 'Anna Schmidt', password: 'kamdi2024', createdAt: new Date().toISOString() }
+        { id: '1', username: 'Max Mustermann', password: hash, createdAt: new Date().toISOString() },
+        { id: '2', username: 'Anna Schmidt', password: hash, createdAt: new Date().toISOString() }
     ];
 }
 
@@ -56,14 +74,25 @@ function saveUsers(users) {
     }
 }
 
-let users = loadUsers();
+let users = await loadUsers();
+
+// Simple auth middleware for admin API endpoints
+function requireAuth(req, res, next) {
+    const authHeader = req.headers['x-admin-auth'];
+    const loginUser = users.find(u => u.username === authHeader);
+    if (!loginUser) {
+        return res.status(401).json({ success: false, message: 'Nicht autorisiert' });
+    }
+    req.authUser = loginUser;
+    next();
+}
 
 // API endpoint for Berater authentication
-app.post('/api/berater/login', (req, res) => {
+app.post('/api/berater/login', async (req, res) => {
     const { username, password } = req.body;
-    const user = users.find(u => u.username === username && u.password === password);
+    const user = users.find(u => u.username === username);
     
-    if (user) {
+    if (user && await bcrypt.compare(password, user.password)) {
         console.log(`Berater ${username} authenticated successfully`);
         res.json({ success: true, name: username });
     } else {
@@ -72,18 +101,17 @@ app.post('/api/berater/login', (req, res) => {
     }
 });
 
-// API endpoints for user management
-app.get('/api/users', (req, res) => {
+// API endpoints for user management (protected)
+app.get('/api/users', requireAuth, (req, res) => {
     const safeUsers = users.map(u => ({
         id: u.id,
         username: u.username,
-        password: u.password,
         createdAt: u.createdAt
     }));
     res.json(safeUsers);
 });
 
-app.post('/api/users', (req, res) => {
+app.post('/api/users', requireAuth, async (req, res) => {
     const { username, password } = req.body;
     
     if (!username || !password) {
@@ -94,10 +122,11 @@ app.post('/api/users', (req, res) => {
         return res.status(400).json({ success: false, message: 'Benutzername bereits vergeben' });
     }
     
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const newUser = {
         id: Date.now().toString(),
         username,
-        password,
+        password: hashedPassword,
         createdAt: new Date().toISOString()
     };
     
@@ -108,7 +137,7 @@ app.post('/api/users', (req, res) => {
     res.json({ success: true, user: { id: newUser.id, username: newUser.username, createdAt: newUser.createdAt } });
 });
 
-app.put('/api/users/:id', (req, res) => {
+app.put('/api/users/:id', requireAuth, async (req, res) => {
     const { id } = req.params;
     const { username, password } = req.body;
     
@@ -125,7 +154,7 @@ app.put('/api/users/:id', (req, res) => {
     }
     
     if (password) {
-        users[userIndex].password = password;
+        users[userIndex].password = await bcrypt.hash(password, SALT_ROUNDS);
     }
     
     saveUsers(users);
@@ -133,7 +162,7 @@ app.put('/api/users/:id', (req, res) => {
     res.json({ success: true, user: { id: users[userIndex].id, username: users[userIndex].username, createdAt: users[userIndex].createdAt } });
 });
 
-app.delete('/api/users/:id', (req, res) => {
+app.delete('/api/users/:id', requireAuth, (req, res) => {
     const { id } = req.params;
     
     const userIndex = users.findIndex(u => u.id === id);

@@ -1270,7 +1270,9 @@ function closeUserFormModal() {
 
 async function loadUsers() {
     try {
-        const response = await fetch('/api/users');
+        const response = await fetch('/api/users', {
+            headers: { 'x-admin-auth': beraterName }
+        });
         const users = await response.json();
         renderUserTable(users);
     } catch (err) {
@@ -1284,15 +1286,15 @@ function renderUserTable(users) {
             <td>${user.username}</td>
             <td>${new Date(user.createdAt).toLocaleDateString('de-DE')}</td>
             <td class="actions">
-                <button class="btn-edit" onclick="editUser('${user.id}', '${user.username}', '${user.password}')">✏️ Bearbeiten</button>
+                <button class="btn-edit" onclick="editUser('${user.id}', '${user.username}')">✏️ Bearbeiten</button>
                 <button class="btn-delete" onclick="deleteUser('${user.id}', '${user.username}')">🗑️ Löschen</button>
             </td>
         </tr>
     `).join('');
 }
 
-window.editUser = function(id, username, password) {
-    openUserForm({ id, username, password });
+window.editUser = function(id, username) {
+    openUserForm({ id, username });
 };
 
 window.deleteUser = async function(id, username) {
@@ -1302,7 +1304,8 @@ window.deleteUser = async function(id, username) {
     
     try {
         const response = await fetch(`/api/users/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'x-admin-auth': beraterName }
         });
         
         if (response.ok) {
@@ -1346,7 +1349,7 @@ async function saveUser() {
         
         const response = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-admin-auth': beraterName },
             body: JSON.stringify(body)
         });
         
