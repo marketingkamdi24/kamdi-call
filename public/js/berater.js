@@ -563,7 +563,27 @@ async function toggleScreenShare() {
                 toggleVideoBtn.classList.add('active');
                 toggleVideoBtn.classList.remove('muted');
             } catch (camErr) {
-                console.log('Camera not available after screen share');
+                console.log('Camera not available after screen share, creating dummy track');
+                // Create dummy black video track as replacement
+                const canvas = document.createElement('canvas');
+                canvas.width = 640;
+                canvas.height = 480;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                const dummyStream = canvas.captureStream(1);
+                const dummyTrack = dummyStream.getVideoTracks()[0];
+                localStream.addTrack(dummyTrack);
+                localVideo.srcObject = localStream;
+                
+                // Replace the ended screen track in WebRTC connection
+                if (currentCall && currentCall.peerConnection) {
+                    const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                    if (sender) {
+                        sender.replaceTrack(dummyTrack);
+                    }
+                }
+                
                 isVideoEnabled = false;
                 toggleVideoBtn.classList.remove('active');
                 toggleVideoBtn.classList.add('muted');
