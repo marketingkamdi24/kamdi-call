@@ -91,16 +91,32 @@ function initPeer() {
     });
 }
 
+function resetVideoSwapState() {
+    const localWrapper = document.querySelector('.local-video-wrapper');
+    const remoteWrapper = document.querySelector('.remote-video-wrapper');
+    if (localWrapper) localWrapper.classList.remove('video-large');
+    if (remoteWrapper) remoteWrapper.classList.remove('video-small');
+    isVideoSwapped = false;
+}
+
 function handleIncomingPeerCall(call) {
     currentCall = call;
     
-    // Clear any leftover remote video from previous calls
+    // Clear any leftover state from previous calls
     remoteVideo.srcObject = null;
+    remoteVideo.load();
+    resetVideoSwapState();
     
     call.answer(localStream);
     
     call.on('stream', (remoteStream) => {
-        console.log('Remote stream received, video tracks:', remoteStream.getVideoTracks().length);
+        console.log('=== BERATER: Remote stream received ===');
+        console.log('Remote video tracks:', remoteStream.getVideoTracks().length);
+        console.log('Remote audio tracks:', remoteStream.getAudioTracks().length);
+        console.log('Remote stream ID:', remoteStream.id);
+        console.log('Local stream ID:', localStream ? localStream.id : 'null');
+        console.log('Same stream?', localStream && remoteStream.id === localStream.id);
+        
         remoteVideo.srcObject = remoteStream;
         
         const hasVideo = remoteStream.getVideoTracks().length > 0 && 
@@ -110,8 +126,9 @@ function handleIncomingPeerCall(call) {
         // Listen for track changes (e.g., screen sharing)
         if (call.peerConnection) {
             call.peerConnection.ontrack = (event) => {
-                console.log('Track received:', event.track.kind);
+                console.log('=== BERATER: Track change ===', event.track.kind);
                 if (event.streams && event.streams[0]) {
+                    console.log('New stream ID:', event.streams[0].id);
                     remoteVideo.srcObject = event.streams[0];
                     const hasVideo = event.streams[0].getVideoTracks().length > 0;
                     remoteAudioOnly.classList.toggle('hidden', hasVideo);
@@ -318,6 +335,14 @@ function acceptCall() {
         ringtone.currentTime = 0;
     }
     
+    // Reset all video state for fresh call
+    remoteVideo.srcObject = null;
+    remoteVideo.load();
+    resetVideoSwapState();
+    isScreenSharing = false;
+    originalVideoTrack = null;
+    toggleScreenBtn.classList.remove('active');
+    
     socket.emit('accept-call', currentCustomer.customerSocketId);
     
     activeCallerName.textContent = currentCustomer.customerName;
@@ -394,13 +419,7 @@ function endCall(notifyServer = true) {
     remoteVideo.load();
     
     // Reset video swap state
-    if (isVideoSwapped) {
-        const localWrapper = document.querySelector('.local-video-wrapper');
-        const remoteWrapper = document.querySelector('.remote-video-wrapper');
-        if (localWrapper) localWrapper.classList.remove('video-large');
-        if (remoteWrapper) remoteWrapper.classList.remove('video-small');
-        isVideoSwapped = false;
-    }
+    resetVideoSwapState();
     
     chatMessages.innerHTML = '';
     currentCustomer = null;
