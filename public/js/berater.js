@@ -126,6 +126,7 @@ function handleDataConnection(conn) {
             refreshRemoteVideo();
         } else if (data.type === 'screen-share-ended') {
             console.log('Customer stopped screen sharing');
+            refreshRemoteVideo();
         }
     });
 
@@ -340,6 +341,12 @@ function endCall(notifyServer = true) {
         clearInterval(callTimerInterval);
         callTimerInterval = null;
     }
+    
+    remoteVideo.srcObject = null;
+    
+    isScreenSharing = false;
+    originalVideoTrack = null;
+    toggleScreenBtn.classList.remove('active');
     
     chatMessages.innerHTML = '';
     currentCustomer = null;
