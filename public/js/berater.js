@@ -102,6 +102,18 @@ function handleIncomingPeerCall(call) {
         const hasVideo = remoteStream.getVideoTracks().length > 0 && 
                          remoteStream.getVideoTracks()[0].enabled;
         remoteAudioOnly.classList.toggle('hidden', hasVideo);
+        
+        // Listen for track changes (e.g., screen sharing)
+        if (call.peerConnection) {
+            call.peerConnection.ontrack = (event) => {
+                console.log('Track received:', event.track.kind);
+                if (event.streams && event.streams[0]) {
+                    remoteVideo.srcObject = event.streams[0];
+                    const hasVideo = event.streams[0].getVideoTracks().length > 0;
+                    remoteAudioOnly.classList.toggle('hidden', hasVideo);
+                }
+            };
+        }
     });
 
     call.on('close', () => {
@@ -343,6 +355,33 @@ function endCall(notifyServer = true) {
     }
     
     remoteVideo.srcObject = null;
+    
+    // If screen sharing was active, stop the screen track and restore camera
+    if (isScreenSharing && localStream) {
+        const screenTrack = localStream.getVideoTracks()[0];
+        if (screenTrack) {
+            screenTrack.stop();
+            localStream.removeTrack(screenTrack);
+        }
+        // Try to restore camera
+        navigator.mediaDevices.getUserMedia({ video: true }).then(newStream => {
+            const newVideoTrack = newStream.getVideoTracks()[0];
+            localStream.addTrack(newVideoTrack);
+            localVideo.srcObject = localStream;
+        }).catch(() => {
+            // Camera not available, add dummy track
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const dummyStream = canvas.captureStream(1);
+            const dummyTrack = dummyStream.getVideoTracks()[0];
+            localStream.addTrack(dummyTrack);
+            localVideo.srcObject = localStream;
+        });
+    }
     
     isScreenSharing = false;
     originalVideoTrack = null;
