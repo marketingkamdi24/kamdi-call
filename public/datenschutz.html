@@ -23,7 +23,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-gradient);
+            background: #f0f2f5;
             min-height: 100vh;
             color: var(--text);
         }
@@ -31,7 +31,8 @@
         /* ── Hero header ── */
         .dse-hero {
             text-align: center;
-            padding: 48px 20px 0;
+            padding: 48px 20px 32px;
+            background: var(--bg-gradient);
         }
         .dse-hero .logo {
             display: inline-flex;
@@ -60,8 +61,10 @@
         /* ── Card wrapper ── */
         .dse-wrapper {
             max-width: 860px;
-            margin: 32px auto 0;
+            margin: -20px auto 0;
             padding: 0 16px 60px;
+            position: relative;
+            z-index: 1;
         }
         .dse-card {
             background: var(--card-bg);
@@ -216,14 +219,14 @@
         .dse-footer {
             text-align: center;
             padding: 0 20px 32px;
-            color: rgba(255,255,255,.55);
+            color: var(--text-light);
             font-size: .8rem;
         }
         .dse-footer a {
-            color: rgba(255,255,255,.7);
+            color: var(--secondary);
             text-decoration: none;
         }
-        .dse-footer a:hover { color: #fff; }
+        .dse-footer a:hover { color: var(--primary); }
 
         /* ── Responsive ── */
         @media (max-width: 600px) {
