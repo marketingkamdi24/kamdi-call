@@ -94,9 +94,13 @@ function initPeer() {
 function handleIncomingPeerCall(call) {
     currentCall = call;
     
+    // Clear any leftover remote video from previous calls
+    remoteVideo.srcObject = null;
+    
     call.answer(localStream);
     
     call.on('stream', (remoteStream) => {
+        console.log('Remote stream received, video tracks:', remoteStream.getVideoTracks().length);
         remoteVideo.srcObject = remoteStream;
         
         const hasVideo = remoteStream.getVideoTracks().length > 0 && 
@@ -339,31 +343,14 @@ function rejectCall() {
 }
 
 function endCall(notifyServer = true) {
-    if (currentCall) {
-        currentCall.close();
-        currentCall = null;
-    }
-    
-    if (dataConnection) {
-        dataConnection.close();
-        dataConnection = null;
-    }
-    
-    if (callTimerInterval) {
-        clearInterval(callTimerInterval);
-        callTimerInterval = null;
-    }
-    
-    remoteVideo.srcObject = null;
-    
-    // If screen sharing was active, stop the screen track and restore camera
+    // Stop screen sharing FIRST (before closing call) so we can restore camera
     if (isScreenSharing && localStream) {
         const screenTrack = localStream.getVideoTracks()[0];
         if (screenTrack) {
             screenTrack.stop();
             localStream.removeTrack(screenTrack);
         }
-        // Try to restore camera
+        // Synchronously restore camera
         navigator.mediaDevices.getUserMedia({ video: true }).then(newStream => {
             const newVideoTrack = newStream.getVideoTracks()[0];
             localStream.addTrack(newVideoTrack);
@@ -386,6 +373,34 @@ function endCall(notifyServer = true) {
     isScreenSharing = false;
     originalVideoTrack = null;
     toggleScreenBtn.classList.remove('active');
+    
+    if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+    }
+    
+    if (dataConnection) {
+        dataConnection.close();
+        dataConnection = null;
+    }
+    
+    if (callTimerInterval) {
+        clearInterval(callTimerInterval);
+        callTimerInterval = null;
+    }
+    
+    // Clear remote video completely
+    remoteVideo.srcObject = null;
+    remoteVideo.load();
+    
+    // Reset video swap state
+    if (isVideoSwapped) {
+        const localWrapper = document.querySelector('.local-video-wrapper');
+        const remoteWrapper = document.querySelector('.remote-video-wrapper');
+        if (localWrapper) localWrapper.classList.remove('video-large');
+        if (remoteWrapper) remoteWrapper.classList.remove('video-small');
+        isVideoSwapped = false;
+    }
     
     chatMessages.innerHTML = '';
     currentCustomer = null;
@@ -550,10 +565,9 @@ async function toggleScreenShare() {
             });
             const screenTrack = screenStream.getVideoTracks()[0];
             
-            // Save and remove existing video track
+            // Save and remove existing video track (don't stop it, keep alive for restoration)
             originalVideoTrack = localStream.getVideoTracks()[0];
             if (originalVideoTrack) {
-                originalVideoTrack.stop();
                 localStream.removeTrack(originalVideoTrack);
             }
             
