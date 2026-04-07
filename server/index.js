@@ -224,6 +224,10 @@ const beraters = new Map();
 const customerQueue = [];
 const activeConnections = new Map();
 
+// Queue configuration
+const MAX_QUEUE_SIZE = 20;
+const QUEUE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes max wait time
+
 io.on('connection', (socket) => {
     console.log('New socket connection');
 
@@ -267,10 +271,13 @@ io.on('connection', (socket) => {
         const availableBerater = findAvailableBerater();
         if (availableBerater) {
             connectCustomerToBerater(customer, availableBerater);
-        } else {
+        } else if (customerQueue.length < MAX_QUEUE_SIZE) {
             customerQueue.push(customer);
             socket.emit('queue-position', { position: customerQueue.length });
             notifyBeratersOfQueue();
+        } else {
+            // Queue is full
+            socket.emit('queue-full', { message: 'Alle Leitungen sind belegt. Bitte versuchen Sie es später erneut.' });
         }
     });
 
@@ -394,17 +401,25 @@ io.on('connection', (socket) => {
 });
 
 function findAvailableBerater() {
+    // Round-Robin: pick the available berater who has been idle the longest
+    let best = null;
+    let oldestTime = Infinity;
     for (const [socketId, berater] of beraters) {
         if (berater.status === 'available') {
-            return berater;
+            const lastCall = berater.lastCallTime || 0;
+            if (lastCall < oldestTime) {
+                oldestTime = lastCall;
+                best = berater;
+            }
         }
     }
-    return null;
+    return best;
 }
 
 function connectCustomerToBerater(customer, berater) {
     berater.status = 'ringing';
     berater.currentCustomer = customer;
+    berater.lastCallTime = Date.now();
     
     io.to(berater.socketId).emit('incoming-call', {
         customerName: customer.name,
@@ -421,14 +436,14 @@ function connectCustomerToBerater(customer, berater) {
 }
 
 function processQueue() {
-    if (customerQueue.length === 0) return;
-    
-    const availableBerater = findAvailableBerater();
-    if (availableBerater) {
+    // Process ALL waiting customers that can be matched to available beraters
+    while (customerQueue.length > 0) {
+        const availableBerater = findAvailableBerater();
+        if (!availableBerater) break;
         const customer = customerQueue.shift();
         connectCustomerToBerater(customer, availableBerater);
-        updateQueuePositions();
     }
+    updateQueuePositions();
 }
 
 function updateQueuePositions() {
@@ -462,8 +477,7 @@ function broadcastBeraterList() {
 }
 
 function notifyBeratersOfQueue() {
-    // Only send necessary data to Berater frontend (Art. 5 DSGVO - Datenminimierung)
-    // peerId and socketId are kept server-side, sent only as opaque reference IDs
+    // Send queue info to beraters (Art. 5 DSGVO - Datenminimierung)
     const queueInfo = customerQueue.map(c => ({
         name: c.name,
         callType: c.callType,
@@ -477,8 +491,30 @@ function notifyBeratersOfQueue() {
     });
 }
 
+// Clean up customers who have been waiting too long
+function cleanupStaleQueue() {
+    const now = Date.now();
+    let removed = false;
+    for (let i = customerQueue.length - 1; i >= 0; i--) {
+        if (now - customerQueue[i].timestamp > QUEUE_TIMEOUT_MS) {
+            const stale = customerQueue.splice(i, 1)[0];
+            io.to(stale.socketId).emit('queue-timeout', { 
+                message: 'Die Wartezeit wurde überschritten. Bitte versuchen Sie es erneut.' 
+            });
+            activeConnections.delete(stale.socketId);
+            removed = true;
+            console.log('Customer removed from queue (timeout):', stale.name);
+        }
+    }
+    if (removed) {
+        updateQueuePositions();
+        notifyBeratersOfQueue();
+    }
+}
+
 setInterval(() => {
     notifyBeratersOfQueue();
+    cleanupStaleQueue();
 }, 5000);
 
 const PORT = process.env.PORT || 3000;

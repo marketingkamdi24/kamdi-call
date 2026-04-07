@@ -1125,6 +1125,24 @@ socket.on('queue-position', (data) => {
     queuePositionEl.textContent = data.position;
 });
 
+socket.on('queue-full', (data) => {
+    alert(data.message);
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    showSection('login');
+});
+
+socket.on('queue-timeout', (data) => {
+    alert(data.message);
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    showSection('login');
+});
+
 socket.on('call-connecting', (data) => {
     if (queueAudio) {
         queueAudio.pause();
