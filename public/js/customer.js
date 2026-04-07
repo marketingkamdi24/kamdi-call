@@ -305,15 +305,41 @@ function attachRemoteStream(stream) {
                      stream.getVideoTracks().some(t => t.enabled && t.readyState === 'live');
     remoteAudioOnly.classList.toggle('hidden', hasVideo);
     
-    // Play through video element (single audio path — no Web Audio to prevent echo/double audio)
+    // Route audio through Web Audio API (reliable even with dummy video tracks)
+    // Mute video element to prevent double audio — Web Audio is the only audio path
+    if (stream.getAudioTracks().length > 0) {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                if (!_audioContext) {
+                    _audioContext = new AudioCtx();
+                }
+                if (_audioContext.state === 'suspended') {
+                    _audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
+                }
+                if (_webAudioSource) {
+                    try { _webAudioSource.disconnect(); } catch(e) {}
+                }
+                _webAudioSource = _audioContext.createMediaStreamSource(stream);
+                _webAudioSource.connect(_audioContext.destination);
+                remoteVideo.muted = true;
+                console.log('Web Audio: audio routed to speakers (state:', _audioContext.state, ')');
+                updateDebugOverlay('Audio: OK (Web Audio)');
+            }
+        } catch(e) {
+            console.warn('Web Audio failed, falling back to video element:', e);
+            remoteVideo.muted = false;
+            remoteVideo.volume = 1;
+        }
+    }
+    
+    // Play the video element (for video display; audio handled by Web Audio above)
     const playPromise = remoteVideo.play();
     if (playPromise) {
         playPromise.then(() => {
-            console.log('Remote video+audio playing successfully');
-            updateDebugOverlay('Audio: OK');
+            console.log('Remote video playing successfully');
         }).catch(e => {
             console.warn('Play failed:', e.name);
-            updateDebugOverlay('Audio BLOCKED: ' + e.name);
             if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
                 showPlayOverlay();
             }
@@ -351,11 +377,13 @@ function startAudioHealthCheck() {
             return;
         }
         
-        // Fix video element state if needed
-        if (remoteVideo.muted) {
-            console.warn('Audio health: video element muted, fixing');
-            remoteVideo.muted = false;
-            remoteVideo.volume = 1;
+        // Fix video element state if needed (only if Web Audio is NOT handling audio)
+        if (!_webAudioSource) {
+            if (remoteVideo.muted) {
+                console.warn('Audio health: video element muted, fixing');
+                remoteVideo.muted = false;
+                remoteVideo.volume = 1;
+            }
         }
         if (remoteVideo.paused) {
             console.warn('Audio health: video paused, re-playing');
@@ -523,9 +551,26 @@ function showPlayOverlay() {
         // Unlock AudioContext during this user gesture
         unlockAudio();
         
-        // Ensure video element plays audio
-        remoteVideo.muted = false;
-        remoteVideo.volume = 1;
+        // Re-connect Web Audio (primary audio path)
+        if (remoteVideo.srcObject) {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    if (!_audioContext) _audioContext = new AudioCtx();
+                    if (_audioContext.state === 'suspended') _audioContext.resume().catch(() => {});
+                    if (_webAudioSource) { try { _webAudioSource.disconnect(); } catch(e) {} }
+                    _webAudioSource = _audioContext.createMediaStreamSource(remoteVideo.srcObject);
+                    _webAudioSource.connect(_audioContext.destination);
+                    remoteVideo.muted = true;
+                    console.log('Play overlay: Web Audio reconnected');
+                }
+            } catch(e) {
+                // Fallback to video element
+                remoteVideo.muted = false;
+                remoteVideo.volume = 1;
+            }
+        }
+        
         remoteVideo.play().catch(() => {});
         
         // Remove overlay
