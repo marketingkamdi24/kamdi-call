@@ -785,14 +785,68 @@ function startCallTimer() {
     }, 1000);
 }
 
-function toggleVideo() {
-    if (localStream) {
-        const videoTrack = localStream.getVideoTracks()[0];
-        if (videoTrack) {
-            isVideoEnabled = !isVideoEnabled;
-            videoTrack.enabled = isVideoEnabled;
-            toggleVideoBtn.classList.toggle('muted', !isVideoEnabled);
+async function toggleVideo() {
+    if (!localStream) return;
+    
+    const videoTrack = localStream.getVideoTracks()[0];
+    
+    if (!isVideoEnabled) {
+        // Switching ON: Start real camera (replace dummy track if present)
+        try {
+            const camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const newVideoTrack = camStream.getVideoTracks()[0];
+            
+            // Remove old track (dummy or stopped)
+            if (videoTrack) {
+                videoTrack.stop();
+                localStream.removeTrack(videoTrack);
+            }
+            localStream.addTrack(newVideoTrack);
+            localVideo.srcObject = localStream;
+            
+            // Replace track in WebRTC connection so remote peer sees video
+            if (currentCall && currentCall.peerConnection) {
+                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) {
+                    await sender.replaceTrack(newVideoTrack);
+                }
+            }
+            
+            isVideoEnabled = true;
+            toggleVideoBtn.classList.remove('muted');
+            console.log('Video enabled: camera started');
+        } catch (e) {
+            console.warn('Could not start camera:', e);
         }
+    } else {
+        // Switching OFF: Stop camera, replace with dummy track
+        if (videoTrack) {
+            videoTrack.stop();
+            localStream.removeTrack(videoTrack);
+        }
+        
+        // Create dummy video track
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const dummyTrack = canvas.captureStream(1).getVideoTracks()[0];
+        localStream.addTrack(dummyTrack);
+        localVideo.srcObject = localStream;
+        
+        // Replace track in WebRTC connection
+        if (currentCall && currentCall.peerConnection) {
+            const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+                await sender.replaceTrack(dummyTrack);
+            }
+        }
+        
+        isVideoEnabled = false;
+        toggleVideoBtn.classList.add('muted');
+        console.log('Video disabled: camera stopped');
     }
 }
 
