@@ -403,6 +403,9 @@ function handleDataConnection(conn) {
         } else if (data.type === 'screen-share-ended') {
             console.log('Customer stopped screen sharing');
             refreshRemoteVideo();
+        } else if (data.type === 'video-toggle') {
+            console.log('Customer video toggled:', data.videoEnabled);
+            remoteAudioOnly.classList.toggle('hidden', data.videoEnabled);
         }
     });
 
@@ -754,6 +757,11 @@ async function toggleVideo() {
             isVideoEnabled = true;
             toggleVideoBtn.classList.add('active');
             toggleVideoBtn.classList.remove('muted');
+            
+            // Notify remote peer that video is now on
+            if (dataConnection && dataConnection.open) {
+                dataConnection.send({ type: 'video-toggle', videoEnabled: true });
+            }
             console.log('Video enabled: camera started');
         } catch (e) {
             console.warn('Could not start camera:', e);
@@ -787,6 +795,11 @@ async function toggleVideo() {
         isVideoEnabled = false;
         toggleVideoBtn.classList.remove('active');
         toggleVideoBtn.classList.add('muted');
+        
+        // Notify remote peer that video is now off
+        if (dataConnection && dataConnection.open) {
+            dataConnection.send({ type: 'video-toggle', videoEnabled: false });
+        }
         console.log('Video disabled: camera stopped');
     }
 }
