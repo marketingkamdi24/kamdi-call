@@ -415,16 +415,7 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on('file-share', (data) => {
-        const { targetSocketId, fileName, fileData, fileType, senderName } = data;
-        io.to(targetSocketId).emit('file-received', {
-            senderName,
-            fileName,
-            fileData,
-            fileType,
-            timestamp: Date.now()
-        });
-    });
+    // Note: File sharing uses WebRTC DataChannel (P2P), not Socket.IO
 
     socket.on('disconnect', () => {
         console.log('Socket disconnected:', socket.id);

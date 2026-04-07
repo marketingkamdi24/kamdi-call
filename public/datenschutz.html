@@ -343,7 +343,7 @@
                 </table>
 
                 <h3>3.7 Dateiübertragung</h3>
-                <p>Dateien werden über den Server (Socket.IO) an den Gesprächspartner weitergeleitet. Es erfolgt <strong>keine dauerhafte Speicherung</strong> &ndash; die Daten existieren nur transient im RAM während der Weiterleitung.</p>
+                <p>Dateien werden über WebRTC DataChannel <strong>direkt zwischen den Endgeräten</strong> (Peer-to-Peer) übertragen und <strong>nicht auf dem Server gespeichert</strong>. Bei TURN-Relay-Verbindungen erfolgt die Weiterleitung verschlüsselt über den TURN-Server (siehe §6.1).</p>
 
                 <h3>3.8 WebSocket-Verbindung</h3>
                 <p>Für Echtzeitkommunikation (Warteschlange, Signalisierung, Chat). Keine dauerhafte Speicherung personenbezogener Daten. Automatische Bereinigung bei Verbindungsende.</p>
