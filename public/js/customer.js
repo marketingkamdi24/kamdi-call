@@ -790,6 +790,8 @@ function endCall() {
         callTimerInterval = null;
     }
     
+    chatMessages.innerHTML = '';
+    
     socket.emit('call-ended');
     showSection('ended');
 }
