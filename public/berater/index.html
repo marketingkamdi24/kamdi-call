@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>kamdi24 - Berater Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css?v=20260319b">
+    <link rel="stylesheet" href="/css/berater.css?v=20260319b">
+    <link rel="stylesheet" href="/css/tools.css?v=1740600000">
+    <link rel="stylesheet" href="/css/ipad.css?v=1740600000">
+    <link rel="stylesheet" href="/css/fonts.css">
+    
+    <!-- Critical iPhone/Mobile Styles - Inline for guaranteed loading -->
+    <style>
+        /* Mobile: Show flip camera button + compact controls */
+        @media (max-width: 1024px) {
+            .control-btn.flip-camera {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            .chat-back-btn {
+                display: flex !important;
+                visibility: visible !important;
+            }
+            /* Compact call control buttons on mobile/tablet */
+            .call-controls {
+                gap: 8px !important;
+                padding: 10px 8px !important;
+                min-height: 65px !important;
+            }
+            .control-btn {
+                min-width: 48px !important;
+                max-width: 60px !important;
+                padding: 8px 6px !important;
+                flex: 0 1 auto !important;
+                border-radius: 12px !important;
+            }
+            .control-btn .btn-icon {
+                font-size: 1.2rem !important;
+            }
+            .control-btn .btn-label {
+                font-size: 0.5rem !important;
+                margin-top: 2px !important;
+            }
+        }
+        
+        /* iPhone specific */
+        @media (max-width: 480px) {
+            .chat-panel .chat-input-container,
+            .chat-panel-customer .chat-input-container {
+                display: flex !important;
+                min-height: 60px !important;
+                padding: 10px 12px !important;
+                background: #fff !important;
+            }
+            .chat-panel .chat-input-container input,
+            .chat-panel-customer .chat-input-container input {
+                display: block !important;
+                flex: 1 !important;
+                font-size: 16px !important;
+                height: 40px !important;
+                min-height: 40px !important;
+            }
+            .chat-panel .send-btn,
+            .chat-panel .file-upload-btn,
+            .chat-panel-customer .send-btn,
+            .chat-panel-customer .file-upload-btn {
+                display: flex !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+            
+            /* Sidebar mobile fix */
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="berater-body">
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn hidden-desktop" id="mobile-menu-btn">☰</button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Mobile Chat Button -->
+    <button class="mobile-chat-btn hidden" id="mobile-chat-btn">💬</button>
+    
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🔥</span>
+                    <h1>kamdi<span class="accent">24</span></h1>
+                </div>
+                <p class="dashboard-label">Berater Dashboard</p>
+            </div>
+
+            <div id="berater-profile" class="berater-profile hidden">
+                <div class="profile-avatar">👔</div>
+                <h3 id="berater-name-display"></h3>
+                <div class="status-indicator">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">Verfügbar</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button id="toggle-status-btn" class="nav-btn hidden">
+                    <span>🔄</span> Status ändern
+                </button>
+                <button id="user-management-btn" class="nav-btn hidden">
+                    <span>👥</span> Nutzerverwaltung
+                </button>
+                <button id="logout-btn" class="nav-btn hidden">
+                    <span>🚪</span> Abmelden
+                </button>
+            </nav>
+
+            <div class="queue-sidebar" id="queue-sidebar">
+                <h3>Warteschlange</h3>
+                <div id="queue-list" class="queue-list">
+                    <p class="empty-queue">Keine wartenden Kunden</p>
+                </div>
+            </div>
+
+            <div class="other-beraters">
+                <h3>Andere Berater</h3>
+                <div id="other-beraters-list" class="beraters-list"></div>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <section id="login-section" class="berater-login-section">
+                <div class="login-card">
+                    <h2>🔐 Berater Anmeldung</h2>
+                    <p>Nur für autorisierte Mitarbeiter</p>
+                    <div class="form-group">
+                        <label for="berater-name">Benutzername</label>
+                        <input type="text" id="berater-name" placeholder="Vor- und Nachname" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="berater-password">Passwort</label>
+                        <input type="password" id="berater-password" placeholder="Passwort eingeben" autocomplete="off">
+                    </div>
+                    <div id="login-error" class="login-error hidden">
+                        Ungültige Anmeldedaten
+                    </div>
+                    <button id="login-btn" class="btn btn-primary btn-large">
+                        <span>🔑</span> Anmelden
+                    </button>
+                </div>
+            </section>
+
+            <section id="waiting-section" class="waiting-section hidden">
+                <div class="waiting-content">
+                    <div class="waiting-icon">☕</div>
+                    <h2>Bereit für Anrufe</h2>
+                    <p>Warten auf eingehende Kundenanrufe...</p>
+                </div>
+            </section>
+
+            <section id="incoming-call-section" class="incoming-call-section hidden">
+                <div class="incoming-call-card">
+                    <div class="ring-animation">
+                        <div class="ring-circle"></div>
+                        <div class="ring-circle"></div>
+                        <div class="ring-circle"></div>
+                        <span class="phone-icon">📞</span>
+                    </div>
+                    <h2>Eingehender Anruf</h2>
+                    <p class="caller-info">
+                        <span id="caller-name"></span>
+                        <span class="call-type-badge" id="call-type-badge"></span>
+                    </p>
+                    <div class="incoming-call-actions">
+                        <button id="accept-call-btn" class="btn btn-success btn-large">
+                            <span>✓</span> Annehmen
+                        </button>
+                        <button id="reject-call-btn" class="btn btn-danger btn-large">
+                            <span>✕</span> Ablehnen
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="call-section" class="call-section hidden">
+                <div class="call-layout">
+                    <div class="video-area">
+                        <div class="video-container-berater">
+                            <div class="remote-video-wrapper">
+                                <video id="remote-video" autoplay playsinline></video>
+                                <div id="remote-audio-only" class="audio-only-indicator hidden">
+                                    <span class="audio-icon">🎧</span>
+                                    <p id="remote-customer-name">Kunde</p>
+                                </div>
+                            </div>
+                            <div class="local-video-wrapper">
+                                <video id="local-video" autoplay playsinline muted></video>
+                            </div>
+                        </div>
+
+                        <div class="call-info-bar">
+                            <div class="caller-details">
+                                <span class="caller-avatar">👤</span>
+                                <span id="active-caller-name"></span>
+                            </div>
+                            <span id="call-timer">00:00</span>
+                        </div>
+
+                        <div class="call-controls">
+                            <button id="toggle-video-btn" class="control-btn active" title="Video ein/aus">
+                                <span class="btn-icon">📹</span>
+                                <span class="btn-label">Video</span>
+                            </button>
+                            <button id="toggle-audio-btn" class="control-btn active" title="Mikrofon ein/aus">
+                                <span class="btn-icon">🎤</span>
+                                <span class="btn-label">Mikro</span>
+                            </button>
+                            <button id="toggle-screen-btn" class="control-btn" title="Bildschirm teilen">
+                                <span class="btn-icon">🖥️</span>
+                                <span class="btn-label">Screen</span>
+                            </button>
+                            <button id="flip-camera-btn" class="control-btn flip-camera" title="Kamera wechseln">
+                                <span class="btn-icon">
+                                    <svg class="flip-camera-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/>
+                                        <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="m18 22-3-3 3-3"/>
+                                        <path d="m6 2 3 3-3 3"/>
+                                    </svg>
+                                </span>
+                                <span class="btn-label">Kamera</span>
+                            </button>
+                            <button id="end-call-btn" class="control-btn end-call" title="Anruf beenden">
+                                <span class="btn-icon">📵</span>
+                                <span class="btn-label">Beenden</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-area" id="chat-area">
+                        <div class="chat-header">
+                            <button id="chat-back-btn" class="chat-back-btn" title="Zurück zum Video">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 12H5"/>
+                                    <path d="m12 19-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <h3>💬 Chat mit <span id="chat-customer-name"></span></h3>
+                            <button class="chat-close-btn mobile-only" id="chat-close-btn">✕</button>
+                        </div>
+                        <div id="chat-messages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Nachricht eingeben...">
+                            <label class="file-upload-btn" title="Datei senden">
+                                📎
+                                <input type="file" id="file-input" hidden>
+                            </label>
+                            <button id="send-message-btn" class="send-btn">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Tools Panel (ARCHIVED - hidden for now) -->
+    <!--
+    <button id="tools-toggle-btn" class="tools-toggle-btn hidden">🛠️</button>
+    
+    <div id="tools-panel" class="tools-panel">
+        <div class="tools-panel-header">
+            <h3>🛠️ Beratungs-Tools</h3>
+            <button class="tools-panel-close" id="tools-panel-close">×</button>
+        </div>
+        
+        <div class="tools-panel-tabs">
+            <button class="tools-tab active" data-tab="drawing">
+                <span class="tab-icon">✏️</span>
+                <span>Zeichnen</span>
+            </button>
+            <button class="tools-tab" data-tab="checklist">
+                <span class="tab-icon">✅</span>
+                <span>Checkliste</span>
+            </button>
+            <button class="tools-tab" data-tab="followup">
+                <span class="tab-icon">📅</span>
+                <span>Follow-up</span>
+            </button>
+        </div>
+        
+        <div class="tools-panel-content">
+            <div class="tools-section active" id="drawing-section">
+                <div class="drawing-toolbar">
+                    <button class="draw-tool-btn active" data-tool="line" title="Linie">📏</button>
+                    <button class="draw-tool-btn" data-tool="measure" title="Messen">📐</button>
+                    <button class="draw-tool-btn" data-tool="arrow" title="Pfeil">➡️</button>
+                    <button class="draw-tool-btn" data-tool="rect" title="Rechteck">⬜</button>
+                    <button class="draw-tool-btn" data-tool="circle" title="Kreis">⭕</button>
+                    <button class="draw-tool-btn" data-tool="freehand" title="Freihand">✏️</button>
+                </div>
+                
+                <h4 style="margin-bottom: 8px; font-size: 13px; color: #666;">Farbe</h4>
+                <div class="color-picker-group">
+                    <div class="color-pick active" data-color="#ff0000" style="background: #ff0000;"></div>
+                    <div class="color-pick" data-color="#00ff00" style="background: #00ff00;"></div>
+                    <div class="color-pick" data-color="#0000ff" style="background: #0000ff;"></div>
+                    <div class="color-pick" data-color="#ffff00" style="background: #ffff00;"></div>
+                    <div class="color-pick" data-color="#ff00ff" style="background: #ff00ff;"></div>
+                    <div class="color-pick" data-color="#ffffff" style="background: #ffffff; border: 1px solid #ccc;"></div>
+                </div>
+                
+                <div class="drawing-actions">
+                    <button class="btn-undo" id="drawing-undo">↩️ Rückgängig</button>
+                    <button class="btn-clear" id="drawing-clear">🗑️ Löschen</button>
+                </div>
+                
+                <p style="margin-top: 16px; font-size: 12px; color: #666;">
+                    💡 Zeichnungen werden live zum Kunden übertragen
+                </p>
+            </div>
+            
+            <div class="tools-section" id="checklist-section">
+                <div class="checklist-container" id="checklist-items">
+                    <div class="checklist-item" data-id="1">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Raumgröße besprochen</span>
+                    </div>
+                    <div class="checklist-item" data-id="2">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Schornstein vorhanden</span>
+                    </div>
+                    <div class="checklist-item" data-id="3">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Abstände zu brennbaren Materialien</span>
+                    </div>
+                    <div class="checklist-item" data-id="4">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Bodenplatte erforderlich</span>
+                    </div>
+                    <div class="checklist-item" data-id="5">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Externe Luftzufuhr möglich</span>
+                    </div>
+                    <div class="checklist-item" data-id="6">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Heizleistung passend</span>
+                    </div>
+                    <div class="checklist-item" data-id="7">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Budget besprochen</span>
+                    </div>
+                    <div class="checklist-item" data-id="8">
+                        <div class="checklist-checkbox">✓</div>
+                        <span class="checklist-text">Lieferzeit erklärt</span>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 20px 0 12px; font-size: 14px;">📝 Notizen</h4>
+                <textarea class="notes-textarea" id="consultation-notes" placeholder="Notizen zur Beratung eingeben..."></textarea>
+            </div>
+            
+            <div class="tools-section" id="followup-section">
+                <div class="followup-section">
+                    <h4>📅 Termin vereinbaren</h4>
+                    <div class="appointment-picker">
+                        <input type="date" id="appointment-date">
+                        <input type="time" id="appointment-time">
+                        <input type="text" id="appointment-note" placeholder="Terminnotiz (z.B. Vor-Ort-Aufmaß)">
+                    </div>
+                </div>
+                
+                <div class="followup-section">
+                    <h4>📌 Nächste Schritte</h4>
+                    <div class="next-steps-list" id="next-steps-list">
+                        <div class="next-step-item">
+                            <input type="checkbox" checked>
+                            <span>Angebot zusenden</span>
+                        </div>
+                        <div class="next-step-item">
+                            <input type="checkbox">
+                            <span>Produktbilder senden</span>
+                        </div>
+                        <div class="next-step-item">
+                            <input type="checkbox">
+                            <span>Vor-Ort-Termin vereinbaren</span>
+                        </div>
+                    </div>
+                    <button class="add-step-btn" id="add-step-btn">+ Schritt hinzufügen</button>
+                </div>
+                
+                <div class="followup-actions">
+                    <button class="btn-send-summary" id="send-summary-btn">
+                        📧 Zusammenfassung senden
+                    </button>
+                    <button class="btn-book-appointment" id="book-appointment-btn">
+                        📅 Termin buchen
+                    </button>
+                    <button class="btn-export-pdf" id="export-pdf-btn">
+                        📄 PDF exportieren
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    -->
+
+    <!-- User Management Modal -->
+    <div id="user-management-modal" class="modal hidden">
+        <div class="modal-content user-management-content">
+            <div class="modal-header">
+                <h2>👥 Nutzerverwaltung</h2>
+                <button class="modal-close" id="close-user-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="user-actions">
+                    <button id="add-user-btn" class="btn btn-primary">
+                        <span>➕</span> Nutzer hinzufügen
+                    </button>
+                </div>
+                <table class="user-table" id="user-table">
+                    <thead>
+                        <tr>
+                            <th>Benutzername</th>
+                            <th>Erstellt am</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="user-form-modal" class="modal hidden">
+        <div class="modal-content user-form-content">
+            <div class="modal-header">
+                <h2 id="user-form-title">Nutzer hinzufügen</h2>
+                <button class="modal-close" id="close-user-form">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-group">
+                    <label for="user-username">Benutzername</label>
+                    <input type="text" id="user-username" placeholder="Benutzername eingeben">
+                </div>
+                <div class="form-group" id="current-password-group" style="display: none;">
+                    <label for="user-current-password">Aktuelles Passwort</label>
+                    <input type="text" id="user-current-password" readonly class="readonly-input">
+                </div>
+                <div class="form-group">
+                    <label for="user-password" id="password-label">Passwort</label>
+                    <input type="password" id="user-password" placeholder="Passwort eingeben">
+                </div>
+                <div class="form-group">
+                    <label for="user-password-confirm" id="password-confirm-label">Passwort bestätigen</label>
+                    <input type="password" id="user-password-confirm" placeholder="Passwort bestätigen">
+                </div>
+                <div id="user-form-error" class="form-error hidden"></div>
+                <div class="form-actions">
+                    <button id="cancel-user-form" class="btn btn-secondary">Abbrechen</button>
+                    <button id="save-user-btn" class="btn btn-primary">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/peerjs.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/drawing-tools.js?v=20260311c"></script>
+    <script src="/js/pdf-generator.js?v=20260311c"></script>
+    <script src="/js/berater.js?v=20260319m"></script>
+</body>
+</html>

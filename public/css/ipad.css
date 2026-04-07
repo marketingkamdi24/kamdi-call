@@ -1,0 +1,1166 @@
+/* ========================================
+   iPad Optimized Styles - kamdi24
+   Supports: iPad Mini, iPad, iPad Air, iPad Pro
+   ======================================== */
+
+/* iPad Detection - Portrait & Landscape */
+@media only screen 
+    and (min-device-width: 768px) 
+    and (max-device-width: 1366px)
+    and (-webkit-min-device-pixel-ratio: 1) {
+    
+    /* Prevent zoom on input focus */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* ========================================
+   iPad Portrait Mode (768px - 1024px width)
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    
+    /* Container */
+    .container {
+        padding: 16px;
+        max-width: 100%;
+    }
+
+    /* Header */
+    .header {
+        padding: 24px 0;
+    }
+
+    .logo-icon {
+        font-size: 2.2rem;
+    }
+
+    .logo h1 {
+        font-size: 2rem;
+    }
+
+    .tagline {
+        font-size: 1rem;
+        margin-top: 6px;
+    }
+
+    /* Login Card */
+    .card {
+        padding: 36px 32px;
+        max-width: 520px;
+        border-radius: 16px;
+    }
+
+    .login-card h2 {
+        font-size: 1.6rem;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+        margin-bottom: 28px;
+    }
+
+    /* Form Elements - Touch Optimized */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group label {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    .form-group input {
+        padding: 16px 18px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        border-width: 2px;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    /* Call Buttons - Large Touch Targets */
+    .call-buttons {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .btn-large {
+        padding: 20px 28px;
+        font-size: 1.15rem;
+        border-radius: 14px;
+        min-height: 64px;
+    }
+
+    .btn-icon {
+        font-size: 1.5rem;
+    }
+
+    /* Berater Status */
+    .berater-status {
+        padding-top: 28px;
+    }
+
+    .berater-status h3 {
+        font-size: 1rem;
+        margin-bottom: 18px;
+    }
+
+    .berater-item {
+        padding: 12px 18px;
+        font-size: 0.95rem;
+        border-radius: 24px;
+    }
+
+    .berater-dot {
+        width: 10px;
+        height: 10px;
+    }
+
+    /* ===== Call Section - iPad Portrait ===== */
+    .call-section {
+        height: calc(100vh - 32px);
+        max-height: none;
+        border-radius: 16px;
+    }
+
+    .call-layout-customer {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .video-area-customer {
+        border-radius: 16px 16px 0 0;
+    }
+
+    /* Video Container */
+    .video-container {
+        aspect-ratio: 4 / 3;
+    }
+
+    .local-video-wrapper {
+        width: 180px;
+        bottom: 16px;
+        right: 16px;
+        border-radius: 12px;
+        border-width: 3px;
+    }
+
+    .remote-video-wrapper.video-small {
+        width: 180px;
+        bottom: 16px;
+        right: 16px;
+        border-radius: 12px;
+    }
+
+    /* Call Info */
+    .call-info {
+        padding: 14px 20px;
+    }
+
+    #call-timer {
+        font-size: 1.2rem;
+        padding: 6px 14px;
+    }
+
+    #call-berater-name {
+        font-size: 1rem;
+    }
+
+    /* Call Controls - Touch Optimized */
+    .call-controls {
+        gap: 16px;
+        padding: 20px 24px;
+        min-height: 100px;
+        background: linear-gradient(180deg, rgba(26, 26, 46, 0.97) 0%, rgba(15, 15, 35, 1) 100%);
+    }
+
+    .control-btn {
+        min-width: 80px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border-width: 2px;
+    }
+
+    .control-btn .btn-icon {
+        font-size: 1.7rem;
+    }
+
+    .control-btn .btn-label {
+        font-size: 0.75rem;
+        margin-top: 6px;
+    }
+
+    /* Chat Panel - iPad Portrait */
+    .chat-panel-customer {
+        border-radius: 0 0 16px 16px;
+        max-height: 280px;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .chat-panel-customer .chat-header {
+        padding: 14px 18px;
+    }
+
+    .chat-panel-customer .chat-header h3 {
+        font-size: 1rem;
+    }
+
+    .chat-panel-customer .chat-messages {
+        padding: 14px;
+    }
+
+    .chat-panel-customer .chat-input-container {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .chat-input-container input {
+        padding: 14px 18px;
+        font-size: 1rem;
+        border-radius: 24px;
+    }
+
+    .file-upload-btn,
+    .send-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .chat-message {
+        max-width: 75%;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        border-radius: 18px;
+    }
+
+    /* Queue & Connecting Sections */
+    .queue-animation {
+        width: 140px;
+        height: 140px;
+        margin-bottom: 28px;
+    }
+
+    .queue-icon {
+        font-size: 3.5rem;
+    }
+
+    .queue-card h2,
+    .connecting-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .queue-position {
+        font-size: 1.4rem;
+        margin: 20px 0 28px;
+    }
+
+    .connecting-animation {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 28px;
+    }
+
+    .connecting-icon {
+        font-size: 3rem;
+    }
+
+    /* Audio Only Indicator */
+    .audio-icon {
+        font-size: 6rem;
+    }
+
+    .audio-only-indicator p {
+        font-size: 1.2rem;
+    }
+
+    /* Footer */
+    .footer {
+        padding: 18px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ========================================
+   iPad Landscape Mode (1024px - 1366px width)
+   ======================================== */
+@media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    
+    /* Container */
+    .container {
+        padding: 16px 24px;
+        max-width: 1300px;
+    }
+
+    /* Header */
+    .header {
+        padding: 20px 0;
+    }
+
+    .logo-icon {
+        font-size: 2.2rem;
+    }
+
+    .logo h1 {
+        font-size: 2rem;
+    }
+
+    .tagline {
+        font-size: 1rem;
+    }
+
+    /* Login Card */
+    .card {
+        padding: 40px 44px;
+        max-width: 560px;
+        border-radius: 16px;
+    }
+
+    .login-card h2 {
+        font-size: 1.7rem;
+    }
+
+    /* Form Elements */
+    .form-group input {
+        padding: 16px 18px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+    }
+
+    /* Call Buttons */
+    .call-buttons {
+        gap: 18px;
+    }
+
+    .btn-large {
+        padding: 20px 32px;
+        font-size: 1.15rem;
+        border-radius: 14px;
+        min-height: 64px;
+    }
+
+    /* Berater Items */
+    .berater-item {
+        padding: 12px 18px;
+        font-size: 0.95rem;
+    }
+
+    /* ===== Call Section - iPad Landscape ===== */
+    .call-section {
+        height: calc(100vh - 32px);
+        max-height: none;
+        border-radius: 16px;
+    }
+
+    .call-layout-customer {
+        grid-template-columns: 1fr 380px;
+        grid-template-rows: 1fr;
+    }
+
+    .video-area-customer {
+        border-radius: 16px 0 0 16px;
+    }
+
+    /* Video Container */
+    .video-container {
+        aspect-ratio: 16 / 9;
+        flex: 1;
+    }
+
+    .local-video-wrapper {
+        width: 200px;
+        bottom: 20px;
+        right: 20px;
+        border-radius: 12px;
+        border-width: 3px;
+    }
+
+    .remote-video-wrapper.video-small {
+        width: 200px;
+        bottom: 20px;
+        right: 20px;
+        border-radius: 12px;
+    }
+
+    /* Call Info */
+    .call-info {
+        padding: 14px 24px;
+    }
+
+    #call-timer {
+        font-size: 1.3rem;
+        padding: 6px 16px;
+    }
+
+    /* Call Controls */
+    .call-controls {
+        gap: 20px;
+        padding: 18px 28px;
+        min-height: 95px;
+    }
+
+    .control-btn {
+        min-width: 85px;
+        padding: 14px 18px;
+        border-radius: 14px;
+    }
+
+    .control-btn .btn-icon {
+        font-size: 1.6rem;
+    }
+
+    .control-btn .btn-label {
+        font-size: 0.75rem;
+    }
+
+    /* Chat Panel - iPad Landscape */
+    .chat-panel-customer {
+        border-radius: 0 16px 16px 0;
+        border-left: 2px solid #e2e8f0;
+        max-height: none;
+    }
+
+    .chat-panel-customer .chat-header {
+        padding: 16px 20px;
+        border-radius: 0 16px 0 0;
+    }
+
+    .chat-panel-customer .chat-header h3 {
+        font-size: 1.05rem;
+    }
+
+    .chat-panel-customer .chat-messages {
+        padding: 16px;
+    }
+
+    .chat-panel-customer .chat-input-container {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .chat-input-container input {
+        padding: 14px 20px;
+        font-size: 1rem;
+    }
+
+    .file-upload-btn,
+    .send-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.4rem;
+    }
+
+    .chat-message {
+        max-width: 80%;
+        padding: 12px 18px;
+        font-size: 0.95rem;
+    }
+
+    /* Audio Only */
+    .audio-icon {
+        font-size: 5.5rem;
+    }
+}
+
+/* ========================================
+   iPad Pro 12.9" Specific (1024px+ width)
+   ======================================== */
+@media screen and (min-width: 1024px) and (max-width: 1400px) {
+    
+    .call-layout-customer {
+        grid-template-columns: 1fr 400px;
+    }
+
+    .chat-panel-customer .chat-header {
+        padding: 18px 22px;
+    }
+
+    .chat-panel-customer .chat-messages {
+        padding: 18px;
+    }
+
+    .chat-message {
+        padding: 14px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* ========================================
+   Touch Optimizations for All iPads
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1366px) {
+    
+    /* Larger touch targets */
+    button, 
+    .btn,
+    .control-btn,
+    input[type="submit"],
+    input[type="button"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Better tap feedback */
+    .btn:active,
+    .control-btn:active {
+        transform: scale(0.96);
+        opacity: 0.9;
+    }
+
+    /* Prevent text selection on buttons */
+    button,
+    .btn,
+    .control-btn {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Smooth scrolling */
+    .chat-messages,
+    .berater-list {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+
+    /* Better focus states for touch */
+    input:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.15);
+    }
+
+    /* Hide scrollbars but keep functionality */
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 3px;
+    }
+
+    /* Prevent unwanted zooming */
+    * {
+        touch-action: manipulation;
+    }
+}
+
+/* ========================================
+   Tools Panel - iPad Optimizations
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+    
+    .tools-panel {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .tools-toggle-btn {
+        width: 56px;
+        height: 56px;
+        font-size: 26px;
+    }
+
+    .tools-toggle-btn.panel-open {
+        right: 440px;
+    }
+
+    .tools-tab {
+        padding: 14px 10px;
+    }
+
+    .tools-tab .tab-icon {
+        font-size: 20px;
+    }
+
+    .tools-panel-content {
+        padding: 24px;
+    }
+
+    .draw-tool-btn {
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
+    }
+
+    .color-pick {
+        width: 36px;
+        height: 36px;
+    }
+
+    .checklist-item {
+        padding: 16px;
+    }
+
+    .checklist-checkbox {
+        width: 28px;
+        height: 28px;
+    }
+
+    .checklist-text {
+        font-size: 15px;
+    }
+
+    .notes-textarea {
+        min-height: 180px;
+        font-size: 15px;
+        padding: 16px;
+    }
+
+    .followup-actions button {
+        padding: 16px;
+        font-size: 15px;
+    }
+}
+
+@media screen and (min-width: 1024px) and (max-width: 1366px) {
+    
+    .tools-panel {
+        width: 420px;
+    }
+
+    .tools-toggle-btn.panel-open {
+        right: 440px;
+    }
+}
+
+/* ========================================
+   Customer Config Preview - iPad
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1366px) {
+    
+    .customer-config-preview {
+        width: 360px;
+        bottom: 24px;
+        left: 24px;
+        border-radius: 20px;
+    }
+
+    .preview-header {
+        padding: 18px 20px;
+    }
+
+    .preview-header h4 {
+        font-size: 16px;
+    }
+
+    .preview-content {
+        padding: 20px;
+    }
+
+    .preview-model {
+        padding: 24px;
+        border-radius: 16px;
+    }
+
+    .preview-model .model-icon {
+        font-size: 72px;
+    }
+
+    .preview-model .model-name {
+        font-size: 20px;
+    }
+
+    .preview-details {
+        font-size: 14px;
+    }
+
+    .preview-details .detail-row {
+        padding: 10px 0;
+    }
+
+    .preview-price {
+        font-size: 22px;
+        margin-top: 16px;
+    }
+}
+
+/* ========================================
+   Appointment Notification - iPad
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1366px) {
+    
+    .appointment-notification {
+        width: 400px;
+        top: 24px;
+        right: 24px;
+        border-radius: 20px;
+    }
+
+    .notification-content {
+        padding: 24px;
+        gap: 18px;
+    }
+
+    .notification-icon {
+        font-size: 36px;
+    }
+
+    .notification-text h4 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .notification-text p {
+        font-size: 15px;
+    }
+
+    .notification-close {
+        font-size: 24px;
+        top: 12px;
+        right: 12px;
+    }
+}
+
+/* ========================================
+   iPad Split View / Slide Over Support
+   ======================================== */
+@media screen and (min-width: 320px) and (max-width: 500px) {
+    /* iPad Split View (1/3 width) */
+    
+    .call-layout-customer {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .chat-panel-customer {
+        max-height: 180px;
+    }
+
+    .control-btn .btn-label {
+        display: none;
+    }
+}
+
+/* ========================================
+   Safe Area Insets (for newer iPads)
+   ======================================== */
+@supports (padding: env(safe-area-inset-bottom)) {
+    @media screen and (min-width: 768px) and (max-width: 1366px) {
+        
+        .container {
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+
+        .call-controls {
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+
+        .chat-panel-customer .chat-input-container {
+            padding-bottom: max(14px, env(safe-area-inset-bottom));
+        }
+    }
+}
+
+/* ========================================
+   High Contrast Mode Support
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1366px) and (prefers-contrast: high) {
+    
+    .control-btn {
+        border-width: 3px;
+    }
+
+    .form-group input {
+        border-width: 3px;
+    }
+
+    .chat-message {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ========================================
+   Reduced Motion Support
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1366px) and (prefers-reduced-motion: reduce) {
+    
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .btn:active,
+    .control-btn:active {
+        transform: none;
+    }
+}
+
+/* ========================================
+   BERATER DASHBOARD - iPad Optimizations
+   ======================================== */
+
+/* iPad Portrait - Berater Dashboard */
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    
+    .dashboard-container {
+        grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar {
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .sidebar .logo h1 {
+        font-size: 1.6rem;
+    }
+
+    .dashboard-label {
+        font-size: 0.9rem;
+    }
+
+    .berater-profile {
+        padding: 18px;
+    }
+
+    .profile-avatar {
+        font-size: 2.8rem;
+    }
+
+    .berater-profile h3 {
+        font-size: 1.15rem;
+    }
+
+    .nav-btn {
+        padding: 14px 18px;
+        font-size: 1rem;
+        border-radius: 10px;
+        min-height: 50px;
+    }
+
+    .queue-item {
+        padding: 14px 16px;
+        font-size: 0.95rem;
+        border-radius: 10px;
+    }
+
+    .main-area {
+        padding: 24px;
+    }
+
+    /* Login Card - iPad Berater */
+    .berater-login-section .login-card {
+        padding: 36px 32px;
+    }
+
+    .berater-login-section h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Incoming Call - iPad */
+    .incoming-call-card {
+        padding: 44px 40px;
+        border-radius: 24px;
+    }
+
+    .ring-animation {
+        width: 130px;
+        height: 130px;
+    }
+
+    .phone-icon {
+        font-size: 3.2rem;
+    }
+
+    .incoming-call-card h2 {
+        font-size: 1.4rem;
+    }
+
+    .caller-info {
+        font-size: 1.2rem;
+        margin-bottom: 36px;
+    }
+
+    .incoming-call-actions {
+        gap: 20px;
+    }
+
+    .incoming-call-actions .btn {
+        padding: 16px 28px;
+        font-size: 1.05rem;
+        min-height: 56px;
+    }
+
+    /* Call Section - iPad Portrait Berater */
+    .call-section {
+        height: calc(100vh - 48px);
+    }
+
+    .call-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .video-area {
+        border-radius: 16px 16px 0 0;
+    }
+
+    .video-container-berater .local-video-wrapper {
+        width: 160px;
+        bottom: 16px;
+        right: 16px;
+        border-radius: 12px;
+    }
+
+    .video-container-berater .remote-video-wrapper.video-small {
+        width: 160px;
+        bottom: 16px;
+        right: 16px;
+    }
+
+    .call-info-bar {
+        padding: 14px 20px;
+    }
+
+    .call-controls {
+        gap: 18px;
+        padding: 20px 24px;
+        min-height: 100px;
+    }
+
+    .control-btn {
+        min-width: 78px;
+        padding: 14px 16px;
+    }
+
+    /* Chat Area - iPad Portrait Berater */
+    .chat-area {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 380px;
+        height: 100vh;
+        border-radius: 0;
+        transform: translateX(100%);
+        transition: transform 0.3s;
+        z-index: 100;
+    }
+
+    .chat-area.open {
+        transform: translateX(0);
+    }
+
+    .chat-area .chat-header {
+        padding: 18px 22px;
+    }
+
+    .chat-area .chat-messages {
+        padding: 18px;
+    }
+
+    .chat-area .chat-input-container {
+        padding: 16px 20px;
+    }
+
+    /* Mobile Chat Button for iPad Portrait */
+    .mobile-chat-btn {
+        display: flex !important;
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #1d3557, #457b9d);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.6rem;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 99;
+    }
+}
+
+/* iPad Landscape - Berater Dashboard */
+@media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    
+    .dashboard-container {
+        grid-template-columns: 300px 1fr;
+    }
+
+    .sidebar {
+        padding: 22px;
+        gap: 22px;
+    }
+
+    .sidebar .logo h1 {
+        font-size: 1.7rem;
+    }
+
+    .berater-profile {
+        padding: 20px;
+    }
+
+    .profile-avatar {
+        font-size: 3rem;
+    }
+
+    .nav-btn {
+        padding: 14px 18px;
+        font-size: 1rem;
+        min-height: 52px;
+    }
+
+    .queue-item {
+        padding: 14px 16px;
+        font-size: 0.95rem;
+    }
+
+    .main-area {
+        padding: 28px;
+    }
+
+    /* Login Card - iPad Landscape Berater */
+    .berater-login-section .login-card {
+        padding: 40px 44px;
+        max-width: 480px;
+    }
+
+    /* Incoming Call - iPad Landscape */
+    .incoming-call-card {
+        padding: 48px 52px;
+    }
+
+    .ring-animation {
+        width: 140px;
+        height: 140px;
+    }
+
+    .incoming-call-actions .btn {
+        padding: 18px 32px;
+        min-height: 58px;
+    }
+
+    /* Call Section - iPad Landscape Berater */
+    .call-section {
+        height: calc(100vh - 56px);
+    }
+
+    .call-layout {
+        grid-template-columns: 1fr 380px;
+    }
+
+    .video-area {
+        border-radius: 16px 0 0 16px;
+    }
+
+    .video-container-berater .local-video-wrapper {
+        width: 180px;
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .video-container-berater .remote-video-wrapper.video-small {
+        width: 180px;
+    }
+
+    .call-info-bar {
+        padding: 16px 24px;
+    }
+
+    .call-controls {
+        gap: 20px;
+        padding: 18px 28px;
+        min-height: 95px;
+    }
+
+    /* Chat Area - iPad Landscape Berater */
+    .chat-area {
+        position: relative;
+        width: auto;
+        height: auto;
+        transform: none;
+        border-radius: 0 16px 16px 0;
+    }
+
+    .chat-area .chat-header {
+        padding: 20px 24px;
+        border-radius: 0 16px 0 0;
+    }
+
+    .chat-area .chat-messages {
+        padding: 20px;
+    }
+
+    .chat-area .chat-input-container {
+        padding: 18px 22px;
+    }
+
+    .mobile-chat-btn {
+        display: none !important;
+    }
+}
+
+/* iPad Pro 12.9" Landscape - Berater */
+@media screen and (min-width: 1200px) and (max-width: 1400px) {
+    
+    .dashboard-container {
+        grid-template-columns: 320px 1fr;
+    }
+
+    .call-layout {
+        grid-template-columns: 1fr 420px;
+    }
+
+    .video-container-berater .local-video-wrapper {
+        width: 200px;
+    }
+}
+
+/* ========================================
+   Camera Flip Button - iPad Optimizations
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1366px) {
+    
+    /* Show flip camera button on iPad */
+    .control-btn.flip-camera {
+        display: flex !important;
+        min-width: 80px;
+        padding: 14px 18px;
+    }
+
+    .control-btn.flip-camera .flip-camera-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .control-btn.flip-camera .btn-label {
+        font-size: 0.75rem;
+    }
+
+    /* Larger touch target for iPad */
+    .control-btn.flip-camera:active {
+        transform: scale(0.92);
+    }
+}
+
+/* iPad Portrait - Flip Camera */
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    
+    .control-btn.flip-camera {
+        min-width: 75px;
+        padding: 12px 14px;
+    }
+
+    .control-btn.flip-camera .flip-camera-icon {
+        width: 24px;
+        height: 24px;
+    }
+}

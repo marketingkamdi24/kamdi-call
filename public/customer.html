@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>kamdi24 - Kundenberatung</title>
+    <link rel="stylesheet" href="/css/styles.css?v=1740600000">
+    <link rel="stylesheet" href="/css/tools.css?v=1740600000">
+    <link rel="stylesheet" href="/css/ipad.css?v=1740600000">
+    <link rel="stylesheet" href="/css/fonts.css">
+    
+    <!-- Critical iPhone/Mobile Styles - Inline for guaranteed loading -->
+    <style>
+        /* Mobile: Show flip camera button */
+        @media (max-width: 1024px) {
+            .control-btn.flip-camera {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            .chat-back-btn {
+                display: flex !important;
+                visibility: visible !important;
+            }
+            /* Compact call control buttons on mobile/tablet */
+            .call-controls {
+                gap: 8px !important;
+                padding: 10px 8px !important;
+                min-height: 65px !important;
+            }
+            .control-btn {
+                min-width: 48px !important;
+                max-width: 60px !important;
+                padding: 8px 6px !important;
+                flex: 0 1 auto !important;
+                border-radius: 12px !important;
+            }
+            .control-btn .btn-icon {
+                font-size: 1.2rem !important;
+            }
+            .control-btn .btn-label {
+                font-size: 0.5rem !important;
+                margin-top: 2px !important;
+            }
+        }
+        
+        /* iPhone specific */
+        @media (max-width: 480px) {
+            .chat-panel-customer .chat-input-container {
+                display: flex !important;
+                min-height: 60px !important;
+                padding: 10px 12px !important;
+                background: #fff !important;
+            }
+            .chat-panel-customer .chat-input-container input {
+                display: block !important;
+                flex: 1 !important;
+                font-size: 16px !important;
+                height: 40px !important;
+                min-height: 40px !important;
+            }
+            .chat-panel-customer .send-btn,
+            .chat-panel-customer .file-upload-btn {
+                display: flex !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🔥</span>
+                <h1>kamdi<span class="accent">24</span></h1>
+            </div>
+            <p class="tagline">Persönliche Beratung - Direkt und Unkompliziert</p>
+        </header>
+
+        <main class="main-content">
+            <section id="login-section" class="card login-card">
+                <h2>Starten Sie Ihre Beratung</h2>
+                <p class="subtitle">Verbinden Sie sich direkt mit unseren Experten</p>
+                
+                <div class="form-group">
+                    <label for="customer-name">Ihr Name</label>
+                    <input type="text" id="customer-name" placeholder="Geben Sie Ihren Namen ein" autocomplete="off">
+                </div>
+
+                <div class="call-buttons">
+                    <button id="video-call-btn" class="btn btn-primary btn-large">
+                        <span class="btn-icon">📹</span>
+                        <span>Videoanruf</span>
+                    </button>
+                    <button id="audio-call-btn" class="btn btn-secondary btn-large">
+                        <span class="btn-icon">📞</span>
+                        <span>Audioanruf</span>
+                    </button>
+                </div>
+
+                <div class="berater-status">
+                    <h3>Verfügbare Berater</h3>
+                    <div id="berater-list" class="berater-list">
+                        <p class="loading">Lade Berater...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="queue-section" class="card queue-card hidden">
+                <div class="queue-content">
+                    <div class="queue-animation">
+                        <div class="ripple"></div>
+                        <span class="queue-icon">📞</span>
+                    </div>
+                    <h2>Bitte warten...</h2>
+                    <p class="queue-message">Sie befinden sich in der Warteschlange</p>
+                    <div class="queue-position">
+                        Position: <span id="queue-position-number">1</span>
+                    </div>
+                    <button id="cancel-call-btn" class="btn btn-danger">Anruf abbrechen</button>
+                </div>
+            </section>
+
+            <section id="connecting-section" class="card connecting-card hidden">
+                <div class="connecting-content">
+                    <div class="connecting-animation">
+                        <div class="pulse"></div>
+                        <span class="connecting-icon">🔗</span>
+                    </div>
+                    <h2>Verbindung wird hergestellt...</h2>
+                    <p>Berater: <span id="connecting-berater-name"></span></p>
+                </div>
+            </section>
+
+            <section id="call-section" class="call-section hidden">
+                <div class="call-layout-customer">
+                    <div class="video-area-customer">
+                        <div class="video-container">
+                            <div class="remote-video-wrapper">
+                                <video id="remote-video" autoplay playsinline></video>
+                                <div id="remote-audio-only" class="audio-only-indicator hidden">
+                                    <span class="audio-icon">🎧</span>
+                                    <p id="remote-name">Berater</p>
+                                </div>
+                            </div>
+                            <div class="local-video-wrapper">
+                                <video id="local-video" autoplay playsinline muted></video>
+                            </div>
+                        </div>
+
+                        <div class="call-info">
+                            <span id="call-timer">00:00</span>
+                            <span id="call-berater-name"></span>
+                        </div>
+
+                        <div class="call-controls">
+                            <button id="toggle-video-btn" class="control-btn active" title="Video ein/aus">
+                                <span class="btn-icon">📹</span>
+                                <span class="btn-label">Video</span>
+                            </button>
+                            <button id="toggle-audio-btn" class="control-btn active" title="Mikrofon ein/aus">
+                                <span class="btn-icon">🎤</span>
+                                <span class="btn-label">Mikro</span>
+                            </button>
+                            <button id="toggle-screen-btn" class="control-btn" title="Bildschirm teilen">
+                                <span class="btn-icon">🖥️</span>
+                                <span class="btn-label">Bildschirm</span>
+                            </button>
+                            <button id="flip-camera-btn" class="control-btn flip-camera" title="Kamera wechseln">
+                                <span class="btn-icon">
+                                    <svg class="flip-camera-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/>
+                                        <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="m18 22-3-3 3-3"/>
+                                        <path d="m6 2 3 3-3 3"/>
+                                    </svg>
+                                </span>
+                                <span class="btn-label">Kamera</span>
+                            </button>
+                            <button id="end-call-btn" class="control-btn end-call" title="Anruf beenden">
+                                <span class="btn-icon">📵</span>
+                                <span class="btn-label">Beenden</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="chat-panel" class="chat-panel-customer">
+                        <div class="chat-header">
+                            <button id="chat-back-btn" class="chat-back-btn" title="Zurück zum Video">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 12H5"/>
+                                    <path d="m12 19-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <h3>💬 Chat mit Berater</h3>
+                        </div>
+                        <div id="chat-messages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Nachricht eingeben...">
+                            <label class="file-upload-btn" title="Datei senden">
+                                📎
+                                <input type="file" id="file-input" hidden>
+                            </label>
+                            <button id="send-message-btn" class="send-btn">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="call-ended-section" class="card call-ended-card hidden">
+                <div class="call-ended-content">
+                    <span class="ended-icon">✅</span>
+                    <h2>Anruf beendet</h2>
+                    <p>Vielen Dank für Ihre Anfrage!</p>
+                    <button id="new-call-btn" class="btn btn-primary">Neuer Anruf</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Product Configuration Preview (from Berater) -->
+        <div id="config-preview" class="customer-config-preview">
+            <div class="preview-header">
+                <h4>🔥 Kamin-Konfiguration</h4>
+            </div>
+            <div class="preview-content">
+                <div class="preview-brand">
+                    <span class="brand-label">Marke:</span>
+                    <span class="brand-value" id="preview-brand">-</span>
+                </div>
+                <div class="preview-model">
+                    <div class="model-icon">🔥</div>
+                    <div class="model-info">
+                        <div class="model-name" id="preview-model-name">-</div>
+                        <div class="model-power" id="preview-model-power"></div>
+                    </div>
+                </div>
+                <div class="preview-details">
+                    <div class="detail-row">
+                        <span>Farbe:</span>
+                        <span id="preview-color">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Verkleidung:</span>
+                        <span id="preview-cladding">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Zubehör:</span>
+                        <span id="preview-accessories">-</span>
+                    </div>
+                </div>
+                <div class="preview-price" id="preview-price">0 €</div>
+            </div>
+        </div>
+
+        <!-- Appointment Notification -->
+        <div id="appointment-notification" class="appointment-notification hidden">
+            <div class="notification-content">
+                <span class="notification-icon">📅</span>
+                <div class="notification-text">
+                    <h4>Termin gebucht!</h4>
+                    <p id="appointment-details"></p>
+                </div>
+                <button class="notification-close" id="close-appointment-notification">×</button>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2024 kamdi24 - Ihr Experte für Kamine und Öfen</p>
+            <p style="margin-top: 4px; font-size: 12px;"><a href="/datenschutz.html" style="color: #888; text-decoration: none;">Datenschutz</a> | <a href="/impressum.html" style="color: #888; text-decoration: none;">Impressum</a></p>
+        </footer>
+    </div>
+
+    <script src="/js/peerjs.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/drawing-tools.js?v=20260128"></script>
+    <script src="/js/customer.js?v=20260324c"></script>
+</body>
+</html>

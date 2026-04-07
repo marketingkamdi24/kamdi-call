@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenschutzerklärung - kamdi24 Videoberatung</title>
+    <link rel="stylesheet" href="/css/fonts.css">
+    <style>
+        :root {
+            --primary: #e63946;
+            --primary-dark: #c1121f;
+            --secondary: #457b9d;
+            --accent: #f77f00;
+            --text: #1d3557;
+            --text-light: #6c757d;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: #ffffff;
+            --card-radius: 16px;
+            --card-shadow: 0 10px 40px rgba(0,0,0,0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* ── Hero header ── */
+        .dse-hero {
+            text-align: center;
+            padding: 48px 20px 32px;
+            background: var(--bg-gradient);
+        }
+        .dse-hero .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .dse-hero .logo-icon { font-size: 2rem; }
+        .dse-hero .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .dse-hero .logo h1 .accent { color: var(--accent); }
+        .dse-hero .page-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        .dse-hero .page-sub {
+            color: rgba(255,255,255,.75);
+            font-size: .95rem;
+        }
+
+        /* ── Card wrapper ── */
+        .dse-wrapper {
+            max-width: 860px;
+            margin: -20px auto 0;
+            padding: 0 16px 60px;
+            position: relative;
+            z-index: 1;
+        }
+        .dse-card {
+            background: var(--card-bg);
+            border-radius: var(--card-radius);
+            box-shadow: var(--card-shadow);
+            padding: 44px 40px 52px;
+        }
+
+        /* ── Back link ── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: .875rem;
+            font-weight: 500;
+            margin-bottom: 28px;
+            transition: color .2s;
+        }
+        .back-link:hover { color: var(--primary); }
+        .back-link svg { width: 16px; height: 16px; }
+
+        /* ── Summary box ── */
+        .dse-summary {
+            background: linear-gradient(135deg, #f0f4ff 0%, #f5f0ff 100%);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 36px;
+            border: 1px solid rgba(102,126,234,.15);
+        }
+        .dse-summary strong {
+            color: var(--secondary);
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .dse-summary p {
+            font-size: .875rem;
+            line-height: 1.6;
+            color: var(--text-light);
+        }
+
+        /* ── Sections ── */
+        .dse-section {
+            margin-bottom: 32px;
+        }
+        .dse-section:last-child { margin-bottom: 0; }
+
+        .dse-section h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(102,126,234,.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dse-section h2 .num {
+            background: var(--secondary);
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .dse-section h3 {
+            font-size: .95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 18px 0 8px;
+        }
+
+        .dse-section p,
+        .dse-section li {
+            font-size: .875rem;
+            line-height: 1.7;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .dse-section ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        .dse-section ul li { margin-bottom: 4px; }
+
+        .dse-section a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .dse-section a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* ── Tables ── */
+        .dse-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 12px 0 16px;
+            font-size: .8rem;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+        .dse-table th {
+            background: #f8f9fc;
+            color: var(--text);
+            font-weight: 600;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .dse-table td {
+            padding: 10px 14px;
+            vertical-align: top;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+            line-height: 1.5;
+        }
+        .dse-table tr:last-child td { border-bottom: none; }
+        .dse-table tr:hover td { background: #fafbff; }
+
+        /* ── Contact card ── */
+        .contact-block {
+            background: #f8f9fc;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 10px 0;
+            font-size: .875rem;
+            line-height: 1.7;
+            border: 1px solid #e9ecef;
+        }
+        .contact-block strong {
+            color: var(--text);
+        }
+
+        /* ── Footer ── */
+        .dse-footer {
+            text-align: center;
+            padding: 0 20px 32px;
+            color: var(--text-light);
+            font-size: .8rem;
+        }
+        .dse-footer a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+        .dse-footer a:hover { color: var(--primary); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .dse-card { padding: 28px 20px 36px; }
+            .dse-hero { padding: 32px 16px 0; }
+            .dse-hero .page-title { font-size: 1.3rem; }
+            .dse-table { font-size: .75rem; }
+            .dse-table th, .dse-table td { padding: 8px 10px; }
+            .dse-section h2 { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <div class="dse-hero">
+        <div class="logo">
+            <span class="logo-icon">🔥</span>
+            <h1>kamdi<span class="accent">24</span></h1>
+        </div>
+        <div class="page-title">Datenschutzerklärung</div>
+        <div class="page-sub">kamdi24 Videoberatung &middot; Stand: März 2026</div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="dse-wrapper">
+        <div class="dse-card">
+            <a href="/" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 011.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+                Zurück zur Startseite
+            </a>
+
+            <!-- Summary -->
+            <div class="dse-summary">
+                <strong>Auf einen Blick</strong>
+                <p>Video- und Audiodaten werden zu keinem Zeitpunkt auf unseren Servern gespeichert oder aufgezeichnet. 
+                Es werden keine Cookies gesetzt, kein Tracking durchgeführt und keine externen Dienste eingebunden.</p>
+            </div>
+
+            <!-- §1 -->
+            <div class="dse-section">
+                <h2><span class="num">1</span> Verantwortlicher</h2>
+                <div class="contact-block">
+                    <strong>kamdi24 GmbH</strong><br>
+                    Breitscheidstraße 78<br>
+                    01237 Dresden, Deutschland<br><br>
+                    Telefon: 0351 / 25 25 250<br>
+                    E-Mail: <a href="mailto:marketing@kamdi24.de">marketing@kamdi24.de</a><br>
+                    Web: <a href="https://www.kamdi24.de" target="_blank" rel="noopener">www.kamdi24.de</a>
+                </div>
+            </div>
+
+            <!-- §2 -->
+            <div class="dse-section">
+                <h2><span class="num">2</span> Allgemeines zur Datenverarbeitung</h2>
+                <p>
+                    Diese Anwendung (&bdquo;kamdi24 Videoberatung&ldquo;) ermöglicht eine Echtzeit-Videoberatung zwischen Kunden und Beratern der kamdi24 GmbH.
+                    Die Kommunikation (Video, Audio, Bildschirmfreigabe) erfolgt dabei verschlüsselt und <strong>direkt zwischen den Endgeräten</strong> (Peer-to-Peer via WebRTC).
+                    Unser Server dient ausschließlich der Vermittlung der Verbindung (Signaling) und der Weiterleitung von Chat-Nachrichten.
+                </p>
+            </div>
+
+            <!-- §3 -->
+            <div class="dse-section">
+                <h2><span class="num">3</span> Datenverarbeitungen im Detail</h2>
+
+                <h3>3.1 Server-Logs</h3>
+                <p>Beim Aufruf dieser Anwendung erhebt unser Hosting-Provider automatisch technische Zugriffsdaten:</p>
+                <table class="dse-table">
+                    <tr><th>Daten</th><th>Rechtsgrundlage</th><th>Speicherdauer</th></tr>
+                    <tr>
+                        <td>IP-Adresse (gekürzt), Datum/Uhrzeit, HTTP-Status, Datenmenge, Browser, Betriebssystem</td>
+                        <td>Art. 6 Abs. 1 lit. f DSGVO<br>(berechtigtes Interesse)</td>
+                        <td>Max. 30 Tage, dann automatische Löschung</td>
+                    </tr>
+                </table>
+                <p>Diese Daten werden nicht mit anderen Datenquellen zusammengeführt.</p>
+
+                <h3>3.2 Eingabe Ihres Namens</h3>
+                <table class="dse-table">
+                    <tr><th>Verarbeitung</th><th>Rechtsgrundlage</th><th>Speicherdauer</th></tr>
+                    <tr>
+                        <td>Anzeigename im Arbeitsspeicher während der Sitzung</td>
+                        <td>Art. 6 Abs. 1 lit. b DSGVO<br>(Vertragsanbahnung)</td>
+                        <td>Nur im RAM &ndash; <strong>sofort gelöscht</strong> bei Sitzungsende</td>
+                    </tr>
+                </table>
+                <p>Der Name wird <strong>nicht</strong> an andere Kunden weitergegeben.</p>
+
+                <h3>3.3 WebRTC-Signaling</h3>
+                <p>
+                    Für den Peer-to-Peer-Verbindungsaufbau werden technische Parameter (SDP, ICE-Candidates, ggf. IP-Adresse) über unseren selbst gehosteten PeerJS-Server ausgetauscht.
+                    Diese Daten existieren nur <strong>transient im RAM</strong> und werden nach Verbindungsaufbau nicht weiter gespeichert.
+                </p>
+
+                <h3>3.4 Video- und Audiodaten</h3>
+                <ul>
+                    <li><strong>Peer-to-Peer:</strong> Direkte Übertragung zwischen den Endgeräten, kein Server-Transit</li>
+                    <li><strong>DTLS-SRTP verschlüsselt:</strong> Ende-zu-Ende, Entschlüsselung durch Server technisch unmöglich</li>
+                    <li><strong>Keine Aufzeichnung</strong> &ndash; weder auf Server noch in der Anwendung</li>
+                </ul>
+                <p><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. a DSGVO (Einwilligung durch Kamera-/Mikrofonfreigabe im Browser)</p>
+
+                <h3>3.5 Bildschirmfreigabe</h3>
+                <p>Aktive Freigabe durch Nutzer erforderlich. Übertragung erfolgt per P2P und wird <strong>nicht aufgezeichnet</strong>.</p>
+
+                <h3>3.6 Chat-Nachrichten</h3>
+                <table class="dse-table">
+                    <tr><th>Verarbeitung</th><th>Rechtsgrundlage</th><th>Speicherdauer</th></tr>
+                    <tr>
+                        <td>Weiterleitung via Server (Socket.IO)</td>
+                        <td>Art. 6 Abs. 1 lit. b DSGVO</td>
+                        <td><strong>Keine dauerhafte Speicherung</strong> &ndash; nur RAM, Löschung bei Sitzungsende</td>
+                    </tr>
+                </table>
+
+                <h3>3.7 Dateiübertragung</h3>
+                <p>Dateien werden über WebRTC DataChannel direkt zwischen den Endgeräten übertragen und <strong>nicht auf dem Server gespeichert</strong>.</p>
+
+                <h3>3.8 WebSocket-Verbindung</h3>
+                <p>Für Echtzeitkommunikation (Warteschlange, Signalisierung, Chat). Keine dauerhafte Speicherung personenbezogener Daten. Automatische Bereinigung bei Verbindungsende.</p>
+            </div>
+
+            <!-- §4 -->
+            <div class="dse-section">
+                <h2><span class="num">4</span> Kamera und Mikrofon</h2>
+                <p>Ihr Browser fragt Sie <strong>vor dem ersten Zugriff</strong> um Erlaubnis. Sie haben die Wahl:</p>
+                <ul>
+                    <li><strong>Videoanruf:</strong> Kamera + Mikrofon (Kamera jederzeit deaktivierbar)</li>
+                    <li><strong>Audioanruf:</strong> Nur Mikrofon</li>
+                </ul>
+                <p>Die Freigabe können Sie jederzeit in Ihren Browser-Einstellungen oder über die Buttons in der Anwendung widerrufen.</p>
+            </div>
+
+            <!-- §5 -->
+            <div class="dse-section">
+                <h2><span class="num">5</span> Cookies, Tracking &amp; lokale Speicherung</h2>
+                <p>Diese Anwendung verwendet:</p>
+                <ul>
+                    <li><strong>Keine Cookies</strong> (weder technische noch Tracking-Cookies)</li>
+                    <li><strong>Kein localStorage / sessionStorage</strong></li>
+                    <li><strong>Kein Google Analytics, Matomo, Pixel oder sonstiges Tracking</strong></li>
+                    <li><strong>Keine Social-Media-Plugins oder Fingerprinting</strong></li>
+                </ul>
+                <p>Ein Cookie-Banner ist daher <strong>nicht erforderlich</strong> (§ 25 Abs. 2 TDDDG).</p>
+            </div>
+
+            <!-- §6 -->
+            <div class="dse-section">
+                <h2><span class="num">6</span> Externe Ressourcen</h2>
+                <p>Diese Anwendung lädt <strong>keine externen Ressourcen von Drittanbietern</strong>:</p>
+                <ul>
+                    <li><strong>Schriftarten</strong> (Inter) &ndash; lokal gehostet (kein Google Fonts)</li>
+                    <li><strong>JavaScript-Bibliotheken</strong> (PeerJS) &ndash; lokal gehostet (kein CDN)</li>
+                </ul>
+                <p>Keine Übermittlung Ihrer IP-Adresse an Drittanbieter beim Seitenaufruf.</p>
+            </div>
+
+            <!-- §7 -->
+            <div class="dse-section">
+                <h2><span class="num">7</span> Sicherheitsmaßnahmen</h2>
+                <p>Technische und organisatorische Maßnahmen gemäß Art. 32 DSGVO:</p>
+                <table class="dse-table">
+                    <tr><th>Maßnahme</th><th>Umsetzung</th></tr>
+                    <tr><td><strong>Transportverschlüsselung</strong></td><td>Automatischer HTTPS-Redirect (TLS 1.2+), WebSocket über WSS</td></tr>
+                    <tr><td><strong>Medienverschlüsselung</strong></td><td>DTLS-SRTP für alle Video-/Audio-/Screenshare-Streams (E2E)</td></tr>
+                    <tr><td><strong>Passwort-Hashing</strong></td><td>bcrypt (Kostenfaktor 10), keine Klartext-Speicherung</td></tr>
+                    <tr><td><strong>Authentifizierung</strong></td><td>Session-Token (UUID v4), serverseitig erzeugt</td></tr>
+                    <tr><td><strong>Brute-Force-Schutz</strong></td><td>Max. 5 Login-Versuche / 15 Min pro IP</td></tr>
+                    <tr><td><strong>Datenminimierung</strong></td><td>Keine Benutzernamen in Logs, anonymisierte Berater-Liste für Kunden</td></tr>
+                    <tr><td><strong>Auto-Bereinigung</strong></td><td>Alle Sitzungsdaten bei Verbindungsende aus RAM gelöscht</td></tr>
+                </table>
+            </div>
+
+            <!-- §8 -->
+            <div class="dse-section">
+                <h2><span class="num">8</span> Hosting &amp; Auftragsverarbeitung</h2>
+                <div class="contact-block">
+                    <strong>Render Services, Inc.</strong><br>
+                    525 Brannan Street, Suite 300<br>
+                    San Francisco, CA 94107, USA
+                </div>
+                <p>
+                    Datenübermittlung in die USA auf Grundlage von <strong>EU-Standardvertragsklauseln</strong> (Art. 46 Abs. 2 lit. c DSGVO) 
+                    sowie dem <strong>EU-U.S. Data Privacy Framework</strong> (Angemessenheitsbeschluss C(2023) 4745).
+                </p>
+                <p>
+                    <a href="https://render.com/privacy" target="_blank" rel="noopener">Datenschutzerklärung Render</a> &middot;
+                    <a href="https://render.com/legal/dpa" target="_blank" rel="noopener">Data Processing Agreement</a>
+                </p>
+            </div>
+
+            <!-- §9 -->
+            <div class="dse-section">
+                <h2><span class="num">9</span> Empfänger</h2>
+                <table class="dse-table">
+                    <tr><th>Empfänger</th><th>Zweck</th><th>Grundlage</th></tr>
+                    <tr><td>Berater der kamdi24 GmbH</td><td>Durchführung der Videoberatung</td><td>Art. 6 Abs. 1 lit. b DSGVO</td></tr>
+                    <tr><td>Render Services, Inc.</td><td>Technisches Hosting</td><td>Art. 28 DSGVO</td></tr>
+                </table>
+                <p>Keine Weitergabe an Werbetreibende, Analyseunternehmen oder soziale Netzwerke.</p>
+            </div>
+
+            <!-- §10 -->
+            <div class="dse-section">
+                <h2><span class="num">10</span> Speicherdauer</h2>
+                <table class="dse-table">
+                    <tr><th>Datenkategorie</th><th>Speicherdauer</th></tr>
+                    <tr><td>Kundenname</td><td>Nur RAM &ndash; Löschung bei Sitzungsende</td></tr>
+                    <tr><td>Chat-Nachrichten</td><td>Nur RAM &ndash; Löschung bei Sitzungsende</td></tr>
+                    <tr><td>Video/Audio</td><td>Keine Speicherung (Echtzeit P2P)</td></tr>
+                    <tr><td>Signaling-Daten</td><td>Transient im RAM</td></tr>
+                    <tr><td>Server-Logs</td><td>Max. 30 Tage</td></tr>
+                    <tr><td>Berater-Accounts</td><td>Bis zur manuellen Löschung</td></tr>
+                </table>
+            </div>
+
+            <!-- §11 -->
+            <div class="dse-section">
+                <h2><span class="num">11</span> Ihre Rechte</h2>
+                <table class="dse-table">
+                    <tr><th>Recht</th><th>Artikel</th></tr>
+                    <tr><td><strong>Auskunft</strong> über gespeicherte Daten</td><td>Art. 15 DSGVO</td></tr>
+                    <tr><td><strong>Berichtigung</strong> unrichtiger Daten</td><td>Art. 16 DSGVO</td></tr>
+                    <tr><td><strong>Löschung</strong> Ihrer Daten</td><td>Art. 17 DSGVO</td></tr>
+                    <tr><td><strong>Einschränkung</strong> der Verarbeitung</td><td>Art. 18 DSGVO</td></tr>
+                    <tr><td><strong>Datenübertragbarkeit</strong></td><td>Art. 20 DSGVO</td></tr>
+                    <tr><td><strong>Widerspruch</strong> gegen die Verarbeitung</td><td>Art. 21 DSGVO</td></tr>
+                    <tr><td><strong>Widerruf</strong> erteilter Einwilligungen</td><td>Art. 7 Abs. 3 DSGVO</td></tr>
+                </table>
+                <div class="contact-block">
+                    <strong>Kontakt zur Rechteausübung:</strong><br>
+                    E-Mail: <a href="mailto:marketing@kamdi24.de">marketing@kamdi24.de</a><br>
+                    Post: kamdi24 GmbH, Breitscheidstraße 78, 01237 Dresden
+                </div>
+            </div>
+
+            <!-- §12 -->
+            <div class="dse-section">
+                <h2><span class="num">12</span> Beschwerderecht</h2>
+                <p>Sie haben das Recht auf Beschwerde bei einer Datenschutz-Aufsichtsbehörde (Art. 77 DSGVO).</p>
+                <div class="contact-block">
+                    <strong>Sächsischer Datenschutz- und Transparenzbeauftragter</strong><br>
+                    Devrientstraße 5, 01067 Dresden<br>
+                    Telefon: 0351 / 85471 101<br>
+                    E-Mail: <a href="mailto:post@sdtb.sachsen.de">post@sdtb.sachsen.de</a><br>
+                    Web: <a href="https://www.sdtb.sachsen.de" target="_blank" rel="noopener">www.sdtb.sachsen.de</a>
+                </div>
+            </div>
+
+            <!-- §13 -->
+            <div class="dse-section">
+                <h2><span class="num">13</span> Pflicht zur Datenbereitstellung</h2>
+                <p>
+                    Die Namenseingabe ist <strong>freiwillig</strong> &ndash; Sie können auch ein Pseudonym verwenden.
+                    Kamera und Mikrofon sind ebenfalls freiwillig; eine reine Audio-Beratung ist möglich.
+                </p>
+            </div>
+
+            <!-- §14 -->
+            <div class="dse-section">
+                <h2><span class="num">14</span> Automatisierte Entscheidungsfindung</h2>
+                <p>Es findet <strong>keine automatisierte Entscheidungsfindung</strong> einschließlich Profiling gemäß Art. 22 DSGVO statt.</p>
+            </div>
+
+            <!-- §15 -->
+            <div class="dse-section">
+                <h2><span class="num">15</span> Aktualität dieser Erklärung</h2>
+                <p>
+                    Stand: März 2026. Wir passen diese Datenschutzerklärung bei Bedarf an aktuelle rechtliche Anforderungen oder Änderungen unserer Leistungen an.
+                    Die jeweils aktuelle Fassung finden Sie stets unter dieser URL.
+                </p>
+            </div>
+
+        </div><!-- /.dse-card -->
+    </div><!-- /.dse-wrapper -->
+
+    <!-- Footer -->
+    <div class="dse-footer">
+        <p>&copy; 2024 kamdi24 &middot; <a href="/impressum.html">Impressum</a></p>
+    </div>
+</body>
+</html>
