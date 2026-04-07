@@ -1150,12 +1150,40 @@ function handleFileSelect(e) {
 function addFileMessage(fileName, fileData, fileType, senderName, isSent) {
     const msgEl = document.createElement('div');
     msgEl.className = `chat-message file ${isSent ? 'sent' : 'received'}`;
-    msgEl.innerHTML = `
-        <div class="sender">${senderName}</div>
-        <a href="${fileData}" download="${fileName}" class="file-link">
-            📄 ${escapeHtml(fileName)}
-        </a>
-    `;
+    
+    const senderDiv = document.createElement('div');
+    senderDiv.className = 'sender';
+    senderDiv.textContent = senderName;
+    
+    const link = document.createElement('a');
+    link.href = '#';
+    link.className = 'file-link';
+    link.textContent = '📄 ' + fileName;
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Convert data URL to Blob for safe download (prevents page navigation)
+        try {
+            const byteString = atob(fileData.split(',')[1]);
+            const mimeType = fileData.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+            const blob = new Blob([ab], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Download error:', err);
+        }
+    });
+    
+    msgEl.appendChild(senderDiv);
+    msgEl.appendChild(link);
     chatMessages.appendChild(msgEl);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
