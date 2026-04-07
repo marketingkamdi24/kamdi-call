@@ -390,6 +390,8 @@ function handleDataConnection(conn) {
     
     conn.on('open', () => {
         console.log('Data connection from customer established');
+        // Send current video state so remote peer knows if this is audio-only
+        conn.send({ type: 'video-toggle', videoEnabled: isVideoEnabled });
     });
 
     conn.on('data', (data) => {
@@ -406,6 +408,8 @@ function handleDataConnection(conn) {
         } else if (data.type === 'video-toggle') {
             console.log('Customer video toggled:', data.videoEnabled);
             remoteAudioOnly.classList.toggle('hidden', data.videoEnabled);
+            // Hide/show video element to prevent frozen frame
+            remoteVideo.style.visibility = data.videoEnabled ? 'visible' : 'hidden';
         }
     });
 

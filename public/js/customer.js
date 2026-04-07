@@ -611,6 +611,8 @@ function handleDataConnection(conn) {
         } else if (data.type === 'video-toggle') {
             console.log('Berater video toggled:', data.videoEnabled);
             remoteAudioOnly.classList.toggle('hidden', data.videoEnabled);
+            // Hide/show video element to prevent frozen frame
+            remoteVideo.style.visibility = data.videoEnabled ? 'visible' : 'hidden';
         }
     });
 
