@@ -311,11 +311,43 @@ function connectWebAudio(stream) {
         _webAudioSource = null;
     }
     
-    // Use ONLY the video element for audio playback (no Web Audio)
-    // Web Audio + video element caused double audio / echo
-    remoteVideo.muted = false;
-    remoteVideo.volume = 1;
-    console.log('Audio: using video element only (no Web Audio to prevent echo)');
+    if (stream.getAudioTracks().length === 0) {
+        console.warn('connectWebAudio: no audio tracks in stream');
+        return;
+    }
+    
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) {
+            console.warn('Web Audio API not available');
+            remoteVideo.muted = false;
+            remoteVideo.volume = 1;
+            return;
+        }
+        
+        if (!_audioContext) {
+            _audioContext = new AudioCtx();
+        }
+        
+        if (_audioContext.state === 'suspended') {
+            _audioContext.resume().then(() => {
+                console.log('AudioContext resumed:', _audioContext.state);
+            }).catch(e => console.warn('AudioContext resume failed:', e));
+        }
+        
+        _webAudioSource = _audioContext.createMediaStreamSource(stream);
+        _webAudioSource.connect(_audioContext.destination);
+        
+        // Mute the video element — Web Audio is the ONLY audio path
+        // This prevents double audio / echo
+        remoteVideo.muted = true;
+        
+        console.log('Web Audio: stream routed to speakers (AudioContext state:', _audioContext.state, ')');
+    } catch(e) {
+        console.warn('Web Audio connection failed, falling back to video element:', e);
+        remoteVideo.muted = false;
+        remoteVideo.volume = 1;
+    }
 }
 
 function disconnectWebAudio() {
