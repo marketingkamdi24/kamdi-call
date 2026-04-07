@@ -584,6 +584,44 @@ function acceptCall() {
     originalVideoTrack = null;
     toggleScreenBtn.classList.remove('active');
     
+    // For audio-only calls, disable camera and use dummy video track
+    if (currentCustomer.callType === 'audio' && localStream) {
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (videoTrack && videoTrack.readyState === 'live') {
+            videoTrack.stop();
+            localStream.removeTrack(videoTrack);
+            
+            // Add dummy video track for WebRTC negotiation
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const dummyStream = canvas.captureStream(1);
+            localStream.addTrack(dummyStream.getVideoTracks()[0]);
+            localVideo.srcObject = localStream;
+        }
+        isVideoEnabled = false;
+        toggleVideoBtn.classList.remove('active');
+        toggleVideoBtn.classList.add('muted');
+        console.log('Audio-only call: camera disabled');
+    } else if (currentCustomer.callType === 'video' && localStream) {
+        // Ensure camera is active for video calls
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (!videoTrack || videoTrack.readyState !== 'live') {
+            navigator.mediaDevices.getUserMedia({ video: true }).then(newStream => {
+                const newVideoTrack = newStream.getVideoTracks()[0];
+                localStream.getVideoTracks().forEach(t => { t.stop(); localStream.removeTrack(t); });
+                localStream.addTrack(newVideoTrack);
+                localVideo.srcObject = localStream;
+                isVideoEnabled = true;
+                toggleVideoBtn.classList.add('active');
+                toggleVideoBtn.classList.remove('muted');
+            }).catch(e => console.warn('Could not activate camera for video call:', e));
+        }
+    }
+    
     socket.emit('accept-call', currentCustomer.customerSocketId);
     
     activeCallerName.textContent = currentCustomer.customerName;
