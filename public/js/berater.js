@@ -18,31 +18,28 @@ let beraterName = '';
 let authToken = '';
 let peerReconnectTimer = null;
 
-// ICE Server Configuration for reliable WebRTC connections
-const ICE_SERVERS = {
+// ICE servers loaded from server API (DSGVO: keine externen STUN-Server, keine Credentials im Client)
+let ICE_SERVERS = {
     iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:46.225.130.183:3478' },
-        {
-            urls: 'turn:46.225.130.183:3478',
-            username: 'kamdi24',
-            credential: 'K4md1Turn2025!'
-        },
-        {
-            urls: 'turn:46.225.130.183:3478?transport=tcp',
-            username: 'kamdi24',
-            credential: 'K4md1Turn2025!'
-        },
-        {
-            urls: 'turns:kamdi24-call.data-agents.de:5349',
-            username: 'kamdi24',
-            credential: 'K4md1Turn2025!'
-        }
+        { urls: 'stun:46.225.130.183:3478' }
     ],
     iceTransportPolicy: 'all',
     iceCandidatePoolSize: 10
 };
+
+async function loadIceServers() {
+    try {
+        const res = await fetch('/api/ice-servers', {
+            headers: authToken ? { 'x-admin-auth': authToken } : {}
+        });
+        if (res.ok) {
+            const data = await res.json();
+            ICE_SERVERS = data;
+        }
+    } catch (e) {
+        console.warn('Could not load ICE servers, using defaults');
+    }
+}
 
 const loginSection = document.getElementById('login-section');
 const waitingSection = document.getElementById('waiting-section');
@@ -492,6 +489,7 @@ async function login() {
         localVideo.srcObject = localStream;
         localVideo.muted = true; // Ensure local video is always muted
         
+        await loadIceServers();
         initPeer();
         
         beraterNameDisplay.textContent = beraterName;
@@ -1037,9 +1035,29 @@ function addChatMessage(message, senderName, isSent) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// File upload restrictions (Art. 32 DSGVO - Sicherheit)
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+const BLOCKED_EXTENSIONS = ['.exe', '.bat', '.cmd', '.com', '.msi', '.scr', '.ps1', '.vbs', '.js', '.wsf', '.sh'];
+
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file || !dataConnection) return;
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+        alert('Die Datei ist zu groß. Maximale Dateigröße: 10 MB.');
+        e.target.value = '';
+        return;
+    }
+
+    // Check for blocked extensions
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (BLOCKED_EXTENSIONS.includes(ext)) {
+        alert('Dieser Dateityp ist aus Sicherheitsgründen nicht erlaubt.');
+        e.target.value = '';
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {

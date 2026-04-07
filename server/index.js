@@ -9,6 +9,18 @@ import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 
 const SALT_ROUNDS = 10;
+const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours (Art. 32 DSGVO)
+const MAX_JSON_SIZE = '10mb'; // File upload limit (Art. 32 DSGVO)
+
+// TURN server credentials (served via API, never exposed in client code)
+const TURN_CONFIG = {
+    host: process.env.TURN_HOST || '46.225.130.183',
+    port: process.env.TURN_PORT || '3478',
+    tlsHost: process.env.TURN_TLS_HOST || 'kamdi24-call.data-agents.de',
+    tlsPort: process.env.TURN_TLS_PORT || '5349',
+    username: process.env.TURN_USERNAME || 'kamdi24',
+    credential: process.env.TURN_CREDENTIAL || 'K4md1Turn2025!'
+};
 
 // Rate limiting for login attempts (Art. 32 DSGVO - Sicherheit)
 const loginAttempts = new Map();
@@ -16,6 +28,7 @@ const MAX_LOGIN_ATTEMPTS = 5;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 Minuten
 
 // Session tokens for authenticated users (Art. 32 DSGVO - sichere Auth)
+// Stores { username, id, createdAt }
 const sessionTokens = new Map();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,8 +53,19 @@ app.use((req, res, next) => {
     next();
 });
 
+// Security Headers (Art. 32 DSGVO - technische Schutzmaßnahmen)
+app.use((req, res, next) => {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=()');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
+});
+
 app.use(express.static(join(__dirname, '../public')));
-app.use(express.json());
+app.use(express.json({ limit: MAX_JSON_SIZE }));
 
 // User data file path
 const usersFilePath = join(__dirname, 'users.json');
@@ -100,9 +124,25 @@ function requireAuth(req, res, next) {
     if (!token || !sessionTokens.has(token)) {
         return res.status(401).json({ success: false, message: 'Nicht autorisiert' });
     }
-    req.authUser = sessionTokens.get(token);
+    const session = sessionTokens.get(token);
+    // Check session expiry
+    if (Date.now() - session.createdAt > SESSION_TTL_MS) {
+        sessionTokens.delete(token);
+        return res.status(401).json({ success: false, message: 'Sitzung abgelaufen. Bitte erneut anmelden.' });
+    }
+    req.authUser = session;
     next();
 }
+
+// Clean up expired session tokens periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, session] of sessionTokens) {
+        if (now - session.createdAt > SESSION_TTL_MS) {
+            sessionTokens.delete(token);
+        }
+    }
+}, 60 * 60 * 1000); // Check every hour
 
 function checkRateLimit(ip) {
     const now = Date.now();
@@ -134,7 +174,7 @@ app.post('/api/berater/login', async (req, res) => {
     if (user && await bcrypt.compare(password, user.password)) {
         // Create session token
         const token = randomUUID();
-        sessionTokens.set(token, { username: user.username, id: user.id });
+        sessionTokens.set(token, { username: user.username, id: user.id, createdAt: Date.now() });
         console.log('Berater authenticated successfully');
         res.json({ success: true, name: username, token });
     } else {
@@ -178,6 +218,32 @@ app.post('/api/users', requireAuth, async (req, res) => {
     
     console.log('New user created');
     res.json({ success: true, user: { id: newUser.id, username: newUser.username, createdAt: newUser.createdAt } });
+});
+
+// ICE server config API (DSGVO: TURN credentials only served server-side)
+app.get('/api/ice-servers', (req, res) => {
+    res.json({
+        iceServers: [
+            { urls: `stun:${TURN_CONFIG.host}:${TURN_CONFIG.port}` },
+            {
+                urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}`,
+                username: TURN_CONFIG.username,
+                credential: TURN_CONFIG.credential
+            },
+            {
+                urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}?transport=tcp`,
+                username: TURN_CONFIG.username,
+                credential: TURN_CONFIG.credential
+            },
+            {
+                urls: `turns:${TURN_CONFIG.tlsHost}:${TURN_CONFIG.tlsPort}`,
+                username: TURN_CONFIG.username,
+                credential: TURN_CONFIG.credential
+            }
+        ],
+        iceTransportPolicy: 'all',
+        iceCandidatePoolSize: 10
+    });
 });
 
 app.put('/api/users/:id', requireAuth, async (req, res) => {
@@ -240,7 +306,7 @@ io.on('connection', (socket) => {
             status: 'available',
             currentCustomer: null
         });
-        console.log('Berater logged in');
+        console.log('Berater logged in (ID:', socket.id, ')');
         broadcastBeraterList();
         processQueue();
     });
@@ -365,7 +431,7 @@ io.on('connection', (socket) => {
         
         if (beraters.has(socket.id)) {
             const berater = beraters.get(socket.id);
-            console.log('Berater disconnected:', berater.name);
+            console.log('Berater disconnected (ID:', socket.id, ')');
             
             // Notify the customer if berater was in a call
             if (berater.currentCustomer && berater.currentCustomer.socketId) {
@@ -379,7 +445,7 @@ io.on('connection', (socket) => {
         // Check if disconnected socket was a customer in an active call with a berater
         for (const [beraterSocketId, berater] of beraters) {
             if (berater.currentCustomer && berater.currentCustomer.socketId === socket.id) {
-                console.log('Customer disconnected from berater:', berater.name);
+                console.log('Customer disconnected from berater (ID:', berater.socketId, ')');
                 io.to(beraterSocketId).emit('customer-disconnected');
                 berater.status = 'available';
                 berater.currentCustomer = null;
@@ -503,7 +569,7 @@ function cleanupStaleQueue() {
             });
             activeConnections.delete(stale.socketId);
             removed = true;
-            console.log('Customer removed from queue (timeout):', stale.name);
+            console.log('Customer removed from queue (timeout, socket:', stale.socketId, ')');
         }
     }
     if (removed) {

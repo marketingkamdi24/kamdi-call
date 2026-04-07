@@ -16,31 +16,26 @@ let isVideoEnabled = true;
 let isAudioEnabled = true;
 let peerReconnectTimer = null;
 
-// ICE Server Configuration for reliable WebRTC connections
-const ICE_SERVERS = {
+// ICE servers loaded from server API (DSGVO: keine externen STUN-Server, keine Credentials im Client)
+let ICE_SERVERS = {
     iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:46.225.130.183:3478' },
-        {
-            urls: 'turn:46.225.130.183:3478',
-            username: 'kamdi24',
-            credential: 'K4md1Turn2025!'
-        },
-        {
-            urls: 'turn:46.225.130.183:3478?transport=tcp',
-            username: 'kamdi24',
-            credential: 'K4md1Turn2025!'
-        },
-        {
-            urls: 'turns:kamdi24-call.data-agents.de:5349',
-            username: 'kamdi24',
-            credential: 'K4md1Turn2025!'
-        }
+        { urls: 'stun:46.225.130.183:3478' }
     ],
     iceTransportPolicy: 'all',
     iceCandidatePoolSize: 10
 };
+
+async function loadIceServers() {
+    try {
+        const res = await fetch('/api/ice-servers');
+        if (res.ok) {
+            const data = await res.json();
+            ICE_SERVERS = data;
+        }
+    } catch (e) {
+        console.warn('Could not load ICE servers, using defaults');
+    }
+}
 
 const loginSection = document.getElementById('login-section');
 const queueSection = document.getElementById('queue-section');
@@ -621,6 +616,49 @@ function handleDataConnection(conn) {
     });
 }
 
+// DSGVO consent dialog before camera/microphone access (Art. 6/7 DSGVO)
+function showConsentDialog(callType) {
+    return new Promise((resolve, reject) => {
+        const overlay = document.createElement('div');
+        overlay.id = 'consent-overlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
+        
+        const mediaText = callType === 'video' 
+            ? 'Kamera und Mikrofon' 
+            : 'Mikrofon';
+        
+        overlay.innerHTML = `
+            <div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Inter',sans-serif;">
+                <h3 style="margin:0 0 16px;font-size:1.2rem;color:#1d3557;">Einwilligung zur Datenverarbeitung</h3>
+                <div style="font-size:0.875rem;color:#444;line-height:1.7;">
+                    <p style="margin-bottom:12px;">Für die Videoberatung benötigen wir Zugriff auf Ihr <strong>${mediaText}</strong>. Bitte beachten Sie:</p>
+                    <ul style="padding-left:20px;margin-bottom:12px;">
+                        <li>Die Übertragung erfolgt <strong>verschlüsselt</strong> und <strong>direkt</strong> zwischen den Endgeräten (Peer-to-Peer).</li>
+                        <li>Es findet <strong>keine Aufzeichnung</strong> von Video, Audio oder Bildschirmfreigabe statt.</li>
+                        <li>Sie können ${callType === 'video' ? 'die Kamera jederzeit deaktivieren oder einen reinen Audioanruf wählen' : 'den Anruf jederzeit beenden'}.</li>
+                    </ul>
+                    <p style="margin-bottom:16px;">Weitere Informationen finden Sie in unserer <a href="/datenschutz.html" target="_blank" style="color:#457b9d;font-weight:500;">Datenschutzerklärung</a>.</p>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;">
+                    <button id="consent-cancel" style="padding:10px 20px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#666;cursor:pointer;font-size:0.875rem;font-family:inherit;">Abbrechen</button>
+                    <button id="consent-accept" style="padding:10px 20px;border:none;border-radius:8px;background:#e63946;color:#fff;cursor:pointer;font-weight:600;font-size:0.875rem;font-family:inherit;">Einverstanden</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        overlay.querySelector('#consent-accept').addEventListener('click', () => {
+            overlay.remove();
+            resolve(true);
+        });
+        overlay.querySelector('#consent-cancel').addEventListener('click', () => {
+            overlay.remove();
+            resolve(false);
+        });
+    });
+}
+
 async function startCall(callType) {
     const name = customerNameInput.value.trim();
     if (!name) {
@@ -629,6 +667,10 @@ async function startCall(callType) {
         setTimeout(() => customerNameInput.classList.remove('error'), 2000);
         return;
     }
+
+    // DSGVO: Show consent dialog before accessing media devices
+    const consent = await showConsentDialog(callType);
+    if (!consent) return;
 
     // Unlock audio during this user gesture so remote audio works later
     unlockAudio();
@@ -1066,9 +1108,28 @@ function addChatMessage(message, senderName, isSent) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// File upload restrictions (Art. 32 DSGVO - Sicherheit)
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const BLOCKED_EXTENSIONS = ['.exe', '.bat', '.cmd', '.com', '.msi', '.scr', '.ps1', '.vbs', '.js', '.wsf', '.sh'];
+
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file || !dataConnection) return;
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+        alert('Die Datei ist zu groß. Maximale Dateigröße: 10 MB.');
+        e.target.value = '';
+        return;
+    }
+
+    // Check for blocked extensions
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (BLOCKED_EXTENSIONS.includes(ext)) {
+        alert('Dieser Dateityp ist aus Sicherheitsgründen nicht erlaubt.');
+        e.target.value = '';
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -1524,4 +1585,4 @@ socket.on('reconnect', (attemptNumber) => {
     console.log('Socket reconnected after', attemptNumber, 'attempts');
 });
 
-initPeer();
+loadIceServers().then(() => initPeer());

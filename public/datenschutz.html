@@ -262,7 +262,7 @@
             <div class="dse-summary">
                 <strong>Auf einen Blick</strong>
                 <p>Video- und Audiodaten werden zu keinem Zeitpunkt auf unseren Servern gespeichert oder aufgezeichnet. 
-                Es werden keine Cookies gesetzt, kein Tracking durchgeführt und keine externen Dienste eingebunden.</p>
+                Es werden keine Cookies gesetzt und kein Tracking durchgeführt. Für den Verbindungsaufbau werden ausschließlich selbst betriebene Server genutzt.</p>
             </div>
 
             <!-- §1 -->
@@ -336,14 +336,14 @@
                 <table class="dse-table">
                     <tr><th>Verarbeitung</th><th>Rechtsgrundlage</th><th>Speicherdauer</th></tr>
                     <tr>
-                        <td>Weiterleitung via Server (Socket.IO)</td>
+                        <td>Übertragung via WebRTC DataChannel (Peer-to-Peer, direkt zwischen den Endgeräten)</td>
                         <td>Art. 6 Abs. 1 lit. b DSGVO</td>
-                        <td><strong>Keine dauerhafte Speicherung</strong> &ndash; nur RAM, Löschung bei Sitzungsende</td>
+                        <td><strong>Keine Speicherung</strong> &ndash; Echtzeit-Übertragung, kein Server-Transit</td>
                     </tr>
                 </table>
 
                 <h3>3.7 Dateiübertragung</h3>
-                <p>Dateien werden über WebRTC DataChannel direkt zwischen den Endgeräten übertragen und <strong>nicht auf dem Server gespeichert</strong>.</p>
+                <p>Dateien werden über den Server (Socket.IO) an den Gesprächspartner weitergeleitet. Es erfolgt <strong>keine dauerhafte Speicherung</strong> &ndash; die Daten existieren nur transient im RAM während der Weiterleitung.</p>
 
                 <h3>3.8 WebSocket-Verbindung</h3>
                 <p>Für Echtzeitkommunikation (Warteschlange, Signalisierung, Chat). Keine dauerhafte Speicherung personenbezogener Daten. Automatische Bereinigung bei Verbindungsende.</p>
@@ -376,12 +376,26 @@
             <!-- §6 -->
             <div class="dse-section">
                 <h2><span class="num">6</span> Externe Ressourcen</h2>
-                <p>Diese Anwendung lädt <strong>keine externen Ressourcen von Drittanbietern</strong>:</p>
+                <p>Beim Seitenaufruf werden <strong>keine externen Ressourcen</strong> von Drittanbietern geladen:</p>
                 <ul>
                     <li><strong>Schriftarten</strong> (Inter) &ndash; lokal gehostet (kein Google Fonts)</li>
                     <li><strong>JavaScript-Bibliotheken</strong> (PeerJS) &ndash; lokal gehostet (kein CDN)</li>
                 </ul>
-                <p>Keine Übermittlung Ihrer IP-Adresse an Drittanbieter beim Seitenaufruf.</p>
+                <h3>6.1 STUN-/TURN-Server für Verbindungsaufbau</h3>
+                <p>
+                    Für den WebRTC-Verbindungsaufbau (ICE) nutzt diese Anwendung ausschließlich <strong>selbst betriebene bzw. beauftragte</strong> STUN- und TURN-Server.
+                    Es werden <strong>keine Google STUN-Server</strong> oder sonstige Drittanbieter-Server kontaktiert.
+                </p>
+                <table class="dse-table">
+                    <tr><th>Dienst</th><th>Betreiber</th><th>Zweck</th><th>Daten</th></tr>
+                    <tr>
+                        <td>STUN/TURN-Server</td>
+                        <td>data-agents.de<br>(im Auftrag der kamdi24 GmbH)</td>
+                        <td>Ermittlung der Netzwerkadresse für Peer-to-Peer-Verbindungsaufbau; Relay bei blockierter Direktverbindung</td>
+                        <td>IP-Adresse (transient, nur während des Verbindungsaufbaus)</td>
+                    </tr>
+                </table>
+                <p><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an technisch funktionsfähigem Verbindungsaufbau)</p>
             </div>
 
             <!-- §7 -->
@@ -424,7 +438,8 @@
                 <table class="dse-table">
                     <tr><th>Empfänger</th><th>Zweck</th><th>Grundlage</th></tr>
                     <tr><td>Berater der kamdi24 GmbH</td><td>Durchführung der Videoberatung</td><td>Art. 6 Abs. 1 lit. b DSGVO</td></tr>
-                    <tr><td>Render Services, Inc.</td><td>Technisches Hosting</td><td>Art. 28 DSGVO</td></tr>
+                    <tr><td>Render Services, Inc.</td><td>Technisches Hosting (Webserver, PeerJS-Signaling)</td><td>Art. 28 DSGVO</td></tr>
+                    <tr><td>data-agents.de</td><td>STUN-/TURN-Server (WebRTC-Verbindungsaufbau)</td><td>Art. 28 DSGVO</td></tr>
                 </table>
                 <p>Keine Weitergabe an Werbetreibende, Analyseunternehmen oder soziale Netzwerke.</p>
             </div>
@@ -505,7 +520,7 @@
 
     <!-- Footer -->
     <div class="dse-footer">
-        <p>&copy; 2024 kamdi24 &middot; <a href="/impressum.html">Impressum</a></p>
+        <p>&copy; 2026 kamdi24 &middot; <a href="/impressum.html">Impressum</a></p>
     </div>
 </body>
 </html>
