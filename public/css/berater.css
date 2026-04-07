@@ -21,6 +21,8 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .sidebar-header {
@@ -126,6 +128,9 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-y: auto;
+    max-height: 50vh;
+    -webkit-overflow-scrolling: touch;
 }
 
 .queue-item {
