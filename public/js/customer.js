@@ -602,7 +602,7 @@ function showConsentDialog(callType) {
         
         overlay.innerHTML = `
             <div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Inter',sans-serif;">
-                <h3 style="margin:0 0 16px;font-size:1.2rem;color:#1d3557;">Einwilligung zur Datenverarbeitung</h3>
+                <h3 style="margin:0 0 16px;font-size:1.2rem;color:#303030;">Einwilligung zur Datenverarbeitung</h3>
                 <div style="font-size:0.875rem;color:#444;line-height:1.7;">
                     <p style="margin-bottom:12px;">Für die Videoberatung benötigen wir Zugriff auf Ihr <strong>${mediaText}</strong>. Bitte beachten Sie:</p>
                     <ul style="padding-left:20px;margin-bottom:12px;">
@@ -610,11 +610,11 @@ function showConsentDialog(callType) {
                         <li>Es findet <strong>keine Aufzeichnung</strong> von Video, Audio oder Bildschirmfreigabe statt.</li>
                         <li>Sie können ${callType === 'video' ? 'die Kamera jederzeit deaktivieren oder einen reinen Audioanruf wählen' : 'den Anruf jederzeit beenden'}.</li>
                     </ul>
-                    <p style="margin-bottom:16px;">Weitere Informationen finden Sie in unserer <a href="/datenschutz.html" target="_blank" style="color:#457b9d;font-weight:500;">Datenschutzerklärung</a>.</p>
+                    <p style="margin-bottom:16px;">Weitere Informationen finden Sie in unserer <a href="/datenschutz.html" target="_blank" style="color:#f18800;font-weight:500;">Datenschutzerklärung</a>.</p>
                 </div>
                 <div style="display:flex;gap:12px;justify-content:flex-end;">
                     <button id="consent-cancel" style="padding:10px 20px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#666;cursor:pointer;font-size:0.875rem;font-family:inherit;">Abbrechen</button>
-                    <button id="consent-accept" style="padding:10px 20px;border:none;border-radius:8px;background:#e63946;color:#fff;cursor:pointer;font-weight:600;font-size:0.875rem;font-family:inherit;">Einverstanden</button>
+                    <button id="consent-accept" style="padding:10px 20px;border:none;border-radius:8px;background:#f18800;color:#fff;cursor:pointer;font-weight:600;font-size:0.875rem;font-family:inherit;">Einverstanden</button>
                 </div>
             </div>
         `;
