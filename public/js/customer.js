@@ -86,10 +86,16 @@ function unlockAudio() {
         }).catch(e => console.warn('AudioContext resume failed:', e));
     }
     
-    // Set audio properties during user gesture — do NOT call play()/pause() here
-    // play() will be called in attachRemoteStream() when the actual stream arrives
+    // Prime the video element during this user gesture so later play() calls succeed
+    // Browsers remember that play() was triggered from a gesture and allow future plays
     remoteVideo.muted = false;
     remoteVideo.volume = 1;
+    remoteVideo.play().then(() => {
+        console.log('unlockAudio: video element primed for autoplay');
+    }).catch(() => {
+        // Expected to fail (no src yet) — the gesture intent is still registered
+        console.log('unlockAudio: video element priming noted (no src yet)');
+    });
     console.log('unlockAudio: AudioContext state:', _audioContext ? _audioContext.state : 'none', '| video element primed');
 }
 
@@ -328,15 +334,21 @@ function attachRemoteStream(stream) {
         }
     }
     
-    // Play the video element (for video display; audio handled by Web Audio above)
+    // Play the video element for video display
+    // Audio is handled by Web Audio above, so even if play() fails audio still works
     const playPromise = remoteVideo.play();
     if (playPromise) {
         playPromise.then(() => {
             console.log('Remote video playing successfully');
         }).catch(e => {
             console.warn('Play failed:', e.name);
-            if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
+            // Only show overlay if Web Audio also failed (audio is the critical path)
+            if ((e.name === 'NotAllowedError' || e.name === 'AbortError') && !_webAudioSource) {
                 showPlayOverlay();
+            } else {
+                // Web Audio is handling sound — retry play silently for video frames
+                remoteVideo.muted = true;
+                remoteVideo.play().catch(() => {});
             }
         });
     }
@@ -649,6 +661,8 @@ function showConsentDialog(callType) {
         document.body.appendChild(overlay);
         
         overlay.querySelector('#consent-accept').addEventListener('click', () => {
+            // Unlock audio during this user gesture (closest gesture to call start)
+            unlockAudio();
             overlay.remove();
             resolve(true);
         });
