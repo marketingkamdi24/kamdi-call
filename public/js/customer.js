@@ -313,10 +313,11 @@ function attachRemoteStream(stream) {
         };
     });
     
-    // Attach stream to video element for video display
+    // Attach stream to video element for VIDEO DISPLAY ONLY
+    // Audio is routed through a separate <audio> element for call-channel volume
     remoteVideo.srcObject = stream;
-    remoteVideo.muted = false;
-    remoteVideo.volume = 1;
+    remoteVideo.muted = true;  // Always muted — audio goes through <audio> element
+    remoteVideo.volume = 0;
     remoteVideo.autoplay = true;
     remoteVideo.playsInline = true;
     
@@ -348,14 +349,20 @@ function attachRemoteStream(stream) {
                 console.log('Call-channel audio: playing via <audio> element');
                 updateDebugOverlay('Audio: OK (Call-Kanal)');
             }).catch(e => {
-                console.warn('Call-channel audio play failed:', e.name, '- trying unmuted');
-                _remoteAudioElement.play().catch(() => {});
+                console.warn('Call-channel audio play failed:', e.name);
+                // Retry once
+                setTimeout(() => {
+                    _remoteAudioElement.play().catch(() => {
+                        console.warn('Call-channel audio retry also failed');
+                        // Last resort: unmute video element
+                        remoteVideo.muted = false;
+                        remoteVideo.volume = 1;
+                        updateDebugOverlay('Audio: Fallback (Video)');
+                    });
+                }, 500);
             });
             
-            // Mute the video element to prevent double audio
-            remoteVideo.muted = true;
-            
-            // Also set up Web Audio as fallback (for desktop browsers)
+            // Also set up Web Audio as fallback (for desktop browsers only)
             connectWebAudio(stream);
             
             console.log('Audio routed to call channel via <audio> element');
@@ -366,12 +373,11 @@ function attachRemoteStream(stream) {
         }
     }
     
-    // Play the video element for video display
-    // Audio is routed via Web Audio API (unlocked during user gesture), so play() is only for video frames
+    // Play the video element for video frames only (audio is muted on video element)
     remoteVideo.play().then(() => {
-        console.log('Remote video playing successfully');
+        console.log('Remote video playing (muted — audio via call channel)');
     }).catch(e => {
-        console.warn('Play failed:', e.name, '- retrying muted for video frames');
+        console.warn('Video play failed:', e.name, '- retrying');
         // Retry muted so at least video frames are displayed; audio goes through Web Audio
         remoteVideo.muted = true;
         remoteVideo.play().catch(() => {});
@@ -530,15 +536,10 @@ function tryRecoverAudio() {
 function ensureAudioPlaying() {
     if (!remoteVideo.srcObject) return;
     
-    remoteVideo.muted = false;
-    remoteVideo.volume = 1;
-    
-    if (remoteVideo.paused) {
-        remoteVideo.play().catch(() => {});
-    }
+    const stream = remoteVideo.srcObject;
     
     // Check audio track health
-    const audioTracks = remoteVideo.srcObject.getAudioTracks();
+    const audioTracks = stream.getAudioTracks();
     audioTracks.forEach(track => {
         track.enabled = true;
         console.log('ensureAudioPlaying - track:', track.id, 'readyState:', track.readyState, 'muted:', track.muted);
@@ -546,6 +547,22 @@ function ensureAudioPlaying() {
     
     if (audioTracks.length === 0 || audioTracks[0].readyState === 'ended') {
         tryRecoverAudio();
+        return;
+    }
+    
+    // Re-route audio through the call-channel <audio> element (NOT the video element)
+    if (_remoteAudioElement && audioTracks.length > 0) {
+        const audioOnlyStream = new MediaStream(audioTracks);
+        _remoteAudioElement.srcObject = audioOnlyStream;
+        _remoteAudioElement.play().catch(() => {});
+        // Keep video element muted — audio goes through <audio> element for call volume
+        remoteVideo.muted = true;
+        console.log('ensureAudioPlaying: re-routed to call channel');
+    }
+    
+    // Ensure video frames are playing
+    if (remoteVideo.paused) {
+        remoteVideo.play().catch(() => {});
     }
 }
 
