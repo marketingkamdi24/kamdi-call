@@ -1126,6 +1126,7 @@ async function toggleScreenShare() {
             }
             
             toggleScreenBtn.classList.remove('active');
+            localVideo.classList.remove('screen-share-active');
             isScreenSharing = false;
         } else {
             // Start screen sharing
@@ -1167,6 +1168,7 @@ async function toggleScreenShare() {
             };
             
             toggleScreenBtn.classList.add('active');
+            localVideo.classList.add('screen-share-active');
             isScreenSharing = true;
         }
     } catch (err) {

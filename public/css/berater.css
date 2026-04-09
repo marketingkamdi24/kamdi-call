@@ -405,6 +405,12 @@
     object-fit: cover;
 }
 
+.video-container-berater .remote-video-wrapper video.screen-share-active,
+.video-container-berater .local-video-wrapper video.screen-share-active {
+    object-fit: contain;
+    background: #000;
+}
+
 .video-container-berater .local-video-wrapper {
     position: absolute;
     bottom: 20px;

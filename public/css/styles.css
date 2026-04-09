@@ -527,6 +527,12 @@ body {
     object-fit: cover;
 }
 
+.remote-video-wrapper video.screen-share-active,
+.local-video-wrapper video.screen-share-active {
+    object-fit: contain;
+    background: #000;
+}
+
 .local-video-wrapper {
     position: absolute;
     bottom: 20px;
