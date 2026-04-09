@@ -36,6 +36,12 @@
     color: #ffffff;
 }
 
+.sidebar .logo-img {
+    height: 36px;
+    width: auto;
+    margin: 0 auto;
+}
+
 .dashboard-label {
     font-size: 0.85rem;
     opacity: 0.8;
