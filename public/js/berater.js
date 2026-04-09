@@ -500,6 +500,9 @@ function handleDataConnection(conn) {
         } else if (data.type === 'screen-share-started') {
             console.log('Customer started screen sharing');
             remoteVideo.classList.add('screen-share-active');
+            // Make video visible even if customer camera was off
+            remoteVideo.style.visibility = 'visible';
+            remoteAudioOnly.classList.add('hidden');
             // Delay refresh to allow replaceTrack to propagate via WebRTC
             setTimeout(() => refreshRemoteVideo(), 500);
             setTimeout(() => refreshRemoteVideo(), 1500);
@@ -984,15 +987,30 @@ function setupVideoClickToSwap() {
     }
 }
 
+let _screenShareBusy = false;
 async function toggleScreenShare() {
+    // Guard against double invocation (e.g. onended + manual stop)
+    if (_screenShareBusy) {
+        console.log('toggleScreenShare: already in progress, skipping');
+        return;
+    }
+    _screenShareBusy = true;
+    
     try {
         if (isScreenSharing) {
-            // Stop screen sharing, return to camera
+            console.log('Stopping screen share...');
+            
+            // Remove onended handler BEFORE stopping to prevent double call
             const screenTrack = localStream.getVideoTracks()[0];
             if (screenTrack) {
+                screenTrack.onended = null;
                 screenTrack.stop();
                 localStream.removeTrack(screenTrack);
             }
+            
+            // Set state immediately to prevent race conditions
+            isScreenSharing = false;
+            toggleScreenBtn.classList.remove('active');
             
             try {
                 const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -1015,11 +1033,10 @@ async function toggleScreenShare() {
                 localStream.addTrack(dummyTrack);
                 localVideo.srcObject = localStream;
                 
-                // Replace the ended screen track in WebRTC connection
                 if (currentCall && currentCall.peerConnection) {
                     const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                     if (sender) {
-                        sender.replaceTrack(dummyTrack);
+                        await sender.replaceTrack(dummyTrack);
                     }
                 }
                 
@@ -1028,14 +1045,13 @@ async function toggleScreenShare() {
                 toggleVideoBtn.classList.add('muted');
             }
             
-            toggleScreenBtn.classList.remove('active');
-            isScreenSharing = false;
-            
             // Notify customer screen share ended
             if (dataConnection && dataConnection.open) {
                 dataConnection.send({ type: 'screen-share-ended' });
+                console.log('Sent screen-share-ended to customer');
             }
         } else {
+            console.log('Starting screen share...');
             // Start screen sharing
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
                 video: { cursor: 'always' },
@@ -1043,7 +1059,7 @@ async function toggleScreenShare() {
             });
             const screenTrack = screenStream.getVideoTracks()[0];
             
-            // Save and remove existing video track (don't stop it, keep alive for restoration)
+            // Save and remove existing video track
             originalVideoTrack = localStream.getVideoTracks()[0];
             if (originalVideoTrack) {
                 localStream.removeTrack(originalVideoTrack);
@@ -1054,7 +1070,6 @@ async function toggleScreenShare() {
             
             if (currentCall && currentCall.peerConnection) {
                 const pc = currentCall.peerConnection;
-                // Find video sender - try by track kind first, then by transceiver
                 let sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
                 if (!sender && pc.getTransceivers) {
                     const vt = pc.getTransceivers().find(t => t.mid !== null && t.sender);
@@ -1073,7 +1088,6 @@ async function toggleScreenShare() {
             }
             
             // Notify customer about screen share
-            console.log('DataConnection status:', dataConnection ? 'exists' : 'null', dataConnection?.open ? 'open' : 'not open');
             if (dataConnection && dataConnection.open) {
                 dataConnection.send({ type: 'screen-share-started' });
                 console.log('Sent screen-share-started to customer');
@@ -1081,8 +1095,9 @@ async function toggleScreenShare() {
                 console.error('Cannot notify customer - dataConnection not ready!');
             }
             
+            // Handle browser-initiated stop (user clicks "Stop sharing")
             screenTrack.onended = () => {
-                console.log('Screen sharing ended by user');
+                console.log('Screen sharing ended by browser/user');
                 toggleScreenShare();
             };
             
@@ -1091,7 +1106,11 @@ async function toggleScreenShare() {
         }
     } catch (err) {
         console.error('Screen share error:', err);
-        alert('Bildschirmfreigabe fehlgeschlagen: ' + err.message);
+        if (err.name !== 'NotAllowedError') {
+            alert('Bildschirmfreigabe fehlgeschlagen: ' + err.message);
+        }
+    } finally {
+        _screenShareBusy = false;
     }
 }
 

@@ -686,6 +686,9 @@ function handleDataConnection(conn) {
         } else if (data.type === 'screen-share-started') {
             console.log('Berater started screen sharing');
             remoteVideo.classList.add('screen-share-active');
+            // Make video visible even if berater camera was off
+            remoteVideo.style.visibility = 'visible';
+            remoteAudioOnly.classList.add('hidden');
             setTimeout(() => refreshRemoteVideo(), 500);
             setTimeout(() => refreshRemoteVideo(), 1500);
         } else if (data.type === 'screen-share-ended') {
