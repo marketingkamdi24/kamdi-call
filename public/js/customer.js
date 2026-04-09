@@ -1172,10 +1172,8 @@ function setupVideoClickToSwap() {
     const remoteWrapper = document.querySelector('.remote-video-wrapper');
     
     if (localWrapper) {
-        localWrapper.addEventListener('click', () => {
-            // Only allow swap when camera is actually on
-            if (!isVideoSwapped && isVideoEnabled) swapVideos();
-        });
+        // Local preview is view-only, no click interaction
+        localWrapper.style.pointerEvents = 'none';
     }
     
     if (remoteWrapper) {
