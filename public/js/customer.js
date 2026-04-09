@@ -335,23 +335,15 @@ function attachRemoteStream(stream) {
     }
     
     // Play the video element for video display
-    // Audio is handled by Web Audio above, so even if play() fails audio still works
-    const playPromise = remoteVideo.play();
-    if (playPromise) {
-        playPromise.then(() => {
-            console.log('Remote video playing successfully');
-        }).catch(e => {
-            console.warn('Play failed:', e.name);
-            // Only show overlay if Web Audio also failed (audio is the critical path)
-            if ((e.name === 'NotAllowedError' || e.name === 'AbortError') && !_webAudioSource) {
-                showPlayOverlay();
-            } else {
-                // Web Audio is handling sound — retry play silently for video frames
-                remoteVideo.muted = true;
-                remoteVideo.play().catch(() => {});
-            }
-        });
-    }
+    // Audio is routed via Web Audio API (unlocked during user gesture), so play() is only for video frames
+    remoteVideo.play().then(() => {
+        console.log('Remote video playing successfully');
+    }).catch(e => {
+        console.warn('Play failed:', e.name, '- retrying muted for video frames');
+        // Retry muted so at least video frames are displayed; audio goes through Web Audio
+        remoteVideo.muted = true;
+        remoteVideo.play().catch(() => {});
+    });
     
     // Start audio health monitoring
     startAudioHealthCheck();
@@ -501,12 +493,17 @@ function tryRecoverAudio() {
     _lastRemoteAudioTrackId = null;
     remoteVideo.muted = false;
     remoteVideo.volume = 1;
+    // Route recovered audio through Web Audio API
+    if (stream) {
+        connectWebAudio(stream);
+    }
     remoteVideo.play().then(() => {
         console.log('Audio recovery: playback restored');
         updateDebugOverlay('Audio: Wiederhergestellt');
     }).catch(e => {
-        console.warn('Audio recovery play failed:', e.name);
-        showPlayOverlay();
+        console.warn('Audio recovery play failed:', e.name, '- audio via Web Audio');
+        remoteVideo.muted = true;
+        remoteVideo.play().catch(() => {});
     });
 }
 
@@ -547,45 +544,9 @@ function updateDebugOverlay(msg) {
 }
 
 function showPlayOverlay() {
-    let overlay = document.getElementById('play-overlay');
-    if (overlay) return;
-    
-    overlay = document.createElement('div');
-    overlay.id = 'play-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;cursor:pointer;';
-    overlay.innerHTML = '<div style="text-align:center;color:#fff;"><div style="font-size:48px;">🔊</div><p style="font-size:18px;margin-top:12px;">Tippen Sie hier um Audio zu aktivieren</p></div>';
-    overlay.addEventListener('click', () => {
-        // Unlock AudioContext during this user gesture
-        unlockAudio();
-        
-        // Re-connect Web Audio (primary audio path)
-        if (remoteVideo.srcObject) {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (AudioCtx) {
-                    if (!_audioContext) _audioContext = new AudioCtx();
-                    if (_audioContext.state === 'suspended') _audioContext.resume().catch(() => {});
-                    if (_webAudioSource) { try { _webAudioSource.disconnect(); } catch(e) {} }
-                    _webAudioSource = _audioContext.createMediaStreamSource(remoteVideo.srcObject);
-                    _webAudioSource.connect(_audioContext.destination);
-                    remoteVideo.muted = true;
-                    console.log('Play overlay: Web Audio reconnected');
-                }
-            } catch(e) {
-                // Fallback to video element
-                remoteVideo.muted = false;
-                remoteVideo.volume = 1;
-            }
-        }
-        
-        remoteVideo.play().catch(() => {});
-        
-        // Remove overlay
-        overlay.remove();
-        updateDebugOverlay('Audio: OK (nach Tap)');
-        console.log('Play overlay dismissed');
-    });
-    document.body.appendChild(overlay);
+    // No-op: Audio is handled via Web Audio API which is unlocked during user gesture.
+    // The overlay is no longer needed.
+    console.log('showPlayOverlay: skipped (Web Audio handles audio)');
 }
 
 function handleDataConnection(conn) {
