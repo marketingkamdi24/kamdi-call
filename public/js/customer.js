@@ -941,9 +941,12 @@ async function toggleVideo() {
             
             // Replace track in WebRTC connection so remote peer sees video
             if (currentCall && currentCall.peerConnection) {
-                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                let sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (!sender) sender = currentCall.peerConnection.getSenders().find(s => !s.track);
                 if (sender) {
                     await sender.replaceTrack(newVideoTrack);
+                } else {
+                    currentCall.peerConnection.addTrack(newVideoTrack, localStream);
                 }
             }
             
@@ -983,7 +986,8 @@ async function toggleVideo() {
         
         // Replace track in WebRTC connection
         if (currentCall && currentCall.peerConnection) {
-            const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            let sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (!sender) sender = currentCall.peerConnection.getSenders().find(s => !s.track);
             if (sender) {
                 await sender.replaceTrack(dummyTrack);
             }
@@ -1106,7 +1110,12 @@ async function toggleScreenShare() {
             localVideo.srcObject = localStream;
             
             if (currentCall && currentCall.peerConnection) {
-                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                let sender = currentCall.peerConnection.getSenders().find(s => 
+                    s.track ? s.track.kind === 'video' : false
+                );
+                if (!sender) {
+                    sender = currentCall.peerConnection.getSenders().find(s => !s.track);
+                }
                 if (sender) {
                     await sender.replaceTrack(localStream.getVideoTracks()[0]);
                 }
@@ -1133,9 +1142,19 @@ async function toggleScreenShare() {
             localVideo.srcObject = localStream;
             
             if (currentCall && currentCall.peerConnection) {
-                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                // Find video sender (may have null track if started as audio-only)
+                let sender = currentCall.peerConnection.getSenders().find(s => 
+                    s.track ? s.track.kind === 'video' : false
+                );
+                // Also check for senders with no track (transceiver created with dummy)
+                if (!sender) {
+                    sender = currentCall.peerConnection.getSenders().find(s => !s.track);
+                }
                 if (sender) {
                     await sender.replaceTrack(screenTrack);
+                } else {
+                    // No video sender exists at all, add the track
+                    currentCall.peerConnection.addTrack(screenTrack, localStream);
                 }
             }
             
