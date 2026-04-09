@@ -290,6 +290,16 @@ const beraters = new Map();
 const customerQueue = [];
 const activeConnections = new Map();
 
+// Debug endpoint to check server state
+app.get('/api/debug/state', (req, res) => {
+    res.json({
+        beraters: Array.from(beraters.values()).map(b => ({ name: b.name, status: b.status, socketId: b.socketId, peerId: b.peerId })),
+        queueLength: customerQueue.length,
+        activeConnections: activeConnections.size,
+        socketCount: io.sockets.sockets.size
+    });
+});
+
 // Queue configuration
 const MAX_QUEUE_SIZE = 20;
 const QUEUE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes max wait time
