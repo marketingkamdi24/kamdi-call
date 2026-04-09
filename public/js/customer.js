@@ -694,6 +694,9 @@ function handleDataConnection(conn) {
         } else if (data.type === 'screen-share-ended') {
             console.log('Berater stopped screen sharing');
             remoteVideo.classList.remove('screen-share-active');
+            // Immediately hide video to prevent frozen last frame (show black)
+            remoteVideo.style.visibility = 'hidden';
+            remoteAudioOnly.classList.remove('hidden');
             setTimeout(() => refreshRemoteVideo(), 500);
             setTimeout(() => refreshRemoteVideo(), 1500);
         } else if (data.type === 'video-toggle') {
@@ -1148,6 +1151,8 @@ async function toggleScreenShare() {
             
             if (dataConnection && dataConnection.open) {
                 dataConnection.send({ type: 'screen-share-ended' });
+                dataConnection.send({ type: 'video-toggle', videoEnabled: isVideoEnabled });
+                console.log('Sent screen-share-ended + video-toggle, videoEnabled:', isVideoEnabled);
             }
             
             toggleScreenBtn.classList.remove('active');

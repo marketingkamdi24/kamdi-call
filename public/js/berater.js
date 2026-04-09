@@ -509,6 +509,9 @@ function handleDataConnection(conn) {
         } else if (data.type === 'screen-share-ended') {
             console.log('Customer stopped screen sharing');
             remoteVideo.classList.remove('screen-share-active');
+            // Immediately hide video to prevent frozen last frame (show black)
+            remoteVideo.style.visibility = 'hidden';
+            remoteAudioOnly.classList.remove('hidden');
             setTimeout(() => refreshRemoteVideo(), 500);
             setTimeout(() => refreshRemoteVideo(), 1500);
         } else if (data.type === 'video-toggle') {
@@ -1065,10 +1068,11 @@ async function toggleScreenShare() {
                 toggleVideoBtn.classList.add('muted');
             }
             
-            // Notify customer screen share ended
+            // Notify customer screen share ended, then send video state so they show/hide video
             if (dataConnection && dataConnection.open) {
                 dataConnection.send({ type: 'screen-share-ended' });
-                console.log('Sent screen-share-ended to customer');
+                dataConnection.send({ type: 'video-toggle', videoEnabled: isVideoEnabled });
+                console.log('Sent screen-share-ended + video-toggle to customer, videoEnabled:', isVideoEnabled);
             }
         } else {
             console.log('Starting screen share...');
