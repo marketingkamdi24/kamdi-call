@@ -44,8 +44,7 @@ const callSection = document.getElementById('call-section');
 const callEndedSection = document.getElementById('call-ended-section');
 
 const customerNameInput = document.getElementById('customer-name');
-const videoCallBtn = document.getElementById('video-call-btn');
-const audioCallBtn = document.getElementById('audio-call-btn');
+const startCallBtn = document.getElementById('start-call-btn');
 const cancelCallBtn = document.getElementById('cancel-call-btn');
 const endCallBtn = document.getElementById('end-call-btn');
 const newCallBtn = document.getElementById('new-call-btn');
@@ -1451,8 +1450,7 @@ socket.on('berater-disconnected', () => {
     endCall();
 });
 
-videoCallBtn.addEventListener('click', () => startCall('video'));
-audioCallBtn.addEventListener('click', () => startCall('audio'));
+startCallBtn.addEventListener('click', () => startCall('video'));
 cancelCallBtn.addEventListener('click', cancelCall);
 endCallBtn.addEventListener('click', endCall);
 newCallBtn.addEventListener('click', () => {
@@ -1489,7 +1487,7 @@ chatInput.addEventListener('keypress', (e) => {
 fileInput.addEventListener('change', handleFileSelect);
 
 customerNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') startCall('video');
+    if (e.key === 'Enter') startCallBtn.click();
 });
 
 // Close appointment notification
