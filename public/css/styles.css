@@ -539,6 +539,7 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
     transition: transform 0.2s, border-color 0.2s;
+    z-index: 10;
 }
 
 .local-video-wrapper:hover {
