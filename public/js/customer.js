@@ -1081,6 +1081,11 @@ async function flipCamera() {
 }
 
 async function toggleScreenShare() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        alert('Bildschirmfreigabe wird von diesem Gerät/Browser nicht unterstützt.');
+        return;
+    }
+    
     try {
         if (isScreenSharing) {
             // Stop screen sharing, restore original video
