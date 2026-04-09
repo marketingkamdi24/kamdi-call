@@ -71,10 +71,17 @@ let isVideoSwapped = false;
 let _makeCallInProgress = false;
 let _audioContext = null;
 let _remoteAudioElement = null;
+let _gainNode = null;
+let _volumeNotificationShown = false;
+
+// Detect platform
+const _isAndroid = /Android/i.test(navigator.userAgent);
+const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const _isMobile = _isAndroid || _isIOS;
 
 // Unlock audio playback on the page (must be called during user gesture)
 function unlockAudio() {
-    // Create and resume AudioContext as fallback
+    // Create and resume AudioContext
     if (!_audioContext) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (AudioCtx) {
@@ -87,12 +94,10 @@ function unlockAudio() {
         }).catch(e => console.warn('AudioContext resume failed:', e));
     }
     
-    // Create a hidden <audio> element for call-channel audio routing
-    // On mobile, <audio> elements route through the CALL/COMMUNICATION volume,
-    // not the media volume — this is the critical difference vs Web Audio API
+    // Create a hidden <audio> element for audio output
     if (!_remoteAudioElement) {
         _remoteAudioElement = document.createElement('audio');
-        _remoteAudioElement.id = 'remote-audio-call-channel';
+        _remoteAudioElement.id = 'remote-audio-output';
         _remoteAudioElement.autoplay = true;
         _remoteAudioElement.playsInline = true;
         _remoteAudioElement.style.display = 'none';
@@ -100,8 +105,8 @@ function unlockAudio() {
     }
     
     // Prime both elements during this user gesture so later play() calls succeed
-    remoteVideo.muted = false;
-    remoteVideo.volume = 1;
+    remoteVideo.muted = true;
+    remoteVideo.volume = 0;
     remoteVideo.play().then(() => {
         console.log('unlockAudio: video element primed for autoplay');
     }).catch(() => {
@@ -114,7 +119,8 @@ function unlockAudio() {
         console.log('unlockAudio: audio element priming noted (no src yet)');
     });
     
-    console.log('unlockAudio: AudioContext state:', _audioContext ? _audioContext.state : 'none', '| elements primed');
+    console.log('unlockAudio: platform:', _isAndroid ? 'Android' : _isIOS ? 'iOS' : 'Desktop',
+        '| AudioContext:', _audioContext ? _audioContext.state : 'none');
 }
 
 const chatPanel = document.getElementById('chat-panel');
@@ -313,10 +319,9 @@ function attachRemoteStream(stream) {
         };
     });
     
-    // Attach stream to video element for VIDEO DISPLAY ONLY
-    // Audio is routed through a separate <audio> element for call-channel volume
+    // === VIDEO ELEMENT: display only, no audio ===
     remoteVideo.srcObject = stream;
-    remoteVideo.muted = true;  // Always muted — audio goes through <audio> element
+    remoteVideo.muted = true;
     remoteVideo.volume = 0;
     remoteVideo.autoplay = true;
     remoteVideo.playsInline = true;
@@ -325,66 +330,177 @@ function attachRemoteStream(stream) {
                      stream.getVideoTracks().some(t => t.enabled && t.readyState === 'live');
     remoteAudioOnly.classList.toggle('hidden', hasVideo);
     
-    // Route audio through a dedicated <audio> element for CALL CHANNEL volume
-    // On mobile devices, <audio> elements route through the communication/call volume,
-    // not the media volume — ensuring the customer hears audio at call volume level
+    // === AUDIO ROUTING ===
+    // Known Chrome/Android bug: When getUserMedia() captures the microphone,
+    // Chrome switches Android to MODE_IN_COMMUNICATION, making the hardware
+    // volume buttons control STREAM_VOICE_CALL. BUT Chrome actually outputs
+    // WebRTC audio through STREAM_MUSIC (media volume). If media volume is
+    // low/muted, the user can't hear anything despite adjusting the volume.
+    //
+    // Solution: Use AudioContext GainNode to BOOST the audio signal (2-3x),
+    // then output via an <audio> element at max volume. This compensates
+    // for potentially low media volume and ensures audio is always audible.
     if (stream.getAudioTracks().length > 0) {
         try {
-            // Create audio-only stream for the dedicated audio element
-            const audioOnlyStream = new MediaStream(stream.getAudioTracks());
-            
-            if (!_remoteAudioElement) {
-                _remoteAudioElement = document.createElement('audio');
-                _remoteAudioElement.id = 'remote-audio-call-channel';
-                _remoteAudioElement.autoplay = true;
-                _remoteAudioElement.playsInline = true;
-                _remoteAudioElement.style.display = 'none';
-                document.body.appendChild(_remoteAudioElement);
-            }
-            
-            _remoteAudioElement.srcObject = audioOnlyStream;
-            _remoteAudioElement.muted = false;
-            _remoteAudioElement.volume = 1;
-            _remoteAudioElement.play().then(() => {
-                console.log('Call-channel audio: playing via <audio> element');
-                updateDebugOverlay('Audio: OK (Call-Kanal)');
-            }).catch(e => {
-                console.warn('Call-channel audio play failed:', e.name);
-                // Retry once
-                setTimeout(() => {
-                    _remoteAudioElement.play().catch(() => {
-                        console.warn('Call-channel audio retry also failed');
-                        // Last resort: unmute video element
-                        remoteVideo.muted = false;
-                        remoteVideo.volume = 1;
-                        updateDebugOverlay('Audio: Fallback (Video)');
-                    });
-                }, 500);
-            });
-            
-            // Also set up Web Audio as fallback (for desktop browsers only)
-            connectWebAudio(stream);
-            
-            console.log('Audio routed to call channel via <audio> element');
+            routeAudioWithBoost(stream);
         } catch(e) {
-            console.warn('Call-channel audio failed, falling back to video element:', e);
-            remoteVideo.muted = false;
-            remoteVideo.volume = 1;
+            console.warn('Boosted audio routing failed, direct fallback:', e);
+            routeAudioDirect(stream);
         }
     }
     
-    // Play the video element for video frames only (audio is muted on video element)
+    // Play the video element for video frames only
     remoteVideo.play().then(() => {
-        console.log('Remote video playing (muted — audio via call channel)');
+        console.log('Remote video playing (muted — audio via separate element)');
     }).catch(e => {
         console.warn('Video play failed:', e.name, '- retrying');
-        // Retry muted so at least video frames are displayed; audio goes through Web Audio
         remoteVideo.muted = true;
         remoteVideo.play().catch(() => {});
     });
     
+    // Show Android volume notification
+    if (_isAndroid && !_volumeNotificationShown) {
+        showVolumeNotification();
+    }
+    
     // Start audio health monitoring
     startAudioHealthCheck();
+}
+
+// Route audio through AudioContext GainNode for volume boost, then to <audio> element
+function routeAudioWithBoost(stream) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) {
+        routeAudioDirect(stream);
+        return;
+    }
+    
+    if (!_audioContext) {
+        _audioContext = new AudioCtx();
+    }
+    if (_audioContext.state === 'suspended') {
+        _audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
+    }
+    
+    // Clean up previous connections
+    if (_webAudioSource) {
+        try { _webAudioSource.disconnect(); } catch(e) {}
+    }
+    if (_gainNode) {
+        try { _gainNode.disconnect(); } catch(e) {}
+    }
+    
+    // Create source from remote stream
+    const audioOnlyStream = new MediaStream(stream.getAudioTracks());
+    _webAudioSource = _audioContext.createMediaStreamSource(audioOnlyStream);
+    
+    // Create GainNode to boost volume (compensates for low media volume on Android)
+    _gainNode = _audioContext.createGain();
+    _gainNode.gain.value = _isMobile ? 3.0 : 1.5; // 3x boost on mobile, 1.5x on desktop
+    
+    // Create a compressor to prevent clipping from the gain boost
+    const compressor = _audioContext.createDynamicsCompressor();
+    compressor.threshold.setValueAtTime(-10, _audioContext.currentTime);
+    compressor.knee.setValueAtTime(30, _audioContext.currentTime);
+    compressor.ratio.setValueAtTime(12, _audioContext.currentTime);
+    compressor.attack.setValueAtTime(0.003, _audioContext.currentTime);
+    compressor.release.setValueAtTime(0.25, _audioContext.currentTime);
+    
+    // Create destination to get a boosted MediaStream
+    const destination = _audioContext.createMediaStreamDestination();
+    
+    // Chain: source → gain → compressor → destination
+    _webAudioSource.connect(_gainNode);
+    _gainNode.connect(compressor);
+    compressor.connect(destination);
+    
+    // Also connect to speakers directly on desktop (dual path for reliability)
+    if (!_isMobile) {
+        compressor.connect(_audioContext.destination);
+    }
+    
+    // Route the boosted stream to the <audio> element
+    if (!_remoteAudioElement) {
+        _remoteAudioElement = document.createElement('audio');
+        _remoteAudioElement.id = 'remote-audio-output';
+        _remoteAudioElement.autoplay = true;
+        _remoteAudioElement.playsInline = true;
+        _remoteAudioElement.style.display = 'none';
+        document.body.appendChild(_remoteAudioElement);
+    }
+    
+    _remoteAudioElement.srcObject = destination.stream;
+    _remoteAudioElement.muted = false;
+    _remoteAudioElement.volume = 1;
+    _remoteAudioElement.play().then(() => {
+        console.log('Boosted audio: playing via <audio> element (gain:', _gainNode.gain.value, ')');
+        updateDebugOverlay('Audio: OK (Boost ' + _gainNode.gain.value + 'x)');
+    }).catch(e => {
+        console.warn('Boosted audio play failed:', e.name, '- retrying...');
+        setTimeout(() => {
+            _remoteAudioElement.play().catch(() => {
+                console.warn('Boosted audio retry failed, trying direct...');
+                routeAudioDirect(stream);
+            });
+        }, 500);
+    });
+    
+    console.log('Audio: GainNode boost =', _gainNode.gain.value, 'x, platform:', 
+        _isAndroid ? 'Android' : _isIOS ? 'iOS' : 'Desktop');
+}
+
+// Fallback: route audio directly through <audio> element without boost
+function routeAudioDirect(stream) {
+    const audioOnlyStream = new MediaStream(stream.getAudioTracks());
+    
+    if (!_remoteAudioElement) {
+        _remoteAudioElement = document.createElement('audio');
+        _remoteAudioElement.id = 'remote-audio-output';
+        _remoteAudioElement.autoplay = true;
+        _remoteAudioElement.playsInline = true;
+        _remoteAudioElement.style.display = 'none';
+        document.body.appendChild(_remoteAudioElement);
+    }
+    
+    _remoteAudioElement.srcObject = audioOnlyStream;
+    _remoteAudioElement.muted = false;
+    _remoteAudioElement.volume = 1;
+    _remoteAudioElement.play().then(() => {
+        console.log('Direct audio: playing via <audio> element');
+        updateDebugOverlay('Audio: OK (Direkt)');
+    }).catch(e => {
+        console.warn('Direct audio play failed:', e.name);
+        // Last resort: use video element for audio
+        remoteVideo.muted = false;
+        remoteVideo.volume = 1;
+        updateDebugOverlay('Audio: Fallback (Video)');
+    });
+}
+
+// Show notification on Android about volume control quirk
+function showVolumeNotification() {
+    _volumeNotificationShown = true;
+    const notification = document.createElement('div');
+    notification.id = 'volume-notification';
+    notification.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
+        'background:#303030;color:#fff;padding:12px 20px;border-radius:12px;z-index:9998;' +
+        'font-size:14px;text-align:center;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,0.3);' +
+        'animation:slideUp 0.3s ease;line-height:1.4;';
+    notification.innerHTML = '<div style="font-size:20px;margin-bottom:6px;">\uD83D\uDD0A</div>' +
+        '<strong>Tipp:</strong> Falls Sie nichts hören, erhöhen Sie die ' +
+        '<strong>Medienlautstärke</strong> Ihres Geräts.<br>' +
+        '<small style="opacity:0.7;">Lautstärketaste drücken → Schieberegler erweitern</small>';
+    notification.addEventListener('click', () => notification.remove());
+    document.body.appendChild(notification);
+    
+    // Auto-dismiss after 8 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.5s';
+            setTimeout(() => notification.remove(), 500);
+        }
+    }, 8000);
 }
 
 // Periodically check audio health and attempt recovery
@@ -414,16 +530,17 @@ function startAudioHealthCheck() {
             return;
         }
         
-        // Fix video element state if needed (only if Web Audio is NOT handling audio)
-        if (!_webAudioSource) {
-            if (remoteVideo.muted) {
-                console.warn('Audio health: video element muted, fixing');
-                remoteVideo.muted = false;
-                remoteVideo.volume = 1;
-            }
+        // Ensure the <audio> element is still playing
+        if (_remoteAudioElement && _remoteAudioElement.paused && _remoteAudioElement.srcObject) {
+            console.warn('Audio health: audio element paused, re-playing');
+            _remoteAudioElement.play().catch(() => {});
+        }
+        // Ensure video element stays muted (audio goes through <audio> element)
+        if (!remoteVideo.muted) {
+            remoteVideo.muted = true;
+            remoteVideo.volume = 0;
         }
         if (remoteVideo.paused) {
-            console.warn('Audio health: video paused, re-playing');
             remoteVideo.play().catch(() => {});
         }
     }, 5000);
@@ -436,52 +553,15 @@ function stopAudioHealthCheck() {
     }
 }
 
-function connectWebAudio(stream) {
-    // Web Audio API as secondary/fallback path (primarily for desktop browsers)
-    // On mobile, the <audio> element handles call-channel routing
-    if (_webAudioSource) {
-        try { _webAudioSource.disconnect(); } catch(e) {}
-        _webAudioSource = null;
-    }
-    
-    if (stream.getAudioTracks().length === 0) {
-        console.warn('connectWebAudio: no audio tracks in stream');
-        return;
-    }
-    
-    try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        
-        if (!_audioContext) {
-            _audioContext = new AudioCtx();
-        }
-        
-        if (_audioContext.state === 'suspended') {
-            _audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
-        }
-        
-        _webAudioSource = _audioContext.createMediaStreamSource(stream);
-        // On mobile, do NOT connect to destination (audio element handles it)
-        // On desktop, connect as additional path
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (!isMobile) {
-            _webAudioSource.connect(_audioContext.destination);
-            console.log('Web Audio: desktop fallback connected (state:', _audioContext.state, ')');
-        } else {
-            console.log('Web Audio: mobile — skipping destination (audio element handles call channel)');
-        }
-    } catch(e) {
-        console.warn('Web Audio fallback setup failed:', e);
-    }
-}
-
 function disconnectWebAudio() {
     if (_webAudioSource) {
         try { _webAudioSource.disconnect(); } catch(e) {}
         _webAudioSource = null;
     }
-    // Also clean up the call-channel audio element
+    if (_gainNode) {
+        try { _gainNode.disconnect(); } catch(e) {}
+        _gainNode = null;
+    }
     if (_remoteAudioElement) {
         _remoteAudioElement.srcObject = null;
         _remoteAudioElement.pause();
@@ -522,12 +602,12 @@ function tryRecoverAudio() {
         }
     }
     
-    // Force re-attach via the full attachRemoteStream pipeline (call-channel audio)
+    // Force re-attach via the full attachRemoteStream pipeline
     _lastRemoteStreamId = null;
     _lastRemoteAudioTrackId = null;
     if (stream) {
         attachRemoteStream(stream);
-        console.log('Audio recovery: re-attached via call channel');
+        console.log('Audio recovery: re-attached via boosted audio pipeline');
         updateDebugOverlay('Audio: Wiederhergestellt');
     }
 }
@@ -537,8 +617,6 @@ function ensureAudioPlaying() {
     if (!remoteVideo.srcObject) return;
     
     const stream = remoteVideo.srcObject;
-    
-    // Check audio track health
     const audioTracks = stream.getAudioTracks();
     audioTracks.forEach(track => {
         track.enabled = true;
@@ -550,15 +628,16 @@ function ensureAudioPlaying() {
         return;
     }
     
-    // Re-route audio through the call-channel <audio> element (NOT the video element)
-    if (_remoteAudioElement && audioTracks.length > 0) {
-        const audioOnlyStream = new MediaStream(audioTracks);
-        _remoteAudioElement.srcObject = audioOnlyStream;
-        _remoteAudioElement.play().catch(() => {});
-        // Keep video element muted — audio goes through <audio> element for call volume
-        remoteVideo.muted = true;
-        console.log('ensureAudioPlaying: re-routed to call channel');
+    // Re-route through the boosted audio pipeline
+    try {
+        routeAudioWithBoost(stream);
+    } catch(e) {
+        routeAudioDirect(stream);
     }
+    
+    // Keep video element muted — audio goes through <audio> element
+    remoteVideo.muted = true;
+    remoteVideo.volume = 0;
     
     // Ensure video frames are playing
     if (remoteVideo.paused) {
