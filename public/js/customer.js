@@ -1143,20 +1143,48 @@ async function toggleScreenShare() {
             localVideo.srcObject = localStream;
             
             if (currentCall && currentCall.peerConnection) {
-                // Find video sender (may have null track if started as audio-only)
-                let sender = currentCall.peerConnection.getSenders().find(s => 
-                    s.track ? s.track.kind === 'video' : false
-                );
-                // Also check for senders with no track (transceiver created with dummy)
-                if (!sender) {
-                    sender = currentCall.peerConnection.getSenders().find(s => !s.track);
+                const pc = currentCall.peerConnection;
+                
+                // Log all senders for debugging
+                const senders = pc.getSenders();
+                console.log('Screen share: all senders:', senders.length);
+                senders.forEach((s, i) => {
+                    console.log(`  sender[${i}]: track=${s.track ? s.track.kind + ' ' + s.track.readyState : 'null'}`);
+                });
+                
+                // Strategy: try all video senders, then transceivers, then addTrack
+                let replaced = false;
+                
+                // 1. Try to find video sender by track kind
+                for (const s of senders) {
+                    if (s.track && s.track.kind === 'video') {
+                        console.log('Screen share: replacing video sender (had track:', s.track.id, ')');
+                        await s.replaceTrack(screenTrack);
+                        replaced = true;
+                        break;
+                    }
                 }
-                if (sender) {
-                    await sender.replaceTrack(screenTrack);
-                } else {
-                    // No video sender exists at all, add the track
-                    currentCall.peerConnection.addTrack(screenTrack, localStream);
+                
+                // 2. Try transceivers if no video sender found
+                if (!replaced && pc.getTransceivers) {
+                    for (const t of pc.getTransceivers()) {
+                        if (t.mid !== null && t.sender && (!t.sender.track || t.sender.track.kind === 'video')) {
+                            console.log('Screen share: replacing via transceiver mid=', t.mid);
+                            await t.sender.replaceTrack(screenTrack);
+                            replaced = true;
+                            break;
+                        }
+                    }
                 }
+                
+                // 3. Last resort: add track
+                if (!replaced) {
+                    console.log('Screen share: no existing sender found, adding track');
+                    pc.addTrack(screenTrack, localStream);
+                }
+                
+                // Verify
+                console.log('Screen share: track replaced =', replaced, ', screenTrack readyState =', screenTrack.readyState);
             }
             
             if (dataConnection && dataConnection.open) {

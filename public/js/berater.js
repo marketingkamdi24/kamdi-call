@@ -486,11 +486,14 @@ function handleDataConnection(conn) {
         } else if (data.type === 'screen-share-started') {
             console.log('Customer started screen sharing');
             remoteVideo.classList.add('screen-share-active');
-            refreshRemoteVideo();
+            // Delay refresh to allow replaceTrack to propagate via WebRTC
+            setTimeout(() => refreshRemoteVideo(), 500);
+            setTimeout(() => refreshRemoteVideo(), 1500);
         } else if (data.type === 'screen-share-ended') {
             console.log('Customer stopped screen sharing');
             remoteVideo.classList.remove('screen-share-active');
-            refreshRemoteVideo();
+            setTimeout(() => refreshRemoteVideo(), 500);
+            setTimeout(() => refreshRemoteVideo(), 1500);
         } else if (data.type === 'video-toggle') {
             console.log('Customer video toggled:', data.videoEnabled);
             remoteAudioOnly.classList.toggle('hidden', data.videoEnabled);
