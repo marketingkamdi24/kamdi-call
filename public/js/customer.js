@@ -678,28 +678,18 @@ async function startCall(callType) {
     try {
         // Try to get media based on call type
         if (callType === 'video') {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-                    video: true
-                });
-                isVideoEnabled = true;
-            } catch (videoErr) {
-                // Fallback to audio-only if video fails
-                console.log('Video not available, trying audio-only:', videoErr.message);
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-                    video: false
-                });
-                
-                // Add dummy video track so WebRTC negotiates video transceivers
-                const dummyTrack = createDummyVideoTrack();
-                localStream.addTrack(dummyTrack);
-                
-                isVideoEnabled = false;
-                toggleVideoBtn.classList.add('muted');
-                callType = 'audio';
-            }
+            // Video call: start with camera OFF — customer must manually enable it
+            localStream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+                video: false
+            });
+            
+            // Add dummy video track so WebRTC negotiates video transceivers
+            const dummyTrack = createDummyVideoTrack();
+            localStream.addTrack(dummyTrack);
+            
+            isVideoEnabled = false;
+            toggleVideoBtn.classList.add('muted');
         } else {
             // Audio-only call
             localStream = await navigator.mediaDevices.getUserMedia({

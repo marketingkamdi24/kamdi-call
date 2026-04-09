@@ -612,24 +612,22 @@ function acceptCall() {
         toggleVideoBtn.classList.add('muted');
         console.log('Audio-only call: camera disabled');
     } else if (currentCustomer.callType === 'video' && localStream) {
-        // Ensure camera is active for video calls
-        const videoTrack = localStream.getVideoTracks()[0];
-        if (!videoTrack || videoTrack.readyState !== 'live') {
-            navigator.mediaDevices.getUserMedia({ video: true }).then(newStream => {
-                const newVideoTrack = newStream.getVideoTracks()[0];
-                localStream.getVideoTracks().forEach(t => { t.stop(); localStream.removeTrack(t); });
-                localStream.addTrack(newVideoTrack);
-                localVideo.srcObject = localStream;
-                isVideoEnabled = true;
-                toggleVideoBtn.classList.add('active');
-                toggleVideoBtn.classList.remove('muted');
-            }).catch(e => console.warn('Could not activate camera for video call:', e));
-        } else {
-            // Camera already live — ensure UI state matches
+        // Always activate real camera for video calls (replace dummy track if present)
+        navigator.mediaDevices.getUserMedia({ video: true }).then(newStream => {
+            const newVideoTrack = newStream.getVideoTracks()[0];
+            localStream.getVideoTracks().forEach(t => { t.stop(); localStream.removeTrack(t); });
+            localStream.addTrack(newVideoTrack);
+            localVideo.srcObject = localStream;
             isVideoEnabled = true;
             toggleVideoBtn.classList.add('active');
             toggleVideoBtn.classList.remove('muted');
-        }
+            console.log('Video call: camera activated');
+        }).catch(e => {
+            console.warn('Could not activate camera for video call:', e);
+            isVideoEnabled = false;
+            toggleVideoBtn.classList.remove('active');
+            toggleVideoBtn.classList.add('muted');
+        });
     }
     
     socket.emit('accept-call', currentCustomer.customerSocketId);
