@@ -920,20 +920,24 @@ async function flipCamera() {
     if (!localStream || isScreenSharing) return;
     
     try {
-        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
         
-        const newStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: currentFacingMode },
-            audio: false
-        });
-        
-        const newVideoTrack = newStream.getVideoTracks()[0];
+        // Stop old camera BEFORE requesting new one (Android needs the camera released first)
         const oldVideoTrack = localStream.getVideoTracks()[0];
-        
         if (oldVideoTrack) {
             oldVideoTrack.stop();
             localStream.removeTrack(oldVideoTrack);
         }
+        
+        // Use { exact: ... } so the browser is forced to pick the other camera (Android ignores ideal hints)
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { exact: newFacingMode } },
+            audio: false
+        });
+        
+        currentFacingMode = newFacingMode;
+        const newVideoTrack = newStream.getVideoTracks()[0];
+        
         localStream.addTrack(newVideoTrack);
         
         localVideo.srcObject = localStream;
@@ -950,6 +954,22 @@ async function flipCamera() {
     } catch (err) {
         console.error('Error flipping camera:', err);
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        // Try to re-acquire the original camera so user isn't left without video
+        try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { exact: currentFacingMode } },
+                audio: false
+            });
+            const fallbackTrack = fallbackStream.getVideoTracks()[0];
+            localStream.addTrack(fallbackTrack);
+            localVideo.srcObject = localStream;
+            if (currentCall && currentCall.peerConnection) {
+                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) await sender.replaceTrack(fallbackTrack);
+            }
+        } catch (fallbackErr) {
+            console.error('Could not re-acquire camera after flip failure:', fallbackErr);
+        }
     }
 }
 
