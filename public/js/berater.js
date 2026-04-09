@@ -1232,27 +1232,34 @@ function refreshRemoteVideo() {
         const track = videoReceiver.track;
         console.log('refreshRemoteVideo - video track:', track.id, 'readyState:', track.readyState);
         
-        // Use existing stream - do NOT create new MediaStream (anti-pattern that kills audio)
-        let remoteStream = null;
+        // Only swap the video track in the existing stream — do NOT rebuild audio pipeline
         const existingStream = remoteVideo.srcObject;
         if (existingStream) {
             const oldVideoTracks = existingStream.getVideoTracks();
             oldVideoTracks.forEach(t => existingStream.removeTrack(t));
             existingStream.addTrack(track);
-            remoteStream = existingStream;
-        }
-        
-        if (!remoteStream) {
-            remoteStream = new MediaStream();
+            console.log('refreshRemoteVideo - swapped video track in existing stream');
+        } else {
+            // No existing stream, create one with all receiver tracks
+            const newStream = new MediaStream();
             receivers.forEach(r => {
                 if (r.track && r.track.readyState === 'live') {
-                    remoteStream.addTrack(r.track);
+                    newStream.addTrack(r.track);
                 }
             });
+            remoteVideo.srcObject = newStream;
         }
         
-        _lastRemoteStreamId = null;
-        attachRemoteStream(remoteStream);
+        // Show/hide audio-only indicator
+        const hasVideo = track.enabled && track.readyState === 'live';
+        remoteAudioOnly.classList.toggle('hidden', hasVideo);
+        
+        // Ensure video element is playing
+        if (remoteVideo.paused) {
+            remoteVideo.play().catch(e => console.warn('refreshRemoteVideo play:', e.name));
+        }
+        
+        console.log('refreshRemoteVideo - done');
     }
 }
 
