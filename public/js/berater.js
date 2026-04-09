@@ -18,6 +18,20 @@ let beraterName = '';
 let authToken = '';
 let peerReconnectTimer = null;
 
+// Keep dummy canvas alive globally so GC doesn't kill the track
+let _dummyCanvas = null;
+function createDummyVideoTrack() {
+    if (!_dummyCanvas) {
+        _dummyCanvas = document.createElement('canvas');
+        _dummyCanvas.width = 640;
+        _dummyCanvas.height = 480;
+        const ctx = _dummyCanvas.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, _dummyCanvas.width, _dummyCanvas.height);
+    }
+    return _dummyCanvas.captureStream(1).getVideoTracks()[0];
+}
+
 // ICE servers loaded from server API (DSGVO: keine externen STUN-Server, keine Credentials im Client)
 let ICE_SERVERS = {
     iceServers: [
@@ -561,15 +575,8 @@ async function login() {
                 video: false
             });
             
-            // Create a black dummy video track so screen sharing can replace it later
-            const canvas = document.createElement('canvas');
-            canvas.width = 640;
-            canvas.height = 480;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            const dummyStream = canvas.captureStream(1);
-            const dummyVideoTrack = dummyStream.getVideoTracks()[0];
+            // Create a persistent dummy video track so screen sharing can replace it later
+            const dummyVideoTrack = createDummyVideoTrack();
             localStream.addTrack(dummyVideoTrack);
             
             console.log('Microphone activated successfully (audio-only mode with dummy video)');
@@ -693,14 +700,7 @@ function acceptCall() {
             localStream.removeTrack(videoTrack);
             
             // Add dummy video track for WebRTC negotiation
-            const canvas = document.createElement('canvas');
-            canvas.width = 640;
-            canvas.height = 480;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            const dummyStream = canvas.captureStream(1);
-            localStream.addTrack(dummyStream.getVideoTracks()[0]);
+            localStream.addTrack(createDummyVideoTrack());
             localVideo.srcObject = localStream;
         }
         isVideoEnabled = false;
@@ -765,15 +765,7 @@ function endCall(notifyServer = true) {
             localVideo.srcObject = localStream;
         }).catch(() => {
             // Camera not available, add dummy track
-            const canvas = document.createElement('canvas');
-            canvas.width = 640;
-            canvas.height = 480;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            const dummyStream = canvas.captureStream(1);
-            const dummyTrack = dummyStream.getVideoTracks()[0];
-            localStream.addTrack(dummyTrack);
+            localStream.addTrack(createDummyVideoTrack());
             localVideo.srcObject = localStream;
         });
     }
@@ -875,13 +867,7 @@ async function toggleVideo() {
         }
         
         // Create dummy video track
-        const canvas = document.createElement('canvas');
-        canvas.width = 640;
-        canvas.height = 480;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const dummyTrack = canvas.captureStream(1).getVideoTracks()[0];
+        const dummyTrack = createDummyVideoTrack();
         localStream.addTrack(dummyTrack);
         localVideo.srcObject = localStream;
         
@@ -1025,15 +1011,7 @@ async function toggleScreenShare() {
                 toggleVideoBtn.classList.remove('muted');
             } catch (camErr) {
                 console.log('Camera not available after screen share, creating dummy track');
-                // Create dummy black video track as replacement
-                const canvas = document.createElement('canvas');
-                canvas.width = 640;
-                canvas.height = 480;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#000000';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                const dummyStream = canvas.captureStream(1);
-                const dummyTrack = dummyStream.getVideoTracks()[0];
+                const dummyTrack = createDummyVideoTrack();
                 localStream.addTrack(dummyTrack);
                 localVideo.srcObject = localStream;
                 
@@ -1075,12 +1053,20 @@ async function toggleScreenShare() {
             localVideo.srcObject = localStream;
             
             if (currentCall && currentCall.peerConnection) {
-                const sender = currentCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                const pc = currentCall.peerConnection;
+                // Find video sender - try by track kind first, then by transceiver
+                let sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (!sender && pc.getTransceivers) {
+                    const vt = pc.getTransceivers().find(t => t.mid !== null && t.sender);
+                    if (vt) sender = vt.sender;
+                }
+                
                 if (sender) {
                     await sender.replaceTrack(screenTrack);
-                    console.log('Screen track replaced successfully');
+                    console.log('Screen track replaced successfully, sender track now:', sender.track?.id, 'readyState:', sender.track?.readyState);
                 } else {
-                    console.warn('No video sender found - this should not happen with dummy track');
+                    console.warn('No video sender found, adding track to PC');
+                    pc.addTrack(screenTrack, localStream);
                 }
             } else {
                 console.warn('No currentCall or peerConnection!');
