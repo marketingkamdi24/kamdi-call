@@ -684,12 +684,15 @@ function handleDataConnection(conn) {
         } else if (data.type === 'consultation-summary') {
             showConsultationSummary(data);
         } else if (data.type === 'screen-share-started') {
-            console.log('=== SCREEN SHARE STARTED ===');
-            console.log('Calling refreshRemoteVideo...');
-            refreshRemoteVideo();
+            console.log('Berater started screen sharing');
+            remoteVideo.classList.add('screen-share-active');
+            setTimeout(() => refreshRemoteVideo(), 500);
+            setTimeout(() => refreshRemoteVideo(), 1500);
         } else if (data.type === 'screen-share-ended') {
-            console.log('=== SCREEN SHARE ENDED ===');
-            refreshRemoteVideo();
+            console.log('Berater stopped screen sharing');
+            remoteVideo.classList.remove('screen-share-active');
+            setTimeout(() => refreshRemoteVideo(), 500);
+            setTimeout(() => refreshRemoteVideo(), 1500);
         } else if (data.type === 'video-toggle') {
             console.log('Berater video toggled:', data.videoEnabled);
             remoteAudioOnly.classList.toggle('hidden', data.videoEnabled);
@@ -1695,61 +1698,43 @@ function showConsultationSummary(summary) {
 }
 
 function refreshRemoteVideo() {
-    console.log('=== REFRESH REMOTE VIDEO ===');
-    
-    if (!currentCall) {
-        console.log('No currentCall - waiting for new call');
-        return;
-    }
-    
-    if (!currentCall.peerConnection) {
-        console.log('No peerConnection yet');
-        return;
-    }
+    if (!currentCall || !currentCall.peerConnection) return;
     
     const pc = currentCall.peerConnection;
     const receivers = pc.getReceivers();
-    console.log('Total receivers:', receivers.length);
-    
-    // Use the stream from the receiver directly - do NOT create a new MediaStream()
-    // Creating new MediaStream from remote tracks is an anti-pattern that kills audio
     const videoReceiver = receivers.find(r => r.track && r.track.kind === 'video');
     
     if (videoReceiver && videoReceiver.track) {
         const track = videoReceiver.track;
-        console.log('Video track found:', track.id, 'readyState:', track.readyState);
+        console.log('refreshRemoteVideo - video track:', track.id, 'readyState:', track.readyState);
         
-        // Get the stream that the receiver's track belongs to
-        // This preserves the original stream with both audio and video
-        let remoteStream = null;
-        if (videoReceiver.track.id && pc.getReceivers) {
-            // Try to find the original stream from ontrack events
-            const existingStream = remoteVideo.srcObject;
-            if (existingStream) {
-                // Update existing stream's video track instead of replacing the stream
-                const oldVideoTracks = existingStream.getVideoTracks();
-                oldVideoTracks.forEach(t => existingStream.removeTrack(t));
-                existingStream.addTrack(track);
-                remoteStream = existingStream;
-            }
-        }
-        
-        if (!remoteStream) {
-            // Fallback: use streams from the receiver (browser provides the original)
-            remoteStream = new MediaStream();
+        // Only swap the video track in the existing stream — do NOT rebuild audio pipeline
+        const existingStream = remoteVideo.srcObject;
+        if (existingStream) {
+            const oldVideoTracks = existingStream.getVideoTracks();
+            oldVideoTracks.forEach(t => existingStream.removeTrack(t));
+            existingStream.addTrack(track);
+            console.log('refreshRemoteVideo - swapped video track in existing stream');
+        } else {
+            const newStream = new MediaStream();
             receivers.forEach(r => {
                 if (r.track && r.track.readyState === 'live') {
-                    remoteStream.addTrack(r.track);
+                    newStream.addTrack(r.track);
                 }
             });
+            remoteVideo.srcObject = newStream;
         }
         
-        // Reset stream ID tracking so attachRemoteStream processes it
-        _lastRemoteStreamId = null;
-        attachRemoteStream(remoteStream);
-        console.log('Screen share video refreshed!');
-    } else {
-        console.log('No video receiver yet');
+        // Show/hide audio-only indicator
+        const hasVideo = track.enabled && track.readyState === 'live';
+        remoteAudioOnly.classList.toggle('hidden', hasVideo);
+        
+        // Ensure video element is playing
+        if (remoteVideo.paused) {
+            remoteVideo.play().catch(e => console.warn('refreshRemoteVideo play:', e.name));
+        }
+        
+        console.log('refreshRemoteVideo - done');
     }
 }
 
