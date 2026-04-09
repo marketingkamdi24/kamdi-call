@@ -324,6 +324,7 @@ io.on('connection', (socket) => {
 
     socket.on('customer-call', (data) => {
         const { name, peerId, callType } = data;
+        console.log('Customer call received:', name, 'type:', callType, 'peerId:', peerId);
         const customer = {
             name,
             peerId,
@@ -335,6 +336,8 @@ io.on('connection', (socket) => {
         activeConnections.set(socket.id, customer);
         
         const availableBerater = findAvailableBerater();
+        console.log('Available berater:', availableBerater ? availableBerater.name + ' (' + availableBerater.status + ')' : 'NONE');
+        console.log('All beraters:', Array.from(beraters.values()).map(b => b.name + ':' + b.status));
         if (availableBerater) {
             connectCustomerToBerater(customer, availableBerater);
         } else if (customerQueue.length < MAX_QUEUE_SIZE) {
