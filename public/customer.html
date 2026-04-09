@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>kamdi24 - Kundenberatung</title>
-    <link rel="stylesheet" href="/css/styles.css?v=20260409b">
+    <link rel="stylesheet" href="/css/styles.css?v=20260409c">
     <link rel="stylesheet" href="/css/tools.css?v=20260409">
     <link rel="stylesheet" href="/css/ipad.css?v=20260409">
     <link rel="stylesheet" href="/css/fonts.css">
@@ -163,6 +163,14 @@
                             </div>
                             <div class="local-video-wrapper">
                                 <video id="local-video" autoplay playsinline muted></video>
+                                <div id="local-audio-only" class="local-audio-only-indicator">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                        <line x1="12" y1="19" x2="12" y2="23"/>
+                                        <line x1="8" y1="23" x2="16" y2="23"/>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
 
@@ -172,7 +180,7 @@
                         </div>
 
                         <div class="call-controls">
-                            <button id="toggle-video-btn" class="control-btn active" title="Video ein/aus">
+                            <button id="toggle-video-btn" class="control-btn muted" title="Video ein/aus">
                                 <span class="btn-icon svg-icon">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <polygon points="23 7 16 12 23 17 23 7"/>
@@ -344,6 +352,6 @@
     <script src="/js/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/drawing-tools.js?v=20260128"></script>
-    <script src="/js/customer.js?v=20260409i"></script>
+    <script src="/js/customer.js?v=20260409j"></script>
 </body>
 </html>

@@ -710,9 +710,7 @@ function showConsentDialog(callType) {
         overlay.id = 'consent-overlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
         
-        const mediaText = callType === 'video' 
-            ? 'Kamera und Mikrofon' 
-            : 'Mikrofon';
+        const mediaText = 'Mikrofon';
         
         overlay.innerHTML = `
             <div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Inter',sans-serif;">
@@ -722,7 +720,7 @@ function showConsentDialog(callType) {
                     <ul style="padding-left:20px;margin-bottom:12px;">
                         <li>Die Übertragung erfolgt <strong>verschlüsselt</strong> und <strong>direkt</strong> zwischen den Endgeräten (Peer-to-Peer).</li>
                         <li>Es findet <strong>keine Aufzeichnung</strong> von Video, Audio oder Bildschirmfreigabe statt.</li>
-                        <li>Sie können ${callType === 'video' ? 'die Kamera jederzeit deaktivieren oder einen reinen Audioanruf wählen' : 'den Anruf jederzeit beenden'}.</li>
+                        <li>Der Anruf startet als <strong>reiner Audioanruf</strong>. Sie können die Kamera jederzeit per Klick auf das Video-Symbol aktivieren.</li>
                     </ul>
                     <p style="margin-bottom:16px;">Weitere Informationen finden Sie in unserer <a href="/datenschutz.html" target="_blank" style="color:#f18800;font-weight:500;">Datenschutzerklärung</a>.</p>
                 </div>
@@ -951,6 +949,11 @@ async function toggleVideo() {
             
             isVideoEnabled = true;
             toggleVideoBtn.classList.remove('muted');
+            toggleVideoBtn.classList.add('active');
+            
+            // Hide local audio-only indicator
+            const localAudioOnly = document.getElementById('local-audio-only');
+            if (localAudioOnly) localAudioOnly.classList.add('hidden');
             
             // Notify remote peer that video is now on
             if (dataConnection && dataConnection.open) {
@@ -988,6 +991,11 @@ async function toggleVideo() {
         
         isVideoEnabled = false;
         toggleVideoBtn.classList.add('muted');
+        toggleVideoBtn.classList.remove('active');
+        
+        // Show local audio-only indicator
+        const localAudioOnly = document.getElementById('local-audio-only');
+        if (localAudioOnly) localAudioOnly.classList.remove('hidden');
         
         // Notify remote peer that video is now off
         if (dataConnection && dataConnection.open) {
@@ -1450,7 +1458,7 @@ socket.on('berater-disconnected', () => {
     endCall();
 });
 
-startCallBtn.addEventListener('click', () => startCall('video'));
+startCallBtn.addEventListener('click', () => startCall('audio'));
 cancelCallBtn.addEventListener('click', cancelCall);
 endCallBtn.addEventListener('click', endCall);
 newCallBtn.addEventListener('click', () => {
