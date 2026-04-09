@@ -248,6 +248,7 @@ function handleIncomingPeerCall(call) {
 
 let _lastRemoteStreamId = null;
 let _remoteAudioEl = null;
+let _remoteAudioElement = null;
 let _audioContext = null;
 let _webAudioSource = null;
 
@@ -283,15 +284,52 @@ function attachRemoteStream(stream) {
                      stream.getVideoTracks().some(t => t.enabled && t.readyState === 'live');
     remoteAudioOnly.classList.toggle('hidden', hasVideo);
     
-    // === Web Audio API: Route audio directly to speakers ===
-    // This bypasses video element audio pipeline which can fail with dummy video tracks
-    connectWebAudio(stream);
+    // Route audio through a dedicated <audio> element for CALL CHANNEL volume
+    // On mobile devices, <audio> elements route through the communication/call volume,
+    // not the media volume — ensuring consistent audio volume
+    if (stream.getAudioTracks().length > 0) {
+        try {
+            const audioOnlyStream = new MediaStream(stream.getAudioTracks());
+            
+            if (!_remoteAudioElement) {
+                _remoteAudioElement = document.createElement('audio');
+                _remoteAudioElement.id = 'remote-audio-call-channel';
+                _remoteAudioElement.autoplay = true;
+                _remoteAudioElement.playsInline = true;
+                _remoteAudioElement.style.display = 'none';
+                document.body.appendChild(_remoteAudioElement);
+            }
+            
+            _remoteAudioElement.srcObject = audioOnlyStream;
+            _remoteAudioElement.muted = false;
+            _remoteAudioElement.volume = 1;
+            _remoteAudioElement.play().then(() => {
+                console.log('Call-channel audio: playing via <audio> element');
+            }).catch(e => {
+                console.warn('Call-channel audio play failed:', e.name);
+                _remoteAudioElement.play().catch(() => {});
+            });
+            
+            // Mute the video element to prevent double audio
+            remoteVideo.muted = true;
+            
+            // Web Audio as fallback for desktop
+            connectWebAudio(stream);
+            
+            console.log('Audio routed to call channel via <audio> element');
+        } catch(e) {
+            console.warn('Call-channel audio failed, using Web Audio:', e);
+            connectWebAudio(stream);
+        }
+    } else {
+        connectWebAudio(stream);
+    }
     
-    // Also play the video element as fallback
+    // Also play the video element for video display
     const playPromise = remoteVideo.play();
     if (playPromise) {
         playPromise.then(() => {
-            console.log('Remote video+audio playing successfully');
+            console.log('Remote video playing successfully');
         }).catch(e => {
             console.warn('Play failed:', e.name);
             if (e.name === 'NotAllowedError') {
@@ -302,7 +340,7 @@ function attachRemoteStream(stream) {
 }
 
 function connectWebAudio(stream) {
-    // Clean up previous Web Audio connection
+    // Web Audio API as secondary/fallback path (primarily for desktop browsers)
     if (_webAudioSource) {
         try { _webAudioSource.disconnect(); } catch(e) {}
         _webAudioSource = null;
@@ -315,35 +353,27 @@ function connectWebAudio(stream) {
     
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) {
-            console.warn('Web Audio API not available');
-            remoteVideo.muted = false;
-            remoteVideo.volume = 1;
-            return;
-        }
+        if (!AudioCtx) return;
         
         if (!_audioContext) {
             _audioContext = new AudioCtx();
         }
         
         if (_audioContext.state === 'suspended') {
-            _audioContext.resume().then(() => {
-                console.log('AudioContext resumed:', _audioContext.state);
-            }).catch(e => console.warn('AudioContext resume failed:', e));
+            _audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
         }
         
         _webAudioSource = _audioContext.createMediaStreamSource(stream);
-        _webAudioSource.connect(_audioContext.destination);
-        
-        // Mute the video element — Web Audio is the ONLY audio path
-        // This prevents double audio / echo
-        remoteVideo.muted = true;
-        
-        console.log('Web Audio: stream routed to speakers (AudioContext state:', _audioContext.state, ')');
+        // On mobile, do NOT connect to destination (audio element handles it)
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isMobile) {
+            _webAudioSource.connect(_audioContext.destination);
+            console.log('Web Audio: desktop fallback connected (state:', _audioContext.state, ')');
+        } else {
+            console.log('Web Audio: mobile — skipping destination (audio element handles call channel)');
+        }
     } catch(e) {
-        console.warn('Web Audio connection failed, falling back to video element:', e);
-        remoteVideo.muted = false;
-        remoteVideo.volume = 1;
+        console.warn('Web Audio fallback setup failed:', e);
     }
 }
 
@@ -355,6 +385,11 @@ function disconnectWebAudio() {
     if (_audioContext) {
         try { _audioContext.close(); } catch(e) {}
         _audioContext = null;
+    }
+    // Clean up the call-channel audio element
+    if (_remoteAudioElement) {
+        _remoteAudioElement.srcObject = null;
+        _remoteAudioElement.pause();
     }
 }
 
