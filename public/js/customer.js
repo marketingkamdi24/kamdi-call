@@ -993,6 +993,9 @@ async function toggleVideo() {
         toggleVideoBtn.classList.add('muted');
         toggleVideoBtn.classList.remove('active');
         
+        // If videos are swapped, swap back to normal before showing audio indicator
+        if (isVideoSwapped) swapVideos();
+        
         // Show local audio-only indicator
         const localAudioOnly = document.getElementById('local-audio-only');
         if (localAudioOnly) localAudioOnly.classList.remove('hidden');
@@ -1170,7 +1173,8 @@ function setupVideoClickToSwap() {
     
     if (localWrapper) {
         localWrapper.addEventListener('click', () => {
-            if (!isVideoSwapped) swapVideos();
+            // Only allow swap when camera is actually on
+            if (!isVideoSwapped && isVideoEnabled) swapVideos();
         });
     }
     
