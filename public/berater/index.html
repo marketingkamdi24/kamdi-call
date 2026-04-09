@@ -118,6 +118,9 @@
                 <button id="user-management-btn" class="nav-btn hidden">
                     <span>👥</span> Nutzerverwaltung
                 </button>
+                <button id="call-log-btn" class="nav-btn hidden">
+                    <span>📋</span> Anruf-Protokoll
+                </button>
                 <button id="logout-btn" class="nav-btn hidden">
                     <span>🚪</span> Abmelden
                 </button>
@@ -476,6 +479,47 @@
         </div>
     </div>
 
+    <!-- Call Log Modal -->
+    <div id="call-log-modal" class="modal hidden">
+        <div class="modal-content call-log-content">
+            <div class="modal-header">
+                <h2>📋 Anruf-Protokoll</h2>
+                <button class="modal-close" id="close-call-log-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="call-log-toolbar">
+                    <div class="call-log-filter">
+                        <label for="call-log-date">Datum:</label>
+                        <input type="date" id="call-log-date" class="call-log-date-input">
+                        <button id="call-log-filter-btn" class="btn btn-primary btn-sm">Filtern</button>
+                        <button id="call-log-reset-btn" class="btn btn-secondary btn-sm">Alle</button>
+                    </div>
+                    <div class="call-log-actions">
+                        <span id="call-log-count" class="call-log-count"></span>
+                        <button id="call-log-clear-btn" class="btn-delete btn-sm">Protokoll löschen</button>
+                    </div>
+                </div>
+                <div class="call-log-table-wrapper">
+                    <table class="user-table call-log-table" id="call-log-table">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Uhrzeit</th>
+                                <th>Berater</th>
+                                <th>Kunde</th>
+                                <th>Typ</th>
+                                <th>Dauer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="call-log-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <p id="call-log-empty" class="empty-queue hidden">Keine Anrufe vorhanden</p>
+            </div>
+        </div>
+    </div>
+
     <footer style="text-align:center;padding:12px 20px;color:#6c757d;font-size:0.75rem;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.95);border-top:1px solid #eee;z-index:10;">
         <p>&copy; 2026 kamdi24 &middot; <a href="/datenschutz.html" style="color:#457b9d;text-decoration:none;">Datenschutz</a> &middot; <a href="/impressum.html" style="color:#457b9d;text-decoration:none;">Impressum</a></p>
     </footer>
@@ -484,6 +528,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/drawing-tools.js?v=20260311c"></script>
     <script src="/js/pdf-generator.js?v=20260311c"></script>
-    <script src="/js/berater.js?v=20260409"></script>
+    <script src="/js/berater.js?v=20260409b"></script>
 </body>
 </html>

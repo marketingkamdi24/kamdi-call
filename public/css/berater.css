@@ -1245,3 +1245,77 @@
     cursor: not-allowed;
     border: 1px dashed #cbd5e1;
 }
+
+/* Call Log Styles */
+.call-log-content {
+    width: 850px;
+}
+
+.call-log-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.call-log-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.call-log-filter label {
+    font-size: 0.875rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.call-log-date-input {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-family: inherit;
+}
+
+.call-log-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.call-log-count {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.btn-sm {
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+}
+
+.call-log-table-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.call-log-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+@media (max-width: 900px) {
+    .call-log-content {
+        width: 100%;
+    }
+    .call-log-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -70,6 +70,35 @@ app.use(express.json({ limit: MAX_JSON_SIZE }));
 // User data file path
 const usersFilePath = join(__dirname, 'users.json');
 
+// Call log file path
+const callLogFilePath = join(__dirname, 'call-log.json');
+
+function loadCallLog() {
+    if (existsSync(callLogFilePath)) {
+        try {
+            return JSON.parse(readFileSync(callLogFilePath, 'utf8'));
+        } catch (e) {
+            return [];
+        }
+    }
+    return [];
+}
+
+function saveCallLog(log) {
+    writeFileSync(callLogFilePath, JSON.stringify(log, null, 2), 'utf8');
+}
+
+function addCallLogEntry(entry) {
+    const log = loadCallLog();
+    log.unshift(entry);
+    // Keep max 500 entries
+    if (log.length > 500) log.length = 500;
+    saveCallLog(log);
+}
+
+// Active calls tracking (for duration calculation)
+const activeCalls = new Map();
+
 // Load users from JSON file or create default
 async function loadUsers() {
     if (existsSync(usersFilePath)) {
@@ -300,6 +329,25 @@ app.get('/api/debug/state', (req, res) => {
     });
 });
 
+// Call Log API endpoints
+app.get('/api/call-log', (req, res) => {
+    const token = req.headers['x-admin-auth'];
+    if (!token || !sessionTokens.has(token)) {
+        return res.status(401).json({ message: 'Nicht autorisiert' });
+    }
+    const log = loadCallLog();
+    res.json(log);
+});
+
+app.delete('/api/call-log', (req, res) => {
+    const token = req.headers['x-admin-auth'];
+    if (!token || !sessionTokens.has(token)) {
+        return res.status(401).json({ message: 'Nicht autorisiert' });
+    }
+    saveCallLog([]);
+    res.json({ success: true });
+});
+
 // Queue configuration
 const MAX_QUEUE_SIZE = 20;
 const QUEUE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes max wait time
@@ -372,6 +420,22 @@ io.on('connection', (socket) => {
     socket.on('call-ended', (data) => {
         const berater = beraters.get(socket.id);
         if (berater) {
+            // Log the call
+            const callData = activeCalls.get(socket.id);
+            if (callData) {
+                const duration = Math.floor((Date.now() - callData.startTime) / 1000);
+                addCallLogEntry({
+                    id: randomUUID(),
+                    beraterName: callData.beraterName,
+                    customerName: callData.customerName,
+                    callType: callData.callType,
+                    startTime: callData.startTime,
+                    endTime: Date.now(),
+                    duration: duration
+                });
+                activeCalls.delete(socket.id);
+            }
+            
             // Notify the customer that the berater ended the call
             if (berater.currentCustomer && berater.currentCustomer.socketId) {
                 io.to(berater.currentCustomer.socketId).emit('berater-disconnected');
@@ -390,6 +454,14 @@ io.on('connection', (socket) => {
             const customer = activeConnections.get(customerId);
             if (customer) {
                 berater.currentCustomer = customer;
+                
+                // Track call start time for duration calculation
+                activeCalls.set(socket.id, {
+                    startTime: Date.now(),
+                    beraterName: berater.name,
+                    customerName: customer.name,
+                    callType: customer.callType
+                });
                 
                 // Remove customer from queue if they were in it
                 const queueIndex = customerQueue.findIndex(c => c.socketId === customerId);
@@ -441,6 +513,22 @@ io.on('connection', (socket) => {
             const berater = beraters.get(socket.id);
             console.log('Berater disconnected (ID:', socket.id, ')');
             
+            // Log the call if berater was in one
+            const callData = activeCalls.get(socket.id);
+            if (callData) {
+                const duration = Math.floor((Date.now() - callData.startTime) / 1000);
+                addCallLogEntry({
+                    id: randomUUID(),
+                    beraterName: callData.beraterName,
+                    customerName: callData.customerName,
+                    callType: callData.callType,
+                    startTime: callData.startTime,
+                    endTime: Date.now(),
+                    duration: duration
+                });
+                activeCalls.delete(socket.id);
+            }
+            
             // Notify the customer if berater was in a call
             if (berater.currentCustomer && berater.currentCustomer.socketId) {
                 io.to(berater.currentCustomer.socketId).emit('berater-disconnected');
@@ -454,6 +542,23 @@ io.on('connection', (socket) => {
         for (const [beraterSocketId, berater] of beraters) {
             if (berater.currentCustomer && berater.currentCustomer.socketId === socket.id) {
                 console.log('Customer disconnected from berater (ID:', berater.socketId, ')');
+                
+                // Log the call
+                const callData = activeCalls.get(beraterSocketId);
+                if (callData) {
+                    const duration = Math.floor((Date.now() - callData.startTime) / 1000);
+                    addCallLogEntry({
+                        id: randomUUID(),
+                        beraterName: callData.beraterName,
+                        customerName: callData.customerName,
+                        callType: callData.callType,
+                        startTime: callData.startTime,
+                        endTime: Date.now(),
+                        duration: duration
+                    });
+                    activeCalls.delete(beraterSocketId);
+                }
+                
                 io.to(beraterSocketId).emit('customer-disconnected');
                 berater.status = 'available';
                 berater.currentCustomer = null;

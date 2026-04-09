@@ -497,6 +497,8 @@ async function login() {
         logoutBtn.classList.remove('hidden');
         toggleStatusBtn.classList.remove('hidden');
         userManagementBtn.classList.remove('hidden');
+        const callLogBtnEl = document.getElementById('call-log-btn');
+        if (callLogBtnEl) callLogBtnEl.classList.remove('hidden');
         
         showSection('waiting');
         updateStatus('available');
@@ -525,6 +527,8 @@ function logout() {
     logoutBtn.classList.add('hidden');
     toggleStatusBtn.classList.add('hidden');
     userManagementBtn.classList.add('hidden');
+    const callLogBtnEl = document.getElementById('call-log-btn');
+    if (callLogBtnEl) callLogBtnEl.classList.add('hidden');
     
     showSection('login');
 }
@@ -1820,6 +1824,128 @@ async function saveUser() {
 function showUserFormError(message) {
     userFormError.textContent = message;
     userFormError.classList.remove('hidden');
+}
+
+// ==================== CALL LOG ====================
+const callLogModal = document.getElementById('call-log-modal');
+const callLogTableBody = document.getElementById('call-log-table-body');
+const callLogEmpty = document.getElementById('call-log-empty');
+const callLogTable = document.getElementById('call-log-table');
+const callLogCount = document.getElementById('call-log-count');
+const closeCallLogModal = document.getElementById('close-call-log-modal');
+const callLogDateInput = document.getElementById('call-log-date');
+const callLogFilterBtn = document.getElementById('call-log-filter-btn');
+const callLogResetBtn = document.getElementById('call-log-reset-btn');
+const callLogClearBtn = document.getElementById('call-log-clear-btn');
+const callLogBtn = document.getElementById('call-log-btn');
+
+let _callLogData = [];
+
+if (callLogBtn) {
+    callLogBtn.addEventListener('click', openCallLog);
+}
+
+if (closeCallLogModal) {
+    closeCallLogModal.addEventListener('click', closeCallLog);
+}
+
+if (callLogModal) {
+    callLogModal.addEventListener('click', (e) => {
+        if (e.target === callLogModal) closeCallLog();
+    });
+}
+
+if (callLogFilterBtn) {
+    callLogFilterBtn.addEventListener('click', () => {
+        const dateVal = callLogDateInput.value;
+        if (dateVal) {
+            renderCallLog(_callLogData.filter(entry => {
+                const entryDate = new Date(entry.startTime).toISOString().slice(0, 10);
+                return entryDate === dateVal;
+            }));
+        }
+    });
+}
+
+if (callLogResetBtn) {
+    callLogResetBtn.addEventListener('click', () => {
+        callLogDateInput.value = '';
+        renderCallLog(_callLogData);
+    });
+}
+
+if (callLogClearBtn) {
+    callLogClearBtn.addEventListener('click', async () => {
+        if (!confirm('Möchten Sie das gesamte Anruf-Protokoll wirklich löschen?')) return;
+        try {
+            await fetch('/api/call-log', {
+                method: 'DELETE',
+                headers: { 'x-admin-auth': authToken }
+            });
+            _callLogData = [];
+            renderCallLog([]);
+        } catch (err) {
+            console.error('Error clearing call log:', err);
+        }
+    });
+}
+
+async function openCallLog() {
+    callLogModal.classList.remove('hidden');
+    callLogDateInput.value = '';
+    try {
+        const response = await fetch('/api/call-log', {
+            headers: { 'x-admin-auth': authToken }
+        });
+        _callLogData = await response.json();
+        renderCallLog(_callLogData);
+    } catch (err) {
+        console.error('Error loading call log:', err);
+        _callLogData = [];
+        renderCallLog([]);
+    }
+}
+
+function closeCallLog() {
+    callLogModal.classList.add('hidden');
+}
+
+function formatCallDuration(seconds) {
+    if (!seconds || seconds < 0) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function renderCallLog(entries) {
+    if (!entries || entries.length === 0) {
+        callLogTableBody.innerHTML = '';
+        callLogTable.classList.add('hidden');
+        callLogEmpty.classList.remove('hidden');
+        callLogCount.textContent = '';
+        return;
+    }
+    
+    callLogTable.classList.remove('hidden');
+    callLogEmpty.classList.add('hidden');
+    callLogCount.textContent = entries.length + ' Anruf' + (entries.length !== 1 ? 'e' : '');
+    
+    callLogTableBody.innerHTML = entries.map(entry => {
+        const start = new Date(entry.startTime);
+        const date = start.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const time = start.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        const typeLabel = entry.callType === 'video' ? '📹 Video' : '📞 Audio';
+        const duration = formatCallDuration(entry.duration);
+        
+        return `<tr>
+            <td>${date}</td>
+            <td>${time}</td>
+            <td>${escapeHtml(entry.beraterName || '-')}</td>
+            <td>${escapeHtml(entry.customerName || '-')}</td>
+            <td>${typeLabel}</td>
+            <td>${duration} min</td>
+        </tr>`;
+    }).join('');
 }
 
 // ========== MOBILE NAVIGATION ==========
