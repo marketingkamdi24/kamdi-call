@@ -624,6 +624,11 @@ function acceptCall() {
                 toggleVideoBtn.classList.add('active');
                 toggleVideoBtn.classList.remove('muted');
             }).catch(e => console.warn('Could not activate camera for video call:', e));
+        } else {
+            // Camera already live — ensure UI state matches
+            isVideoEnabled = true;
+            toggleVideoBtn.classList.add('active');
+            toggleVideoBtn.classList.remove('muted');
         }
     }
     

@@ -359,6 +359,10 @@ io.on('connection', (socket) => {
     socket.on('call-ended', (data) => {
         const berater = beraters.get(socket.id);
         if (berater) {
+            // Notify the customer that the berater ended the call
+            if (berater.currentCustomer && berater.currentCustomer.socketId) {
+                io.to(berater.currentCustomer.socketId).emit('berater-disconnected');
+            }
             berater.status = 'available';
             berater.currentCustomer = null;
             broadcastBeraterList();
