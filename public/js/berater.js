@@ -102,7 +102,102 @@ const fileInput = document.getElementById('file-input');
 const queueList = document.getElementById('queue-list');
 const otherBeratersList = document.getElementById('other-beraters-list');
 
-const ringtone = document.getElementById('ringtone');
+// Ringtone using Web Audio API (open-source, no external file needed)
+const ringtone = (function() {
+    let audioCtx = null;
+    let oscillator1 = null;
+    let oscillator2 = null;
+    let gainNode = null;
+    let ringInterval = null;
+    let isPlaying = false;
+
+    function createContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function startRing() {
+        createContext();
+        // Classic phone ring: two tones (440Hz + 480Hz) alternating on/off
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = 0.3;
+        gainNode.connect(audioCtx.destination);
+
+        oscillator1 = audioCtx.createOscillator();
+        oscillator1.type = 'sine';
+        oscillator1.frequency.value = 440;
+        oscillator1.connect(gainNode);
+        oscillator1.start();
+
+        oscillator2 = audioCtx.createOscillator();
+        oscillator2.type = 'sine';
+        oscillator2.frequency.value = 480;
+        oscillator2.connect(gainNode);
+        oscillator2.start();
+
+        // Ring pattern: 1s on, 2s off
+        let ringOn = true;
+        gainNode.gain.value = 0.3;
+        ringInterval = setInterval(() => {
+            ringOn = !ringOn;
+            gainNode.gain.value = ringOn ? 0.3 : 0;
+        }, ringOn ? 1000 : 2000);
+
+        // More precise pattern: 1s ring, 2s silence
+        clearInterval(ringInterval);
+        let phase = 0;
+        ringInterval = setInterval(() => {
+            phase++;
+            if (phase % 3 === 1) {
+                gainNode.gain.value = 0.3; // ring on
+            } else if (phase % 3 === 2) {
+                gainNode.gain.value = 0; // silence
+            }
+        }, 1000);
+    }
+
+    function stopRing() {
+        if (ringInterval) {
+            clearInterval(ringInterval);
+            ringInterval = null;
+        }
+        if (oscillator1) {
+            try { oscillator1.stop(); } catch(e) {}
+            oscillator1 = null;
+        }
+        if (oscillator2) {
+            try { oscillator2.stop(); } catch(e) {}
+            oscillator2 = null;
+        }
+        if (gainNode) {
+            gainNode.disconnect();
+            gainNode = null;
+        }
+    }
+
+    return {
+        play: function() {
+            if (isPlaying) return Promise.resolve();
+            isPlaying = true;
+            startRing();
+            return Promise.resolve();
+        },
+        pause: function() {
+            isPlaying = false;
+            stopRing();
+        },
+        set currentTime(val) {
+            // no-op for API compatibility
+        },
+        get currentTime() {
+            return 0;
+        }
+    };
+})();
 
 function initPeer() {
     // Destroy old peer if exists
