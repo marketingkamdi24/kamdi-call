@@ -482,16 +482,24 @@ io.on('connection', (socket) => {
     });
 
     socket.on('reject-call', (customerId) => {
+        const berater = beraters.get(socket.id);
+        if (berater) {
+            berater.status = 'available';
+            berater.currentCustomer = null;
+            broadcastBeraterList();
+        }
         const customer = activeConnections.get(customerId);
         if (customer) {
-            const nextBerater = findAvailableBerater();
-            if (nextBerater) {
-                connectCustomerToBerater(customer, nextBerater);
-            } else {
-                customerQueue.unshift(customer);
-                io.to(customerId).emit('queue-position', { position: 1 });
+            // Remove customer from queue if they were in it
+            const queueIndex = customerQueue.findIndex(c => c.socketId === customerId);
+            if (queueIndex !== -1) {
+                customerQueue.splice(queueIndex, 1);
+                updateQueuePositions();
                 notifyBeratersOfQueue();
             }
+            // Notify customer that call was rejected
+            io.to(customerId).emit('call-rejected');
+            activeConnections.delete(customerId);
         }
     });
 

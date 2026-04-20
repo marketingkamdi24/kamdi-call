@@ -1533,10 +1533,15 @@ function makeCall(data) {
 }
 
 socket.on('call-rejected', () => {
-    showSection('queue');
     if (queueAudio) {
-        queueAudio.play().catch(e => console.log('Audio autoplay blocked'));
+        queueAudio.pause();
+        queueAudio.currentTime = 0;
     }
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    showSection('ended');
 });
 
 socket.on('berater-disconnected', () => {
