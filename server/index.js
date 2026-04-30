@@ -393,6 +393,21 @@ io.on('connection', (socket) => {
 
     socket.on('berater-login', (data) => {
         const { name, peerId } = data;
+
+        // Drop any stale entries for this Berater name whose socket is
+        // no longer live. Without this, every page reload / server restart
+        // / mobile-tab-suspend leaves a ghost in the beraters Map; the
+        // round-robin picker then routes incoming-call emits to a dead
+        // socket and the Berater never sees the ringing UI.
+        for (const [oldSocketId, b] of beraters) {
+            if (oldSocketId === socket.id) continue;
+            const stillConnected = io.sockets.sockets.has(oldSocketId);
+            if (b.name === name || !stillConnected) {
+                console.log('Removing stale berater entry', oldSocketId, '(name match:', b.name === name, 'connected:', stillConnected, ')');
+                beraters.delete(oldSocketId);
+            }
+        }
+
         beraters.set(socket.id, {
             name,
             peerId,
@@ -624,19 +639,40 @@ io.on('connection', (socket) => {
 });
 
 function findAvailableBerater() {
-    // Round-Robin: pick the available berater who has been idle the longest
+    // Round-Robin: pick the available berater who has been idle the longest.
+    // A berater whose underlying socket has died (browser closed, network
+    // dropped, server restarted) must be skipped — otherwise incoming-call
+    // emits vanish into a dead socket and the Berater never rings.
     let best = null;
     let oldestTime = Infinity;
     for (const [socketId, berater] of beraters) {
-        if (berater.status === 'available') {
-            const lastCall = berater.lastCallTime || 0;
-            if (lastCall < oldestTime) {
-                oldestTime = lastCall;
-                best = berater;
-            }
+        if (berater.status !== 'available') continue;
+        if (!io.sockets.sockets.has(socketId)) {
+            console.log('Skipping berater with dead socket:', socketId);
+            beraters.delete(socketId);
+            continue;
+        }
+        const lastCall = berater.lastCallTime || 0;
+        if (lastCall < oldestTime) {
+            oldestTime = lastCall;
+            best = berater;
         }
     }
     return best;
+}
+
+// Sweep stale berater registrations (sockets that disconnected without
+// a clean event, e.g. mobile tab suspended, network drop, deploy restart).
+function cleanupStaleBeraters() {
+    let removed = false;
+    for (const [socketId] of beraters) {
+        if (!io.sockets.sockets.has(socketId)) {
+            console.log('Cleanup: removing stale berater', socketId);
+            beraters.delete(socketId);
+            removed = true;
+        }
+    }
+    if (removed) broadcastBeraterList();
 }
 
 function connectCustomerToBerater(customer, berater) {
@@ -736,6 +772,7 @@ function cleanupStaleQueue() {
 }
 
 setInterval(() => {
+    cleanupStaleBeraters();
     notifyBeratersOfQueue();
     cleanupStaleQueue();
 }, 5000);
