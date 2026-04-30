@@ -18,18 +18,29 @@ let beraterName = '';
 let authToken = '';
 let peerReconnectTimer = null;
 
-// Keep dummy canvas alive globally so GC doesn't kill the track
+// Persistent black dummy canvas with a redraw timer so captureStream()
+// actually emits frames. Without continuous redraw the canvas stays "clean"
+// and Chrome produces zero video frames, leaving the remote receiver track
+// stuck in `muted: true` state for the whole call.
 let _dummyCanvas = null;
+let _dummyCtx = null;
+let _dummyDrawTimer = null;
 function createDummyVideoTrack() {
     if (!_dummyCanvas) {
         _dummyCanvas = document.createElement('canvas');
         _dummyCanvas.width = 640;
         _dummyCanvas.height = 480;
-        const ctx = _dummyCanvas.getContext('2d');
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, _dummyCanvas.width, _dummyCanvas.height);
+        _dummyCtx = _dummyCanvas.getContext('2d');
     }
-    return _dummyCanvas.captureStream(1).getVideoTracks()[0];
+    _dummyCtx.fillStyle = '#000000';
+    _dummyCtx.fillRect(0, 0, _dummyCanvas.width, _dummyCanvas.height);
+    if (!_dummyDrawTimer) {
+        _dummyDrawTimer = setInterval(() => {
+            _dummyCtx.fillStyle = '#000000';
+            _dummyCtx.fillRect(0, 0, _dummyCanvas.width, _dummyCanvas.height);
+        }, 100);
+    }
+    return _dummyCanvas.captureStream(10).getVideoTracks()[0];
 }
 
 // ICE servers loaded from server API (DSGVO: keine externen STUN-Server, keine Credentials im Client)
@@ -367,6 +378,34 @@ const _isAndroid = /Android/i.test(navigator.userAgent);
 const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const _isMobile = _isAndroid || _isIOS;
 
+// Must be called from inside a user-gesture handler (button click, etc.)
+// so the AudioContext starts in 'running' state. If the AudioContext is
+// created later inside an async PeerJS callback it stays 'suspended' and
+// resume() is silently rejected — which is why incoming audio was inaudible.
+function unlockAudio() {
+    if (!_audioContext) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) _audioContext = new AudioCtx();
+    }
+    if (_audioContext && _audioContext.state === 'suspended') {
+        _audioContext.resume()
+            .then(() => console.log('AudioContext unlocked (state:', _audioContext.state, ')'))
+            .catch(e => console.warn('AudioContext resume failed:', e));
+    }
+    if (!_remoteAudioElement) {
+        _remoteAudioElement = document.createElement('audio');
+        _remoteAudioElement.id = 'remote-audio-output';
+        _remoteAudioElement.autoplay = true;
+        _remoteAudioElement.playsInline = true;
+        _remoteAudioElement.style.display = 'none';
+        document.body.appendChild(_remoteAudioElement);
+    }
+    // Prime the element while we still have a user gesture
+    _remoteAudioElement.muted = false;
+    _remoteAudioElement.volume = 1;
+    _remoteAudioElement.play().catch(() => { /* no src yet, that's fine */ });
+}
+
 function attachRemoteStream(stream) {
     // Skip if same stream is already attached
     if (_lastRemoteStreamId === stream.id && remoteVideo.srcObject === stream) {
@@ -467,15 +506,13 @@ function routeAudioWithBoost(stream) {
     // Create destination to get a boosted MediaStream
     const destination = _audioContext.createMediaStreamDestination();
     
-    // Chain: source → gain → compressor → destination
+    // Chain: source → gain → compressor → destination(MediaStream)
+    // Only output via the <audio> element below — don't also wire to
+    // _audioContext.destination, otherwise the same audio plays twice
+    // and produces a noticeable echo on desktop.
     _webAudioSource.connect(_gainNode);
     _gainNode.connect(compressor);
     compressor.connect(destination);
-    
-    // Also connect to speakers directly on desktop (dual path for reliability)
-    if (!_isMobile) {
-        compressor.connect(_audioContext.destination);
-    }
     
     // Route the boosted stream to the <audio> element
     if (!_remoteAudioElement) {
@@ -633,6 +670,10 @@ async function login() {
         return;
     }
 
+    // Login click is the first reliable user gesture — unlock audio output
+    // here so incoming-call audio actually plays through the speakers.
+    unlockAudio();
+
     // Authenticate with server
     try {
         const response = await fetch('/api/berater/login', {
@@ -784,7 +825,11 @@ function acceptCall() {
         ringtone.pause();
         ringtone.currentTime = 0;
     }
-    
+
+    // Re-unlock audio at the moment of accepting (in case the page
+    // has been idle long enough that the context was suspended again).
+    unlockAudio();
+
     // Reset all video state for fresh call
     remoteVideo.srcObject = null;
     resetVideoSwapState();

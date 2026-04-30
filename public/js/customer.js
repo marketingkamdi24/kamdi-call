@@ -130,15 +130,29 @@ const fileInput = document.getElementById('file-input');
 
 const queueAudio = document.getElementById('queue-audio'); // May be null if audio element removed
 
-// Creates a black dummy video track for WebRTC negotiation
+// Persistent black dummy canvas so its captureStream() keeps emitting frames.
+// canvas.captureStream(N) only produces a frame when the canvas is "dirty";
+// a single fillRect() at creation time = 0 frames forever, leaving the remote
+// video track in `muted: true` state. Redrawing on a timer keeps it flowing.
+let _dummyCanvas = null;
+let _dummyCtx = null;
+let _dummyDrawTimer = null;
 function createDummyVideoTrack() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 640;
-    canvas.height = 480;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    const stream = canvas.captureStream(1);
+    if (!_dummyCanvas) {
+        _dummyCanvas = document.createElement('canvas');
+        _dummyCanvas.width = 640;
+        _dummyCanvas.height = 480;
+        _dummyCtx = _dummyCanvas.getContext('2d');
+    }
+    _dummyCtx.fillStyle = '#000000';
+    _dummyCtx.fillRect(0, 0, _dummyCanvas.width, _dummyCanvas.height);
+    if (!_dummyDrawTimer) {
+        _dummyDrawTimer = setInterval(() => {
+            _dummyCtx.fillStyle = '#000000';
+            _dummyCtx.fillRect(0, 0, _dummyCanvas.width, _dummyCanvas.height);
+        }, 100);
+    }
+    const stream = _dummyCanvas.captureStream(10);
     return stream.getVideoTracks()[0];
 }
 
@@ -408,15 +422,13 @@ function routeAudioWithBoost(stream) {
     // Create destination to get a boosted MediaStream
     const destination = _audioContext.createMediaStreamDestination();
     
-    // Chain: source → gain → compressor → destination
+    // Chain: source → gain → compressor → destination(MediaStream)
+    // Note: do NOT also connect to _audioContext.destination — that would play
+    // the same audio twice (once via Web Audio output, once via the <audio>
+    // element below) which causes echo/phasing on desktop.
     _webAudioSource.connect(_gainNode);
     _gainNode.connect(compressor);
     compressor.connect(destination);
-    
-    // Also connect to speakers directly on desktop (dual path for reliability)
-    if (!_isMobile) {
-        compressor.connect(_audioContext.destination);
-    }
     
     // Route the boosted stream to the <audio> element
     if (!_remoteAudioElement) {
@@ -982,14 +994,7 @@ async function toggleVideo() {
             localStream.removeTrack(videoTrack);
         }
         
-        // Create dummy video track
-        const canvas = document.createElement('canvas');
-        canvas.width = 640;
-        canvas.height = 480;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const dummyTrack = canvas.captureStream(1).getVideoTracks()[0];
+        const dummyTrack = createDummyVideoTrack();
         localStream.addTrack(dummyTrack);
         localVideo.srcObject = localStream;
         

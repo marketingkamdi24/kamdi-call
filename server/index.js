@@ -254,6 +254,11 @@ app.get('/api/ice-servers', (req, res) => {
     res.json({
         iceServers: [
             { urls: `stun:${TURN_CONFIG.host}:${TURN_CONFIG.port}` },
+            // Public Google STUN as a fallback in case the primary TURN/STUN
+            // host is unreachable. Without a reachable STUN, peers on
+            // different networks can't discover their server-reflexive
+            // candidates and ICE never finds a working path.
+            { urls: 'stun:stun.l.google.com:19302' },
             {
                 urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}`,
                 username: TURN_CONFIG.username,
