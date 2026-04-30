@@ -250,24 +250,30 @@ app.post('/api/users', requireAuth, async (req, res) => {
     res.json({ success: true, user: { id: newUser.id, username: newUser.username, createdAt: newUser.createdAt } });
 });
 
-// Public-relay fallback (Open Relay Project) used when the primary TURN
-// host is unreachable. Free for development/demo, rate-limited; replace
-// with your own TURN (or a Twilio/Xirsys NTS account) for production
-// traffic. To disable the public fallback set DISABLE_PUBLIC_TURN=1.
+// Public TURN fallback. Used only when PUBLIC_TURN_USERNAME and
+// PUBLIC_TURN_CREDENTIAL are configured as env vars. Get free
+// credentials (50 GB/month) by signing up at:
+//   https://dashboard.metered.ca/signup
+// Then set the two env vars on your host (e.g. on Render) — no code
+// change needed. Override PUBLIC_TURN_HOST if you use a different
+// provider (Twilio NTS / Xirsys / Cloudflare Realtime / your own).
 const PUBLIC_TURN = {
-    username: process.env.PUBLIC_TURN_USERNAME || 'openrelayproject',
-    credential: process.env.PUBLIC_TURN_CREDENTIAL || 'openrelayproject'
+    host: process.env.PUBLIC_TURN_HOST || 'a.relay.metered.ca',
+    username: process.env.PUBLIC_TURN_USERNAME || '',
+    credential: process.env.PUBLIC_TURN_CREDENTIAL || ''
 };
 
 // ICE server config API (DSGVO: TURN credentials only served server-side)
 app.get('/api/ice-servers', (req, res) => {
     const iceServers = [
         { urls: `stun:${TURN_CONFIG.host}:${TURN_CONFIG.port}` },
-        // Public Google STUN — helps peers discover their server-reflexive
-        // candidates when the primary STUN is unreachable. STUN alone does
-        // not relay media; symmetric/CGNAT peers still need TURN.
+        // Public STUN fallbacks — help peers discover their
+        // server-reflexive candidates if the primary STUN is unreachable.
+        // STUN alone does not relay media; symmetric/CGNAT peers still
+        // need TURN.
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun.cloudflare.com:3478' },
         {
             urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}`,
             username: TURN_CONFIG.username,
@@ -285,17 +291,16 @@ app.get('/api/ice-servers', (req, res) => {
         }
     ];
 
-    if (process.env.DISABLE_PUBLIC_TURN !== '1') {
-        // Open Relay Project — free public TURN. Mobile carriers and many
-        // residential networks are behind CGNAT/symmetric NAT, so a TURN
-        // relay is required for media to flow. Multiple ports/transports
-        // (UDP 80, TCP 80, UDP 443, TCP 443 over TLS) maximize the chance
-        // that at least one path survives strict firewalls.
+    // Mobile carriers and many residential networks are behind
+    // CGNAT/symmetric NAT, so a TURN relay is required for media to
+    // flow. Multiple ports/transports maximize the chance that at
+    // least one path survives strict firewalls.
+    if (PUBLIC_TURN.username && PUBLIC_TURN.credential) {
         iceServers.push(
-            { urls: 'turn:openrelay.metered.ca:80', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
-            { urls: 'turn:openrelay.metered.ca:80?transport=tcp', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
-            { urls: 'turn:openrelay.metered.ca:443', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
-            { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential }
+            { urls: `turn:${PUBLIC_TURN.host}:80`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
+            { urls: `turn:${PUBLIC_TURN.host}:80?transport=tcp`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
+            { urls: `turn:${PUBLIC_TURN.host}:443`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
+            { urls: `turns:${PUBLIC_TURN.host}:443?transport=tcp`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential }
         );
     }
 
