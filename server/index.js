@@ -40,7 +40,8 @@ const io = new Server(server);
 
 const peerServer = ExpressPeerServer(server, {
     debug: false,
-    path: '/'
+    path: '/',
+    proxied: true // honor X-Forwarded-* headers behind Render/other reverse proxies
 });
 
 app.use('/peerjs', peerServer);
@@ -249,32 +250,57 @@ app.post('/api/users', requireAuth, async (req, res) => {
     res.json({ success: true, user: { id: newUser.id, username: newUser.username, createdAt: newUser.createdAt } });
 });
 
+// Public-relay fallback (Open Relay Project) used when the primary TURN
+// host is unreachable. Free for development/demo, rate-limited; replace
+// with your own TURN (or a Twilio/Xirsys NTS account) for production
+// traffic. To disable the public fallback set DISABLE_PUBLIC_TURN=1.
+const PUBLIC_TURN = {
+    username: process.env.PUBLIC_TURN_USERNAME || 'openrelayproject',
+    credential: process.env.PUBLIC_TURN_CREDENTIAL || 'openrelayproject'
+};
+
 // ICE server config API (DSGVO: TURN credentials only served server-side)
 app.get('/api/ice-servers', (req, res) => {
+    const iceServers = [
+        { urls: `stun:${TURN_CONFIG.host}:${TURN_CONFIG.port}` },
+        // Public Google STUN — helps peers discover their server-reflexive
+        // candidates when the primary STUN is unreachable. STUN alone does
+        // not relay media; symmetric/CGNAT peers still need TURN.
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        {
+            urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}`,
+            username: TURN_CONFIG.username,
+            credential: TURN_CONFIG.credential
+        },
+        {
+            urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}?transport=tcp`,
+            username: TURN_CONFIG.username,
+            credential: TURN_CONFIG.credential
+        },
+        {
+            urls: `turns:${TURN_CONFIG.tlsHost}:${TURN_CONFIG.tlsPort}`,
+            username: TURN_CONFIG.username,
+            credential: TURN_CONFIG.credential
+        }
+    ];
+
+    if (process.env.DISABLE_PUBLIC_TURN !== '1') {
+        // Open Relay Project — free public TURN. Mobile carriers and many
+        // residential networks are behind CGNAT/symmetric NAT, so a TURN
+        // relay is required for media to flow. Multiple ports/transports
+        // (UDP 80, TCP 80, UDP 443, TCP 443 over TLS) maximize the chance
+        // that at least one path survives strict firewalls.
+        iceServers.push(
+            { urls: 'turn:openrelay.metered.ca:80', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
+            { urls: 'turn:openrelay.metered.ca:80?transport=tcp', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
+            { urls: 'turn:openrelay.metered.ca:443', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
+            { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential }
+        );
+    }
+
     res.json({
-        iceServers: [
-            { urls: `stun:${TURN_CONFIG.host}:${TURN_CONFIG.port}` },
-            // Public Google STUN as a fallback in case the primary TURN/STUN
-            // host is unreachable. Without a reachable STUN, peers on
-            // different networks can't discover their server-reflexive
-            // candidates and ICE never finds a working path.
-            { urls: 'stun:stun.l.google.com:19302' },
-            {
-                urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}`,
-                username: TURN_CONFIG.username,
-                credential: TURN_CONFIG.credential
-            },
-            {
-                urls: `turn:${TURN_CONFIG.host}:${TURN_CONFIG.port}?transport=tcp`,
-                username: TURN_CONFIG.username,
-                credential: TURN_CONFIG.credential
-            },
-            {
-                urls: `turns:${TURN_CONFIG.tlsHost}:${TURN_CONFIG.tlsPort}`,
-                username: TURN_CONFIG.username,
-                credential: TURN_CONFIG.credential
-            }
-        ],
+        iceServers,
         iceTransportPolicy: 'all',
         iceCandidatePoolSize: 10
     });
