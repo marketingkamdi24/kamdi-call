@@ -1512,6 +1512,10 @@ socket.on('incoming-call', (data) => {
 socket.on('queue-update', updateQueueDisplay);
 socket.on('berater-list', updateOtherBeraters);
 
+socket.on('file-received', (data) => {
+    addFileMessage(data.fileName, data.fileData, data.fileType, data.senderName, false);
+});
+
 socket.on('customer-disconnected', () => {
     if (ringtone) {
         ringtone.pause();

@@ -36,7 +36,9 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    maxHttpBufferSize: 16e6 // 16MB - allow file transfers via socket
+});
 
 const peerServer = ExpressPeerServer(server, {
     debug: false,
@@ -563,7 +565,16 @@ io.on('connection', (socket) => {
         });
     });
 
-    // Note: File sharing uses WebRTC DataChannel (P2P), not Socket.IO
+    socket.on('file-share', (data) => {
+        const { targetSocketId, fileName, fileData, fileType, senderName } = data;
+        io.to(targetSocketId).emit('file-received', {
+            senderName,
+            fileName,
+            fileData,
+            fileType,
+            timestamp: Date.now()
+        });
+    });
 
     socket.on('disconnect', () => {
         console.log('Socket disconnected:', socket.id);

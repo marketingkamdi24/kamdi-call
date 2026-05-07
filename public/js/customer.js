@@ -1549,6 +1549,10 @@ socket.on('call-rejected', () => {
     showSection('ended');
 });
 
+socket.on('file-received', (data) => {
+    addFileMessage(data.fileName, data.fileData, data.fileType, data.senderName, false);
+});
+
 socket.on('berater-disconnected', () => {
     console.warn('Berater disconnected during call');
     endCall();
