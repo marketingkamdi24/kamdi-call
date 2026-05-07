@@ -1329,13 +1329,17 @@ function handleFileSelect(e) {
 
     const reader = new FileReader();
     reader.onload = () => {
-        dataConnection.send({
-            type: 'file',
-            fileName: file.name,
-            fileData: reader.result,
-            fileType: file.type,
-            senderName: beraterName
-        });
+        // Send via Socket.IO (server relay) instead of PeerJS data channel
+        // PeerJS data channel crashes on iOS due to SCTP buffer limits
+        if (currentCustomer && currentCustomer.customerSocketId) {
+            socket.emit('file-share', {
+                targetSocketId: currentCustomer.customerSocketId,
+                fileName: file.name,
+                fileData: reader.result,
+                fileType: file.type,
+                senderName: beraterName
+            });
+        }
 
         addFileMessage(file.name, reader.result, file.type, 'Sie', true);
     };
