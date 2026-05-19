@@ -2,12 +2,85 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>kamdi24 - Berater Dashboard</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/berater.css">
-    <link rel="stylesheet" href="/css/tools.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css?v=20260409b">
+    <link rel="stylesheet" href="/css/berater.css?v=20260409b">
+    <link rel="stylesheet" href="/css/tools.css?v=20260409">
+    <link rel="stylesheet" href="/css/ipad.css?v=20260409">
+    <link rel="stylesheet" href="/css/fonts.css">
+    
+    <!-- Critical iPhone/Mobile Styles - Inline for guaranteed loading -->
+    <style>
+        /* Mobile: Show flip camera button + compact controls */
+        @media (max-width: 1024px) {
+            .control-btn.flip-camera {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            .chat-back-btn {
+                display: flex !important;
+                visibility: visible !important;
+            }
+            /* Compact call control buttons on mobile/tablet */
+            .call-controls {
+                gap: 8px !important;
+                padding: 10px 8px !important;
+                min-height: 65px !important;
+            }
+            .control-btn {
+                min-width: 48px !important;
+                max-width: 60px !important;
+                padding: 8px 6px !important;
+                flex: 0 1 auto !important;
+                border-radius: 12px !important;
+            }
+            .control-btn .btn-icon {
+                font-size: 1.2rem !important;
+            }
+            .control-btn .btn-label {
+                font-size: 0.5rem !important;
+                margin-top: 2px !important;
+            }
+        }
+        
+        /* iPhone specific */
+        @media (max-width: 480px) {
+            .chat-panel .chat-input-container,
+            .chat-panel-customer .chat-input-container {
+                display: flex !important;
+                min-height: 60px !important;
+                padding: 10px 12px !important;
+                background: #fff !important;
+            }
+            .chat-panel .chat-input-container input,
+            .chat-panel-customer .chat-input-container input {
+                display: block !important;
+                flex: 1 !important;
+                font-size: 16px !important;
+                height: 40px !important;
+                min-height: 40px !important;
+            }
+            .chat-panel .send-btn,
+            .chat-panel .file-upload-btn,
+            .chat-panel-customer .send-btn,
+            .chat-panel-customer .file-upload-btn {
+                display: flex !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+            
+            /* Sidebar mobile fix */
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
 </head>
 <body class="berater-body">
     <!-- Mobile Menu Button -->
@@ -23,8 +96,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <span class="logo-icon">🔥</span>
-                    <h1>kamdi<span class="accent">24</span></h1>
+                    <img src="/img/kamdi24-logo-white.svg" alt="kamdi24" class="logo-img">
                 </div>
                 <p class="dashboard-label">Berater Dashboard</p>
             </div>
@@ -44,6 +116,9 @@
                 </button>
                 <button id="user-management-btn" class="nav-btn hidden">
                     <span>👥</span> Nutzerverwaltung
+                </button>
+                <button id="call-log-btn" class="nav-btn hidden">
+                    <span>📋</span> Anruf-Protokoll
                 </button>
                 <button id="logout-btn" class="nav-btn hidden">
                     <span>🚪</span> Abmelden
@@ -124,7 +199,12 @@
                             <div class="remote-video-wrapper">
                                 <video id="remote-video" autoplay playsinline></video>
                                 <div id="remote-audio-only" class="audio-only-indicator hidden">
-                                    <span class="audio-icon">🎧</span>
+                                    <span class="audio-icon">
+                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                                            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                                        </svg>
+                                    </span>
                                     <p id="remote-customer-name">Kunde</p>
                                 </div>
                             </div>
@@ -143,40 +223,90 @@
 
                         <div class="call-controls">
                             <button id="toggle-video-btn" class="control-btn active" title="Video ein/aus">
-                                <span class="btn-icon">📹</span>
+                                <span class="btn-icon svg-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="23 7 16 12 23 17 23 7"/>
+                                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                                    </svg>
+                                </span>
                                 <span class="btn-label">Video</span>
                             </button>
                             <button id="toggle-audio-btn" class="control-btn active" title="Mikrofon ein/aus">
-                                <span class="btn-icon">🎤</span>
+                                <span class="btn-icon svg-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                        <line x1="12" y1="19" x2="12" y2="23"/>
+                                        <line x1="8" y1="23" x2="16" y2="23"/>
+                                    </svg>
+                                </span>
                                 <span class="btn-label">Mikro</span>
                             </button>
                             <button id="toggle-screen-btn" class="control-btn" title="Bildschirm teilen">
-                                <span class="btn-icon">🖥️</span>
+                                <span class="btn-icon svg-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                        <line x1="8" y1="21" x2="16" y2="21"/>
+                                        <line x1="12" y1="17" x2="12" y2="21"/>
+                                    </svg>
+                                </span>
                                 <span class="btn-label">Screen</span>
                             </button>
-                            <button id="flip-camera-btn" class="control-btn mobile-only" title="Kamera wechseln">
-                                <span class="btn-icon">🔄</span>
+                            <button id="flip-camera-btn" class="control-btn flip-camera" title="Kamera wechseln">
+                                <span class="btn-icon">
+                                    <svg class="flip-camera-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/>
+                                        <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="m18 22-3-3 3-3"/>
+                                        <path d="m6 2 3 3-3 3"/>
+                                    </svg>
+                                </span>
                                 <span class="btn-label">Kamera</span>
                             </button>
                             <button id="end-call-btn" class="control-btn end-call" title="Anruf beenden">
-                                <span class="btn-icon">📵</span>
-                                <span class="btn-label">Beenden</span>
+                                <span class="btn-icon svg-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/>
+                                        <line x1="1" y1="23" x2="23" y2="1"/>
+                                    </svg>
+                                </span>
+                                <span class="btn-label">Auflegen</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="chat-area">
+                    <div class="chat-area" id="chat-area">
                         <div class="chat-header">
-                            <h3>💬 Chat mit <span id="chat-customer-name"></span></h3>
+                            <button id="chat-back-btn" class="chat-back-btn" title="Zurück zum Video">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 12H5"/>
+                                    <path d="m12 19-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <h3>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px;">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                Chat mit <span id="chat-customer-name"></span>
+                            </h3>
+                            <button class="chat-close-btn mobile-only" id="chat-close-btn">✕</button>
                         </div>
                         <div id="chat-messages" class="chat-messages"></div>
                         <div class="chat-input-container">
                             <input type="text" id="chat-input" placeholder="Nachricht eingeben...">
-                            <label class="file-upload-btn" title="Datei senden">
-                                📎
+                            <label class="file-upload-btn" title="Datei senden" style="display:none;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                                </svg>
                                 <input type="file" id="file-input" hidden>
                             </label>
-                            <button id="send-message-btn" class="send-btn">➤</button>
+                            <button id="send-message-btn" class="send-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -184,7 +314,8 @@
         </main>
     </div>
 
-    <!-- Tools Panel -->
+    <!-- Tools Panel (ARCHIVED - hidden for now) -->
+    <!--
     <button id="tools-toggle-btn" class="tools-toggle-btn hidden">🛠️</button>
     
     <div id="tools-panel" class="tools-panel">
@@ -209,7 +340,6 @@
         </div>
         
         <div class="tools-panel-content">
-            <!-- Drawing Tools -->
             <div class="tools-section active" id="drawing-section">
                 <div class="drawing-toolbar">
                     <button class="draw-tool-btn active" data-tool="line" title="Linie">📏</button>
@@ -240,7 +370,6 @@
                 </p>
             </div>
             
-            <!-- Checklist -->
             <div class="tools-section" id="checklist-section">
                 <div class="checklist-container" id="checklist-items">
                     <div class="checklist-item" data-id="1">
@@ -281,7 +410,6 @@
                 <textarea class="notes-textarea" id="consultation-notes" placeholder="Notizen zur Beratung eingeben..."></textarea>
             </div>
             
-            <!-- Follow-up -->
             <div class="tools-section" id="followup-section">
                 <div class="followup-section">
                     <h4>📅 Termin vereinbaren</h4>
@@ -325,6 +453,7 @@
             </div>
         </div>
     </div>
+    -->
 
     <!-- User Management Modal -->
     <div id="user-management-modal" class="modal hidden">
@@ -389,10 +518,55 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <!-- Call Log Modal -->
+    <div id="call-log-modal" class="modal hidden">
+        <div class="modal-content call-log-content">
+            <div class="modal-header">
+                <h2>📋 Anruf-Protokoll</h2>
+                <button class="modal-close" id="close-call-log-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="call-log-toolbar">
+                    <div class="call-log-filter">
+                        <label for="call-log-date">Datum:</label>
+                        <input type="date" id="call-log-date" class="call-log-date-input">
+                        <button id="call-log-filter-btn" class="btn btn-primary btn-sm">Filtern</button>
+                        <button id="call-log-reset-btn" class="btn btn-secondary btn-sm">Alle</button>
+                    </div>
+                    <div class="call-log-actions">
+                        <span id="call-log-count" class="call-log-count"></span>
+                        <button id="call-log-clear-btn" class="btn-delete btn-sm">Protokoll löschen</button>
+                    </div>
+                </div>
+                <div class="call-log-table-wrapper">
+                    <table class="user-table call-log-table" id="call-log-table">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Uhrzeit</th>
+                                <th>Berater</th>
+                                <th>Kunde</th>
+                                <th>Typ</th>
+                                <th>Dauer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="call-log-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <p id="call-log-empty" class="empty-queue hidden">Keine Anrufe vorhanden</p>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align:center;padding:12px 20px;color:#6c757d;font-size:0.75rem;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.95);border-top:1px solid #eee;z-index:10;">
+        <p>&copy; 2026 kamdi24 &middot; <a href="/datenschutz.html" style="color:#f18800;text-decoration:none;">Datenschutz</a> &middot; <a href="/impressum.html" style="color:#f18800;text-decoration:none;">Impressum</a></p>
+    </footer>
+
+    <script src="/js/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/drawing-tools.js"></script>
-    <script src="/js/pdf-generator.js"></script>
-    <script src="/js/berater.js"></script>
+    <script src="/js/drawing-tools.js?v=20260311c"></script>
+    <script src="/js/pdf-generator.js?v=20260311c"></script>
+    <script src="/js/berater.js?v=20260420a"></script>
 </body>
 </html>

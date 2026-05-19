@@ -15,12 +15,14 @@
 }
 
 .sidebar {
-    background: linear-gradient(180deg, #1d3557 0%, #457b9d 100%);
+    background: linear-gradient(180deg, #303030 0%, #1a1a1a 100%);
     color: white;
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .sidebar-header {
@@ -31,6 +33,13 @@
 
 .sidebar .logo h1 {
     font-size: 1.75rem;
+    color: #ffffff;
+}
+
+.sidebar .logo-img {
+    height: 36px;
+    width: auto;
+    margin: 0 auto;
 }
 
 .dashboard-label {
@@ -68,19 +77,19 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #2a9d8f;
+    background: #28a745;
 }
 
 .status-dot.available {
-    background: #2a9d8f;
+    background: #28a745;
 }
 
 .status-dot.busy {
-    background: #e63946;
+    background: #dc3545;
 }
 
 .status-dot.ringing {
-    background: #f4a261;
+    background: #f18800;
     animation: blink 0.5s infinite;
 }
 
@@ -126,6 +135,9 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-y: auto;
+    max-height: 50vh;
+    -webkit-overflow-scrolling: touch;
 }
 
 .queue-item {
@@ -214,7 +226,7 @@
 
 .berater-login-section h2 {
     margin-bottom: 8px;
-    color: #1d3557;
+    color: #303030;
 }
 
 .berater-login-section p {
@@ -244,7 +256,7 @@
 }
 
 .waiting-section h2 {
-    color: #1d3557;
+    color: #303030;
     margin-bottom: 8px;
 }
 
@@ -289,7 +301,7 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 3px solid #2a9d8f;
+    border: 3px solid #f18800;
     animation: ring-expand 1.5s ease-out infinite;
 }
 
@@ -324,7 +336,7 @@
 }
 
 .incoming-call-card h2 {
-    color: #1d3557;
+    color: #303030;
     margin-bottom: 16px;
 }
 
@@ -334,7 +346,7 @@
     justify-content: center;
     gap: 12px;
     font-size: 1.25rem;
-    color: #457b9d;
+    color: #303030;
     margin-bottom: 32px;
 }
 
@@ -364,7 +376,7 @@
 }
 
 .video-area {
-    background: #1a1a2e;
+    background: #1e1e1e;
     display: flex;
     flex-direction: column;
     border-radius: 16px 0 0 16px;
@@ -373,8 +385,9 @@
 
 .video-container-berater {
     flex: 1;
+    min-height: 0;
     position: relative;
-    background: #0f0f23;
+    background: #111111;
 }
 
 .video-container-berater .remote-video-wrapper {
@@ -390,6 +403,12 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.video-container-berater .remote-video-wrapper video.screen-share-active,
+.video-container-berater .local-video-wrapper video.screen-share-active {
+    object-fit: contain;
+    background: #000;
 }
 
 .video-container-berater .local-video-wrapper {
@@ -456,6 +475,7 @@
     align-items: center;
     padding: 16px 24px;
     background: rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
 }
 
 .caller-details {
@@ -538,6 +558,11 @@
 }
 
 @media (max-width: 768px) {
+    /* Show mobile-only elements */
+    .mobile-only {
+        display: flex !important;
+    }
+
     .dashboard-container {
         grid-template-columns: 1fr;
     }
@@ -566,7 +591,7 @@
         z-index: 999;
         width: 44px;
         height: 44px;
-        background: #1d3557;
+        background: #303030;
         border: none;
         border-radius: 10px;
         color: white;
@@ -661,22 +686,34 @@
 
     /* Call section mobile */
     .call-section {
-        height: calc(100vh - 80px);
+        height: auto;
+        min-height: calc(100vh - 80px);
     }
 
     .call-layout {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr auto;
+        min-height: calc(100vh - 80px);
     }
 
     .video-area {
         border-radius: 12px 12px 0 0;
     }
 
+    .video-container-berater {
+        min-height: 250px;
+    }
+
     .video-container-berater .local-video-wrapper {
         width: 100px;
         bottom: 10px;
         right: 10px;
+        z-index: 20;
+        display: block !important;
+    }
+
+    .video-container-berater .local-video-wrapper video {
+        display: block !important;
     }
 
     .video-container-berater .remote-video-wrapper.video-small {
@@ -694,73 +731,148 @@
     }
 
     .call-controls {
-        gap: 10px;
-        padding: 12px;
-        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 8px;
+        flex-wrap: nowrap;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(30, 30, 30, 0.95) 0%, rgba(18, 18, 18, 0.98) 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .control-btn {
-        min-width: 58px;
-        padding: 10px;
+        min-width: 50px;
+        max-width: 62px;
+        padding: 10px 6px;
+        flex: 0 1 auto;
+        border-radius: 12px;
     }
 
     .control-btn .btn-icon {
-        font-size: 1.2rem;
+        font-size: 1.25rem;
     }
 
     .control-btn .btn-label {
         font-size: 0.55rem;
+        margin-top: 3px;
     }
 
-    /* Chat area mobile - slide in panel */
+    .control-btn.end-call {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+    }
+
+    /* Chat area mobile - inline below video (like customer) */
     .chat-area {
-        position: fixed;
-        right: -100%;
-        top: 0;
-        width: 100%;
-        max-width: 320px;
-        height: 100vh;
-        border-radius: 0;
-        transform: none;
-        transition: right 0.3s ease;
-        z-index: 100;
+        position: relative !important;
+        right: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        max-height: 200px;
+        border-radius: 0 0 12px 12px;
+        transform: none !important;
+        transition: none;
+        z-index: auto;
+        display: flex;
+        flex-direction: column;
+        border-top: 1px solid #e2e8f0;
+        overflow: hidden;
     }
 
     .chat-area.open {
-        right: 0;
+        transform: none !important;
+        right: auto !important;
+    }
+
+    /* Show chat back button on mobile */
+    .chat-area .chat-back-btn {
+        display: flex !important;
     }
 
     .chat-area .chat-header {
-        padding: 16px;
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e2e8f0;
+        flex-shrink: 0;
     }
 
-    /* Chat toggle button for mobile */
-    .mobile-chat-btn {
+    .chat-area .chat-messages {
+        flex: 1;
+        min-height: 60px;
+        max-height: 80px;
+        padding: 8px 12px;
+        overflow-y: auto;
+    }
+
+    .chat-area .chat-input-container {
+        padding: 8px 12px;
         display: flex !important;
-        position: fixed;
-        bottom: 100px;
-        right: 12px;
-        z-index: 99;
-        width: 50px;
-        height: 50px;
+        gap: 8px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        flex-shrink: 0;
+        align-items: center;
+    }
+
+    .chat-area .chat-input-container input {
+        flex: 1;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 16px !important;
+        min-width: 0;
+    }
+
+    .chat-area .chat-input-container .send-btn {
+        padding: 10px 14px;
         background: var(--primary-color);
-        border: none;
-        border-radius: 50%;
         color: white;
-        font-size: 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .chat-area .chat-input-container .file-upload-btn {
+        flex-shrink: 0;
+    }
+
+    /* Hide close button - chat is always visible inline */
+    .chat-close-btn {
+        display: none !important;
+    }
+
+    /* Hide mobile chat toggle button - chat is always visible inline */
+    .mobile-chat-btn {
+        display: none !important;
+    }
+
+    /* Tools button - respect hidden class */
+    .tools-toggle-btn.hidden {
+        display: none !important;
+    }
+
+    .tools-toggle-btn:not(.hidden) {
+        display: flex !important;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
 
     /* Tools panel mobile */
     .tools-toggle-btn {
+        top: auto;
         bottom: 170px;
         right: 12px;
         width: 50px;
         height: 50px;
         font-size: 1.25rem;
+        transform: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .tools-panel {
@@ -880,13 +992,6 @@
         font-size: 0.5rem;
     }
 
-    .mobile-chat-btn {
-        width: 44px;
-        height: 44px;
-        bottom: 90px;
-        right: 8px;
-    }
-
     .tools-toggle-btn {
         width: 44px;
         height: 44px;
@@ -895,7 +1000,15 @@
     }
 
     .chat-area {
-        max-width: 100%;
+        max-height: none !important;
+        min-height: 180px;
+        flex: 1;
+    }
+
+    .chat-area .chat-messages {
+        flex: 1;
+        min-height: 60px;
+        max-height: none;
     }
 }
 
@@ -1144,4 +1257,78 @@
     color: #475569;
     cursor: not-allowed;
     border: 1px dashed #cbd5e1;
+}
+
+/* Call Log Styles */
+.call-log-content {
+    width: 850px;
+}
+
+.call-log-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.call-log-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.call-log-filter label {
+    font-size: 0.875rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.call-log-date-input {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-family: inherit;
+}
+
+.call-log-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.call-log-count {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.btn-sm {
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+}
+
+.call-log-table-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.call-log-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+@media (max-width: 900px) {
+    .call-log-content {
+        width: 100%;
+    }
+    .call-log-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

@@ -80,17 +80,17 @@ class ConsultationSummary {
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #e63946; padding-bottom: 20px; margin-bottom: 30px; }
-        .logo { font-size: 28px; font-weight: bold; color: #1d3557; }
-        .logo span { color: #e63946; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #f18800; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 28px; font-weight: bold; color: #303030; }
+        .logo span { color: #f18800; }
         .meta { text-align: right; color: #666; }
         .section { margin-bottom: 30px; }
-        .section-title { font-size: 18px; font-weight: 600; color: #1d3557; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #303030; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .info-item { background: #f8f9fa; padding: 12px 15px; border-radius: 8px; }
         .info-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-        .info-value { font-size: 16px; font-weight: 500; color: #1d3557; margin-top: 4px; }
-        .product-config { background: linear-gradient(135deg, #1d3557 0%, #457b9d 100%); color: white; padding: 25px; border-radius: 12px; }
+        .info-value { font-size: 16px; font-weight: 500; color: #303030; margin-top: 4px; }
+        .product-config { background: linear-gradient(135deg, #303030 0%, #1a1a1a 100%); color: white; padding: 25px; border-radius: 12px; }
         .product-title { font-size: 22px; margin-bottom: 15px; }
         .product-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .product-item { background: rgba(255,255,255,0.15); padding: 10px 15px; border-radius: 6px; }

@@ -22,3 +22,6 @@ Thumbs.db
 # Build output
 dist/
 build/
+
+# User credentials (Art. 32 DSGVO - Vertraulichkeit)
+server/users.json

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1",
+    "username": "Max Mustermann",
+    "password": "$2b$10$YnWfwxvRvru1yCdr5liCNe6perUH8KQ0ZHSzQtBadORJVCYkXleGm",
+    "createdAt": "2026-02-24T16:07:43.943Z"
+  },
+  {
+    "id": "2",
+    "username": "Anna Schmidt",
+    "password": "$2b$10$5ioEDspJnTGwTNfwBcqNMu7Kc0fer/2krD.PT5FqjZjuOFs4l/3CC",
+    "createdAt": "2026-02-24T16:07:43.944Z"
+  }
+]

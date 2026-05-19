@@ -1,18 +1,18 @@
 :root {
-    --primary-color: #e63946;
-    --primary-dark: #c1121f;
-    --secondary-color: #457b9d;
-    --accent-color: #f77f00;
-    --background-color: #f8f9fa;
+    --primary-color: #f18800;
+    --primary-dark: #d97a00;
+    --secondary-color: #303030;
+    --accent-color: #f18800;
+    --background-color: #f5f5f5;
     --card-background: #ffffff;
-    --text-primary: #1d3557;
-    --text-secondary: #6c757d;
-    --success-color: #2a9d8f;
-    --danger-color: #e63946;
-    --warning-color: #f4a261;
+    --text-primary: #303030;
+    --text-secondary: #666666;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #f18800;
     --border-radius: 12px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -23,7 +23,7 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #f5f5f5;
     min-height: 100vh;
     color: var(--text-primary);
 }
@@ -56,15 +56,21 @@ body {
 .logo h1 {
     font-size: 2.5rem;
     font-weight: 700;
-    color: white;
+    color: var(--text-primary);
 }
 
 .logo h1 .accent {
-    color: var(--accent-color);
+    color: var(--primary-color);
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    display: block;
 }
 
 .tagline {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-secondary);
     font-size: 1.1rem;
     margin-top: 8px;
 }
@@ -119,14 +125,47 @@ body {
 .form-group input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+    box-shadow: 0 0 0 3px rgba(241, 136, 0, 0.15);
 }
 
 .call-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 16px;
     margin-bottom: 30px;
+}
+
+.btn-start-call {
+    background: linear-gradient(135deg, #f18800 0%, #e07600 100%);
+    color: white;
+    padding: 18px 32px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(241, 136, 0, 0.3);
+    width: 100%;
+}
+
+.btn-start-call:hover {
+    background: linear-gradient(135deg, #e07600 0%, #cc6a00 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(241, 136, 0, 0.4);
+}
+
+.btn-start-call:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(241, 136, 0, 0.3);
+}
+
+.btn-start-call svg {
+    flex-shrink: 0;
 }
 
 .btn {
@@ -190,6 +229,17 @@ body {
 
 .btn-icon {
     font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon.svg-icon {
+    font-size: inherit;
+}
+
+.btn-icon svg {
+    display: block;
 }
 
 .berater-status {
@@ -279,6 +329,7 @@ body {
     border-radius: 50%;
     border: 3px solid var(--primary-color);
     animation: ripple 1.5s infinite;
+    opacity: 0.7;
 }
 
 @keyframes ripple {
@@ -295,6 +346,14 @@ body {
 .queue-icon {
     font-size: 3rem;
     z-index: 1;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.queue-icon svg {
+    stroke: var(--primary-color);
 }
 
 .queue-position {
@@ -351,6 +410,14 @@ body {
 .connecting-icon {
     font-size: 2.5rem;
     z-index: 1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.connecting-icon svg {
+    stroke: white;
 }
 
 .call-section {
@@ -359,7 +426,7 @@ body {
     max-width: 1200px;
     height: calc(100vh - 40px);
     max-height: 700px;
-    background: #1a1a2e;
+    background: #1e1e1e;
     border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
@@ -374,7 +441,7 @@ body {
 .video-area-customer {
     display: flex;
     flex-direction: column;
-    background: #1a1a2e;
+    background: #1e1e1e;
     border-radius: var(--border-radius) 0 0 var(--border-radius);
 }
 
@@ -446,7 +513,7 @@ body {
     position: relative;
     width: 100%;
     aspect-ratio: 16 / 9;
-    background: #0f0f23;
+    background: #111111;
 }
 
 .remote-video-wrapper {
@@ -458,6 +525,12 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.remote-video-wrapper video.screen-share-active,
+.local-video-wrapper video.screen-share-active {
+    object-fit: contain;
+    background: #000;
 }
 
 .local-video-wrapper {
@@ -472,11 +545,29 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
     transition: transform 0.2s, border-color 0.2s;
+    z-index: 10;
 }
 
 .local-video-wrapper:hover {
     transform: scale(1.05);
     border-color: rgba(255, 255, 255, 0.5);
+}
+
+.local-audio-only-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+    z-index: 2;
+}
+
+.local-audio-only-indicator.hidden {
+    display: none;
 }
 
 .local-video-wrapper video {
@@ -535,14 +626,26 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #2a2a4a 0%, #1a1a2e 100%);
+    z-index: 5;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
     color: white;
 }
 
 .audio-icon {
     font-size: 5rem;
     margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.audio-icon svg {
+    stroke: rgba(255, 255, 255, 0.7);
 }
 
 .call-info {
@@ -568,9 +671,10 @@ body {
     align-items: center;
     gap: 24px;
     padding: 16px 20px;
-    background: #16162a;
+    background: #181818;
     min-height: 80px;
     z-index: 10;
+    flex-shrink: 0;
 }
 
 .control-btn {
@@ -593,6 +697,9 @@ body {
 .control-btn .btn-icon {
     font-size: 1.5rem;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .control-btn .btn-label {
@@ -609,8 +716,8 @@ body {
 }
 
 .control-btn.active {
-    background: #28a745;
-    border-color: #28a745;
+    background: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .control-btn.muted {
@@ -626,6 +733,75 @@ body {
 .control-btn.end-call:hover {
     background: #c82333;
     border-color: #c82333;
+}
+
+/* ===== Camera Flip Button ===== */
+.control-btn.flip-camera {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.control-btn.flip-camera::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.control-btn.flip-camera:hover {
+    background: #444444;
+    border-color: #444444;
+    transform: scale(1.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn.flip-camera:hover::before {
+    left: 100%;
+}
+
+.control-btn.flip-camera:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn.flip-camera .flip-camera-icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-btn.flip-camera:hover .flip-camera-icon {
+    transform: rotateY(180deg);
+}
+
+.control-btn.flip-camera.flipping .flip-camera-icon {
+    animation: flipRotate 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes flipRotate {
+    0% { transform: rotateY(0deg) scale(1); }
+    50% { transform: rotateY(90deg) scale(0.8); }
+    100% { transform: rotateY(180deg) scale(1); }
+}
+
+/* Hide on desktop (only useful on mobile/tablet with multiple cameras) */
+@media (min-width: 1025px) {
+    .control-btn.flip-camera {
+        display: none;
+    }
+}
+
+/* Show and optimize for tablet/mobile */
+@media (max-width: 1024px) {
+    .control-btn.flip-camera {
+        display: flex;
+    }
 }
 
 .chat-panel {
@@ -648,11 +824,39 @@ body {
     align-items: center;
     padding: 16px;
     border-bottom: 1px solid #e2e8f0;
+    gap: 12px;
 }
 
 .chat-header h3 {
     font-size: 1rem;
     color: var(--text-primary);
+    flex: 1;
+}
+
+/* Chat Back Button - Hidden on Desktop */
+.chat-back-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.chat-back-btn:hover {
+    background: #e2e8f0;
+}
+
+.chat-back-btn:active {
+    transform: scale(0.9);
+    background: #cbd5e1;
 }
 
 .close-btn {
@@ -685,6 +889,10 @@ body {
     background: var(--primary-color);
     color: white;
     border-bottom-right-radius: 4px;
+}
+
+.chat-message.sent .sender {
+    color: rgba(255,255,255,0.85);
 }
 
 .chat-message.received {
@@ -743,11 +951,16 @@ body {
     justify-content: center;
     width: 40px;
     height: 40px;
+    min-width: 40px;
+    max-width: 40px;
     background: #f1f5f9;
     border-radius: 50%;
     cursor: pointer;
     font-size: 1.25rem;
     transition: background 0.2s;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .file-upload-btn:hover {
@@ -757,6 +970,7 @@ body {
 .send-btn {
     width: 40px;
     height: 40px;
+    min-width: 40px;
     background: var(--primary-color);
     color: white;
     border: none;
@@ -764,6 +978,10 @@ body {
     cursor: pointer;
     font-size: 1rem;
     transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .send-btn:hover {
@@ -783,6 +1001,9 @@ body {
 .ended-icon {
     font-size: 4rem;
     margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .call-ended-content h2 {
@@ -797,7 +1018,7 @@ body {
 .footer {
     text-align: center;
     padding: 20px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
     font-size: 0.9rem;
 }
 
@@ -845,7 +1066,6 @@ body {
     }
 
     .call-buttons {
-        grid-template-columns: 1fr;
         gap: 12px;
     }
 
@@ -905,16 +1125,21 @@ body {
     }
 
     .call-controls {
-        gap: 12px;
-        padding: 12px 10px;
+        gap: 8px;
+        padding: 12px 8px;
         min-height: 70px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(30, 30, 30, 0.95) 0%, rgba(18, 18, 18, 0.98) 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .control-btn {
-        min-width: 60px;
-        padding: 10px 12px;
-        border-radius: 10px;
+        min-width: 50px;
+        max-width: 62px;
+        padding: 10px 6px;
+        flex: 0 1 auto;
+        border-radius: 12px;
     }
 
     .control-btn .btn-icon {
@@ -922,7 +1147,22 @@ body {
     }
 
     .control-btn .btn-label {
-        font-size: 0.6rem;
+        font-size: 0.55rem;
+        margin-top: 3px;
+    }
+
+    .control-btn.end-call {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+    }
+
+    /* Show flip camera button on tablet */
+    .control-btn.flip-camera {
+        display: flex !important;
+    }
+
+    /* Show chat back button on tablet */
+    .chat-back-btn {
+        display: flex !important;
     }
 
     .chat-panel-customer {
@@ -950,7 +1190,9 @@ body {
 
     .chat-input-container input {
         padding: 8px 12px;
-        font-size: 0.85rem;
+        font-size: 16px !important; /* Prevents iOS zoom on focus */
+        -webkit-appearance: none;
+        appearance: none;
     }
 
     .file-upload-btn,
@@ -1100,6 +1342,18 @@ body {
         font-size: 0.55rem;
     }
 
+    /* Show flip camera and back button on phones */
+    .control-btn.flip-camera {
+        display: flex !important;
+        min-width: 50px;
+    }
+
+    .chat-back-btn {
+        display: flex !important;
+        width: 36px;
+        height: 36px;
+    }
+
     .chat-panel-customer {
         max-height: 150px;
     }
@@ -1110,6 +1364,85 @@ body {
 
     .audio-icon {
         font-size: 3.5rem;
+    }
+}
+
+/* ===== iPhone / iOS Specific Fixes ===== */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari only */
+    .chat-panel-customer {
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .chat-panel-customer .chat-input-container {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        position: relative;
+        z-index: 10;
+    }
+
+    .call-controls {
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+
+    /* Ensure inputs don't zoom on iOS */
+    input, textarea, select {
+        font-size: 16px !important;
+        -webkit-text-size-adjust: 100%;
+    }
+    
+    /* Fix for iOS keyboard pushing content */
+    .call-section {
+        position: relative;
+    }
+}
+
+/* Mobile Chat Panel - Full Height Option */
+@media (max-width: 480px) {
+    .chat-panel-customer {
+        max-height: none !important;
+        min-height: 200px;
+        flex: 1;
+        display: flex !important;
+        flex-direction: column;
+    }
+    
+    .chat-panel-customer .chat-messages {
+        flex: 1;
+        min-height: 80px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .chat-panel-customer .chat-input-container {
+        display: flex !important;
+        flex-shrink: 0;
+        padding: 10px 12px;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        gap: 8px;
+        min-height: 60px;
+        align-items: center;
+    }
+    
+    .chat-panel-customer .chat-input-container input {
+        flex: 1;
+        min-width: 0;
+        height: 40px;
+        padding: 10px 14px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        font-size: 16px !important;
+    }
+    
+    .chat-panel-customer .file-upload-btn,
+    .chat-panel-customer .send-btn {
+        flex-shrink: 0;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 }
 
