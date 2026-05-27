@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Nordica TEA 16 Kaminofen Weiß | kamdi24 (Demo PDP)</title>
+    <link rel="stylesheet" href="/css/fonts.css">
+    <style>
+        :root {
+            --kamdi-orange: #f18800;
+            --kamdi-orange-dark: #d97a00;
+            --text: #303030;
+            --muted: #6c757d;
+            --border: #e5e5e5;
+            --bg: #f7f7f7;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            color: var(--text);
+            background: #fff;
+            line-height: 1.5;
+        }
+        /* Top demo banner */
+        .demo-banner {
+            background: #fff3cd;
+            border-bottom: 1px solid #ffe69c;
+            color: #664d03;
+            font-size: 13px;
+            padding: 8px 16px;
+            text-align: center;
+        }
+        .demo-banner strong { color: #5a3e00; }
+
+        /* Mock shop header */
+        .shop-header {
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .shop-header .logo-img { height: 36px; }
+        .shop-nav {
+            display: flex; gap: 22px; font-size: 14px; color: var(--muted);
+        }
+        .shop-nav span { cursor: default; }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            padding: 12px 24px;
+            font-size: 13px;
+            color: var(--muted);
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+        .breadcrumb a { color: var(--muted); text-decoration: none; }
+        .breadcrumb .sep { margin: 0 6px; }
+
+        /* PDP layout */
+        .pdp {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+            gap: 48px;
+        }
+        @media (max-width: 880px) {
+            .pdp { grid-template-columns: 1fr; gap: 24px; padding: 20px 16px; }
+        }
+
+        /* Gallery */
+        .gallery {
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .gallery-main {
+            background: var(--bg);
+            border-radius: 12px;
+            aspect-ratio: 4 / 5;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .gallery-main svg { width: 70%; height: 70%; }
+        .gallery-thumbs {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+        }
+        .gallery-thumbs .thumb {
+            aspect-ratio: 1; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #bbb; font-size: 11px;
+        }
+        .gallery-thumbs .thumb.active { border-color: var(--kamdi-orange); }
+
+        /* Product info */
+        .brand { color: var(--muted); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
+        .title { font-size: 1.85rem; margin: 0 0 8px; font-weight: 700; line-height: 1.25; }
+        .sku { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+        .rating { color: #f5a623; font-size: 14px; margin-bottom: 18px; }
+        .rating .reviews { color: var(--muted); margin-left: 6px; }
+
+        .price-row {
+            display: flex; align-items: baseline; gap: 14px;
+            margin-bottom: 4px;
+        }
+        .price {
+            font-size: 2rem; font-weight: 700; color: var(--text);
+        }
+        .price-old {
+            font-size: 1rem; color: var(--muted); text-decoration: line-through;
+        }
+        .price-note { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+        .stock { color: #2e7d32; font-weight: 600; font-size: 14px; margin-bottom: 20px; }
+        .stock .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2e7d32; margin-right: 6px; vertical-align: middle; }
+
+        .specs {
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 0;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 24px;
+            font-size: 14px;
+        }
+        .specs div { display: flex; justify-content: space-between; }
+        .specs span:first-child { color: var(--muted); }
+
+        /* Actions */
+        .actions { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 14px 22px; border-radius: 10px;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer; border: 1px solid transparent;
+            font-family: inherit; transition: background 0.15s, transform 0.05s;
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn-cart {
+            background: var(--text); color: #fff; flex: 1;
+        }
+        .btn-cart:hover { background: #111; }
+        .btn-wishlist {
+            background: #fff; color: var(--text); border-color: var(--border);
+        }
+
+        /* Live consultation card – the integration target */
+        .consult-card {
+            margin-top: 8px;
+            border: 2px solid var(--kamdi-orange);
+            border-radius: 14px;
+            padding: 18px 20px;
+            background: linear-gradient(180deg, #fff8ec 0%, #fff 100%);
+            display: flex; align-items: center; gap: 16px;
+        }
+        .consult-icon {
+            width: 48px; height: 48px; flex: 0 0 48px;
+            border-radius: 50%; background: var(--kamdi-orange);
+            color: #fff; display: flex; align-items: center; justify-content: center;
+        }
+        .consult-text { flex: 1; min-width: 0; }
+        .consult-text h4 { margin: 0 0 4px; font-size: 1rem; color: var(--text); }
+        .consult-text p { margin: 0; font-size: 13px; color: var(--muted); }
+        .btn-call {
+            background: var(--kamdi-orange); color: #fff;
+            padding: 12px 18px; font-size: 14px;
+            white-space: nowrap;
+        }
+        .btn-call:hover { background: var(--kamdi-orange-dark); }
+        @media (max-width: 540px) {
+            .consult-card { flex-direction: column; align-items: stretch; text-align: center; }
+            .consult-icon { margin: 0 auto; }
+            .btn-call { width: 100%; }
+        }
+
+        /* Description */
+        .description {
+            max-width: 1200px;
+            margin: 0 auto 48px;
+            padding: 0 24px;
+        }
+        .description h2 { font-size: 1.25rem; margin-bottom: 12px; }
+        .description p { color: #444; font-size: 15px; }
+
+        .footer-mock {
+            border-top: 1px solid var(--border);
+            padding: 24px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-banner">
+        <strong>Demo-PDP:</strong> Diese Seite simuliert eine Produktdetailseite von kamdi24.de. Der orange Button unten startet einen Beratungsanruf und sendet die Produkt-URL automatisch per Chat an den Berater.
+    </div>
+
+    <header class="shop-header">
+        <a href="/" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit;">
+            <img src="/img/kamdi24-logo.svg" alt="kamdi24" class="logo-img">
+        </a>
+        <nav class="shop-nav">
+            <span>Kaminöfen</span>
+            <span>Pelletöfen</span>
+            <span>Zubehör</span>
+            <span>Ratgeber</span>
+        </nav>
+    </header>
+
+    <div class="breadcrumb">
+        <a href="#">Startseite</a><span class="sep">›</span>
+        <a href="#">Kaminöfen</a><span class="sep">›</span>
+        <a href="#">La Nordica</a><span class="sep">›</span>
+        <span>TEA 16 Kaminofen Weiß</span>
+    </div>
+
+    <main class="pdp">
+        <div class="gallery">
+            <div class="gallery-main" aria-label="Produktbild">
+                <!-- Simple SVG illustration of a stove -->
+                <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <rect x="40" y="20" width="120" height="200" rx="10" fill="#f5f5f5" stroke="#cfcfcf" stroke-width="2"/>
+                    <rect x="55" y="60" width="90" height="90" rx="6" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
+                    <path d="M70 140 Q90 100 100 130 Q110 105 120 140 Q130 120 130 140 Z" fill="#f18800"/>
+                    <path d="M80 140 Q95 115 100 135 Q108 118 115 140 Z" fill="#ffd166"/>
+                    <rect x="55" y="160" width="90" height="14" rx="2" fill="#2a2a2a"/>
+                    <rect x="60" y="180" width="80" height="30" rx="3" fill="#ededed" stroke="#cfcfcf"/>
+                    <circle cx="100" cy="195" r="4" fill="#888"/>
+                </svg>
+            </div>
+            <div class="gallery-thumbs">
+                <div class="thumb active">Bild 1</div>
+                <div class="thumb">Bild 2</div>
+                <div class="thumb">Bild 3</div>
+                <div class="thumb">Bild 4</div>
+            </div>
+        </div>
+
+        <div class="info">
+            <div class="brand">La Nordica</div>
+            <h1 class="title">La Nordica TEA 16 Kaminofen Weiß</h1>
+            <div class="sku">Art.-Nr.: 7117200 · EAN: 8024196025203</div>
+
+            <div class="rating">
+                ★★★★★ <span class="reviews">(42 Bewertungen)</span>
+            </div>
+
+            <div class="price-row">
+                <div class="price">1.799,00 €</div>
+                <div class="price-old">1.999,00 €</div>
+            </div>
+            <div class="price-note">inkl. MwSt., zzgl. <a href="#" style="color:var(--muted);">Versandkosten</a></div>
+
+            <div class="stock"><span class="dot"></span>Auf Lager · Lieferzeit 5–10 Werktage</div>
+
+            <div class="specs">
+                <div><span>Nennwärmeleistung</span><span>8,1 kW</span></div>
+                <div><span>Wirkungsgrad</span><span>80,5 %</span></div>
+                <div><span>Raumheizvermögen</span><span>bis 230 m³</span></div>
+                <div><span>Brennstoff</span><span>Scheitholz</span></div>
+                <div><span>Material</span><span>Stahl / Majolika</span></div>
+                <div><span>Farbe</span><span>Weiß</span></div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-cart" type="button">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+                    In den Warenkorb
+                </button>
+                <button class="btn btn-wishlist" type="button" title="Auf den Merkzettel">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </button>
+            </div>
+
+            <!-- THIS is the snippet that gets embedded into all real PDPs on kamdi24.de -->
+            <div class="consult-card">
+                <div class="consult-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                </div>
+                <div class="consult-text">
+                    <h4>Fragen zu diesem Produkt?</h4>
+                    <p>Sprechen Sie direkt mit einem unserer Kamin-Berater per Video- oder Audioanruf.</p>
+                </div>
+                <button id="kamdi-live-call-btn" class="btn btn-call" type="button">
+                    Live-Beratung starten
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <section class="description">
+        <h2>Produktbeschreibung</h2>
+        <p>Der La Nordica TEA 16 ist ein eleganter Kaminofen mit Majolika-Verkleidung in Weiß. Mit 8,1 kW Nennwärmeleistung und einem Wirkungsgrad von 80,5 % eignet er sich hervorragend für Räume bis zu 230 m³. Klassisches Design trifft auf moderne Verbrennungstechnik – ideal für gemütliche Winterabende.</p>
+    </section>
+
+    <footer class="footer-mock">
+        &copy; 2026 kamdi24 (Demo-Seite) · Diese Seite dient ausschließlich der Veranschaulichung der Live-Beratungs-Integration.
+    </footer>
+
+    <script>
+        // This is the snippet that the real PDP pages on kamdi24.de would include.
+        // It opens the customer call portal and passes the current product URL,
+        // which will be auto-sent to the Berater via chat as soon as the call connects.
+        (function () {
+            const btn = document.getElementById('kamdi-live-call-btn');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                const productUrl = window.location.href;
+                const callUrl = '/customer.html?productUrl=' + encodeURIComponent(productUrl);
+                // Open in a new tab so the customer keeps the product page open
+                window.open(callUrl, '_blank', 'noopener');
+            });
+        })();
+    </script>
+</body>
+</html>

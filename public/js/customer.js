@@ -16,6 +16,21 @@ let isVideoEnabled = true;
 let isAudioEnabled = true;
 let peerReconnectTimer = null;
 
+// Product URL passed in from a PDP page via ?productUrl=...
+// When set, the URL is auto-sent to the Berater via chat as soon as the
+// data connection opens, so the Berater immediately knows which product
+// the customer has questions about.
+const productUrl = (() => {
+    try {
+        const u = new URL(window.location.href).searchParams.get('productUrl');
+        if (!u) return null;
+        // Only allow http(s) URLs to avoid javascript:/data: injection.
+        if (!/^https?:\/\//i.test(u)) return null;
+        return u;
+    } catch (e) { return null; }
+})();
+let productUrlSent = false;
+
 // ICE servers loaded from server API (DSGVO: keine externen STUN-Server, keine Credentials im Client)
 let ICE_SERVERS = {
     iceServers: [
@@ -680,6 +695,7 @@ function handleDataConnection(conn) {
     
     conn.on('open', () => {
         console.log('Data connection established');
+        sendProductUrlToBerater();
     });
 
     conn.on('data', (data) => {
@@ -1286,6 +1302,28 @@ function sendChatMessage() {
     chatInput.value = '';
 }
 
+// Auto-send the product URL (passed in via ?productUrl=...) to the Berater
+// as soon as the data connection is open. Runs once per call.
+function sendProductUrlToBerater() {
+    if (!productUrl || productUrlSent) return;
+    if (!dataConnection || !dataConnection.open) return;
+
+    const senderName = (customerNameInput && customerNameInput.value.trim()) || 'Kunde';
+    const message = 'Ich habe eine Frage zu folgendem Produkt:\n' + productUrl;
+
+    try {
+        dataConnection.send({
+            type: 'chat',
+            message,
+            senderName
+        });
+        addChatMessage(message, 'Sie', true);
+        productUrlSent = true;
+    } catch (e) {
+        console.warn('Failed to auto-send product URL:', e);
+    }
+}
+
 function addChatMessage(message, senderName, isSent) {
     const msgEl = document.createElement('div');
     msgEl.className = `chat-message ${isSent ? 'sent' : 'received'}`;
@@ -1562,10 +1600,37 @@ socket.on('berater-disconnected', () => {
     endCall();
 });
 
+// Show a small product-context banner on the login screen if the customer
+// arrived from a PDP page (?productUrl=...). Purely informational; the URL
+// itself is auto-sent to the Berater via chat once the call connects.
+(function showProductContextBanner() {
+    if (!productUrl) return;
+    const loginCard = document.getElementById('login-section');
+    if (!loginCard) return;
+    const banner = document.createElement('div');
+    banner.className = 'product-context-banner';
+    banner.style.cssText = 'display:flex;align-items:flex-start;gap:10px;background:#fff8ec;border:1px solid #f4c97a;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#5a3e00;line-height:1.45;';
+    banner.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 20px;margin-top:1px;">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+        <div style="min-width:0;">
+            <strong style="display:block;margin-bottom:2px;color:#5a3e00;">Beratung zu Ihrem Produkt</strong>
+            <span>Der Link wird beim Verbindungsaufbau automatisch an den Berater übermittelt:</span>
+            <div style="margin-top:4px;word-break:break-all;"><a href="${productUrl}" target="_blank" rel="noopener" style="color:#d97a00;text-decoration:underline;">${productUrl}</a></div>
+        </div>
+    `;
+    // Insert as the first child of the login card
+    loginCard.insertBefore(banner, loginCard.firstChild);
+})();
+
 startCallBtn.addEventListener('click', () => startCall('audio'));
 cancelCallBtn.addEventListener('click', cancelCall);
 endCallBtn.addEventListener('click', endCall);
 newCallBtn.addEventListener('click', () => {
+    productUrlSent = false;
     initPeer();
     showSection('login');
 });
