@@ -908,6 +908,18 @@ body {
     margin-bottom: 4px;
 }
 
+.chat-message .text a {
+    color: inherit;
+    text-decoration: underline;
+    word-break: break-all;
+}
+.chat-message.received .text a {
+    color: var(--primary-color, #f18800);
+}
+.chat-message.sent .text a {
+    color: #fff;
+}
+
 .chat-message.file {
     background: #f8f9fa;
     border: 1px solid #e2e8f0;

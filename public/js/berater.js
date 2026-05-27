@@ -1296,8 +1296,8 @@ function addChatMessage(message, senderName, isSent) {
     const msgEl = document.createElement('div');
     msgEl.className = `chat-message ${isSent ? 'sent' : 'received'}`;
     msgEl.innerHTML = `
-        <div class="sender">${senderName}</div>
-        <div class="text">${escapeHtml(message)}</div>
+        <div class="sender">${escapeHtml(senderName)}</div>
+        <div class="text">${linkifyText(message)}</div>
     `;
     chatMessages.appendChild(msgEl);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1392,6 +1392,14 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Escape, then turn http(s) URLs into clickable links and preserve line breaks.
+function linkifyText(text) {
+    const escaped = escapeHtml(text);
+    const withLinks = escaped.replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+    return withLinks.replace(/\n/g, '<br>');
 }
 
 function refreshRemoteVideo() {
