@@ -395,84 +395,21 @@ function attachRemoteStream(stream) {
     startAudioHealthCheck();
 }
 
-// Route audio through AudioContext GainNode for volume boost, then to <audio> element
+// Play remote audio directly through a plain <audio> element.
+//
+// IMPORTANT: We deliberately do NOT route remote audio through the Web Audio
+// API (AudioContext → GainNode → DynamicsCompressor → MediaStreamDestination)
+// anymore. That pipeline broke the browser's acoustic echo canceller (AEC):
+//   1. The AudioContext + MediaStreamDestination + extra element added
+//      buffering latency that pushed the echo beyond the AEC filter window,
+//      so the remote party heard themselves.
+//   2. The non-linear gain + compression no longer matched the AEC reference
+//      signal (AEC assumes a linear echo path), so residual echo leaked
+//      through and the compressor pumped up the noise floor.
+// Playing the stream straight through an <audio> element keeps Chrome's AEC
+// reference intact and removes the compressor-induced noise.
 function routeAudioWithBoost(stream) {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) {
-        routeAudioDirect(stream);
-        return;
-    }
-    
-    if (!_audioContext) {
-        _audioContext = new AudioCtx();
-    }
-    if (_audioContext.state === 'suspended') {
-        _audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
-    }
-    
-    // Clean up previous connections
-    if (_webAudioSource) {
-        try { _webAudioSource.disconnect(); } catch(e) {}
-    }
-    if (_gainNode) {
-        try { _gainNode.disconnect(); } catch(e) {}
-    }
-    
-    // Create source from remote stream
-    const audioOnlyStream = new MediaStream(stream.getAudioTracks());
-    _webAudioSource = _audioContext.createMediaStreamSource(audioOnlyStream);
-    
-    // Create GainNode to boost volume (compensates for low media volume on Android)
-    _gainNode = _audioContext.createGain();
-    _gainNode.gain.value = _isMobile ? 3.0 : 1.5; // 3x boost on mobile, 1.5x on desktop
-    
-    // Create a compressor to prevent clipping from the gain boost
-    const compressor = _audioContext.createDynamicsCompressor();
-    compressor.threshold.setValueAtTime(-10, _audioContext.currentTime);
-    compressor.knee.setValueAtTime(30, _audioContext.currentTime);
-    compressor.ratio.setValueAtTime(12, _audioContext.currentTime);
-    compressor.attack.setValueAtTime(0.003, _audioContext.currentTime);
-    compressor.release.setValueAtTime(0.25, _audioContext.currentTime);
-    
-    // Create destination to get a boosted MediaStream
-    const destination = _audioContext.createMediaStreamDestination();
-    
-    // Chain: source → gain → compressor → destination(MediaStream)
-    // Note: do NOT also connect to _audioContext.destination — that would play
-    // the same audio twice (once via Web Audio output, once via the <audio>
-    // element below) which causes echo/phasing on desktop.
-    _webAudioSource.connect(_gainNode);
-    _gainNode.connect(compressor);
-    compressor.connect(destination);
-    
-    // Route the boosted stream to the <audio> element
-    if (!_remoteAudioElement) {
-        _remoteAudioElement = document.createElement('audio');
-        _remoteAudioElement.id = 'remote-audio-output';
-        _remoteAudioElement.autoplay = true;
-        _remoteAudioElement.playsInline = true;
-        _remoteAudioElement.style.display = 'none';
-        document.body.appendChild(_remoteAudioElement);
-    }
-    
-    _remoteAudioElement.srcObject = destination.stream;
-    _remoteAudioElement.muted = false;
-    _remoteAudioElement.volume = 1;
-    _remoteAudioElement.play().then(() => {
-        console.log('Boosted audio: playing via <audio> element (gain:', _gainNode.gain.value, ')');
-        updateDebugOverlay('Audio: OK (Boost ' + _gainNode.gain.value + 'x)');
-    }).catch(e => {
-        console.warn('Boosted audio play failed:', e.name, '- retrying...');
-        setTimeout(() => {
-            _remoteAudioElement.play().catch(() => {
-                console.warn('Boosted audio retry failed, trying direct...');
-                routeAudioDirect(stream);
-            });
-        }, 500);
-    });
-    
-    console.log('Audio: GainNode boost =', _gainNode.gain.value, 'x, platform:', 
-        _isAndroid ? 'Android' : _isIOS ? 'iOS' : 'Desktop');
+    routeAudioDirect(stream);
 }
 
 // Fallback: route audio directly through <audio> element without boost
