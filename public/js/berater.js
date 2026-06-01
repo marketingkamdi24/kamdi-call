@@ -345,9 +345,20 @@ function handleIncomingPeerCall(call) {
                 try { call.peerConnection.restartIce(); } catch(e) { console.error('ICE restart failed:', e); }
             }
             if (state === 'connected' || state === 'completed') {
-                // Re-verify audio after ICE reconnection
-                remoteVideo.muted = false;
-                remoteVideo.volume = 1;
+                // Audio plays through the boosted <audio> element — keep the
+                // video element MUTED. Un-muting it here would play the remote
+                // audio twice (once via Web Audio pipeline, once via the video
+                // element) with a slight latency offset, producing echo and
+                // noisy comb-filtering artifacts on the berater side.
+                remoteVideo.muted = true;
+                remoteVideo.volume = 0;
+                if (remoteVideo.srcObject) {
+                    try {
+                        routeAudioWithBoost(remoteVideo.srcObject);
+                    } catch (e) {
+                        routeAudioDirect(remoteVideo.srcObject);
+                    }
+                }
                 if (remoteVideo.paused) remoteVideo.play().catch(() => {});
             }
         });
@@ -462,6 +473,10 @@ function attachRemoteStream(stream) {
             }
         });
     }
+
+    // Safety net: keep the video element muted for the whole call so the
+    // remote audio is never played twice (which would cause echo/noise).
+    startAudioHealthCheck();
 }
 
 // Route audio through AudioContext GainNode for volume boost, then to <audio> element
@@ -563,10 +578,48 @@ function routeAudioDirect(stream) {
         console.log('Direct audio: playing via <audio> element');
     }).catch(e => {
         console.warn('Direct audio play failed:', e.name);
-        // Last resort: use video element for audio
+        // Last resort: use the video element for audio. Only do this while the
+        // <audio> element is NOT producing sound, otherwise both play at once
+        // and cause echo. Re-mute as soon as the <audio> element recovers.
         remoteVideo.muted = false;
         remoteVideo.volume = 1;
     });
+}
+
+// Keep the video element muted so remote audio is only ever heard once
+// (through the boosted <audio> element). Without this, anything that
+// un-mutes the video element causes doubled playback → echo + noise.
+let _audioHealthInterval = null;
+function startAudioHealthCheck() {
+    if (_audioHealthInterval) return;
+    _audioHealthInterval = setInterval(() => {
+        if (!remoteVideo.srcObject || !currentCall) {
+            stopAudioHealthCheck();
+            return;
+        }
+        // The <audio> element is the single source of truth for audio output.
+        // If it is alive, the video element MUST stay muted.
+        const audioElementHealthy = _remoteAudioElement &&
+            _remoteAudioElement.srcObject && !_remoteAudioElement.paused;
+        if (audioElementHealthy && !remoteVideo.muted) {
+            console.warn('Audio health: video element un-muted, re-muting to prevent echo');
+            remoteVideo.muted = true;
+            remoteVideo.volume = 0;
+        }
+        if (_remoteAudioElement && _remoteAudioElement.paused && _remoteAudioElement.srcObject) {
+            _remoteAudioElement.play().catch(() => {});
+        }
+        if (remoteVideo.paused) {
+            remoteVideo.play().catch(() => {});
+        }
+    }, 5000);
+}
+
+function stopAudioHealthCheck() {
+    if (_audioHealthInterval) {
+        clearInterval(_audioHealthInterval);
+        _audioHealthInterval = null;
+    }
 }
 
 function disconnectWebAudio() {
@@ -919,6 +972,8 @@ function endCall(notifyServer = true) {
     isScreenSharing = false;
     originalVideoTrack = null;
     toggleScreenBtn.classList.remove('active');
+    
+    stopAudioHealthCheck();
     
     if (currentCall) {
         currentCall.close();
