@@ -347,10 +347,14 @@ function attachRemoteStream(stream) {
         };
     });
     
-    // === VIDEO ELEMENT: display only, no audio ===
+    // === VIDEO ELEMENT: renders video frames AND plays the remote audio ===
+    // We play audio through this single element (not a separate <audio>
+    // element and not the Web Audio API). This is the standard WebRTC playout
+    // path: it reliably produces sound and keeps the browser's acoustic echo
+    // canceller reference intact.
     remoteVideo.srcObject = stream;
-    remoteVideo.muted = true;
-    remoteVideo.volume = 0;
+    remoteVideo.muted = false;
+    remoteVideo.volume = 1;
     remoteVideo.autoplay = true;
     remoteVideo.playsInline = true;
     
@@ -358,31 +362,15 @@ function attachRemoteStream(stream) {
                      stream.getVideoTracks().some(t => t.enabled && t.readyState === 'live');
     remoteAudioOnly.classList.toggle('hidden', hasVideo);
     
-    // === AUDIO ROUTING ===
-    // Known Chrome/Android bug: When getUserMedia() captures the microphone,
-    // Chrome switches Android to MODE_IN_COMMUNICATION, making the hardware
-    // volume buttons control STREAM_VOICE_CALL. BUT Chrome actually outputs
-    // WebRTC audio through STREAM_MUSIC (media volume). If media volume is
-    // low/muted, the user can't hear anything despite adjusting the volume.
-    //
-    // Solution: Use AudioContext GainNode to BOOST the audio signal (2-3x),
-    // then output via an <audio> element at max volume. This compensates
-    // for potentially low media volume and ensures audio is always audible.
     if (stream.getAudioTracks().length > 0) {
-        try {
-            routeAudioWithBoost(stream);
-        } catch(e) {
-            console.warn('Boosted audio routing failed, direct fallback:', e);
-            routeAudioDirect(stream);
-        }
+        playRemoteAudioViaVideo(stream);
     }
     
-    // Play the video element for video frames only
+    // Play the video element (carries both video frames and audio)
     remoteVideo.play().then(() => {
-        console.log('Remote video playing (muted — audio via separate element)');
+        console.log('Remote video+audio playing');
     }).catch(e => {
         console.warn('Video play failed:', e.name, '- retrying');
-        remoteVideo.muted = true;
         remoteVideo.play().catch(() => {});
     });
     
@@ -397,48 +385,41 @@ function attachRemoteStream(stream) {
 
 // Play remote audio directly through a plain <audio> element.
 //
-// IMPORTANT: We deliberately do NOT route remote audio through the Web Audio
-// API (AudioContext → GainNode → DynamicsCompressor → MediaStreamDestination)
-// anymore. That pipeline broke the browser's acoustic echo canceller (AEC):
-//   1. The AudioContext + MediaStreamDestination + extra element added
-//      buffering latency that pushed the echo beyond the AEC filter window,
-//      so the remote party heard themselves.
-//   2. The non-linear gain + compression no longer matched the AEC reference
-//      signal (AEC assumes a linear echo path), so residual echo leaked
-//      through and the compressor pumped up the noise floor.
-// Playing the stream straight through an <audio> element keeps Chrome's AEC
-// reference intact and removes the compressor-induced noise.
-function routeAudioWithBoost(stream) {
-    routeAudioDirect(stream);
-}
-
-// Fallback: route audio directly through <audio> element without boost
-function routeAudioDirect(stream) {
-    const audioOnlyStream = new MediaStream(stream.getAudioTracks());
-    
-    if (!_remoteAudioElement) {
-        _remoteAudioElement = document.createElement('audio');
-        _remoteAudioElement.id = 'remote-audio-output';
-        _remoteAudioElement.autoplay = true;
-        _remoteAudioElement.playsInline = true;
-        _remoteAudioElement.style.display = 'none';
-        document.body.appendChild(_remoteAudioElement);
+// Play the remote audio through the single <video> element (unmuted).
+//
+// Design notes:
+//  - We do NOT use the Web Audio API (AudioContext → GainNode → Compressor →
+//    MediaStreamDestination). That added latency and non-linear processing
+//    that broke the browser's acoustic echo canceller (remote party heard
+//    themselves) and pumped up the noise floor.
+//  - We do NOT use a separate <audio> element fed with the raw remote stream;
+//    that path is unreliable in Chromium and was producing total silence.
+//  - The <video> element is the standard, reliable WebRTC playout path and is
+//    the reference the browser's AEC uses, so echo cancellation works.
+function playRemoteAudioViaVideo(stream) {
+    // Make sure the legacy separate <audio> element is never also playing,
+    // otherwise the same audio would be heard twice (echo).
+    if (_remoteAudioElement) {
+        try { _remoteAudioElement.pause(); } catch(e) {}
+        _remoteAudioElement.srcObject = null;
     }
-    
-    _remoteAudioElement.srcObject = audioOnlyStream;
-    _remoteAudioElement.muted = false;
-    _remoteAudioElement.volume = 1;
-    _remoteAudioElement.play().then(() => {
-        console.log('Direct audio: playing via <audio> element');
-        updateDebugOverlay('Audio: OK (Direkt)');
+    if (stream && remoteVideo.srcObject !== stream) {
+        remoteVideo.srcObject = stream;
+    }
+    remoteVideo.muted = false;
+    remoteVideo.volume = 1;
+    remoteVideo.play().then(() => {
+        console.log('Remote audio playing via video element');
+        updateDebugOverlay('Audio: OK');
     }).catch(e => {
-        console.warn('Direct audio play failed:', e.name);
-        // Last resort: use video element for audio
-        remoteVideo.muted = false;
-        remoteVideo.volume = 1;
-        updateDebugOverlay('Audio: Fallback (Video)');
+        console.warn('Remote audio/video play failed:', e.name);
+        updateDebugOverlay('Audio: Play blockiert');
     });
 }
+
+// Backwards-compatible aliases for the old routing entry points.
+function routeAudioWithBoost(stream) { playRemoteAudioViaVideo(stream); }
+function routeAudioDirect(stream) { playRemoteAudioViaVideo(stream); }
 
 // Show notification on Android about volume control quirk
 function showVolumeNotification() {
@@ -493,15 +474,16 @@ function startAudioHealthCheck() {
             return;
         }
         
-        // Ensure the <audio> element is still playing
-        if (_remoteAudioElement && _remoteAudioElement.paused && _remoteAudioElement.srcObject) {
-            console.warn('Audio health: audio element paused, re-playing');
-            _remoteAudioElement.play().catch(() => {});
+        // Single playout path = the video element. Make sure the legacy
+        // <audio> element never also plays (would cause echo), keep the video
+        // element unmuted, and ensure it is playing.
+        if (_remoteAudioElement && _remoteAudioElement.srcObject) {
+            try { _remoteAudioElement.pause(); } catch(e) {}
+            _remoteAudioElement.srcObject = null;
         }
-        // Ensure video element stays muted (audio goes through <audio> element)
-        if (!remoteVideo.muted) {
-            remoteVideo.muted = true;
-            remoteVideo.volume = 0;
+        if (remoteVideo.muted) {
+            remoteVideo.muted = false;
+            remoteVideo.volume = 1;
         }
         if (remoteVideo.paused) {
             remoteVideo.play().catch(() => {});
@@ -591,16 +573,8 @@ function ensureAudioPlaying() {
         return;
     }
     
-    // Re-route through the boosted audio pipeline
-    try {
-        routeAudioWithBoost(stream);
-    } catch(e) {
-        routeAudioDirect(stream);
-    }
-    
-    // Keep video element muted — audio goes through <audio> element
-    remoteVideo.muted = true;
-    remoteVideo.volume = 0;
+    // Re-verify playback through the single video-element path.
+    playRemoteAudioViaVideo(stream);
     
     // Ensure video frames are playing
     if (remoteVideo.paused) {
