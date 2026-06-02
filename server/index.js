@@ -252,17 +252,24 @@ app.post('/api/users', requireAuth, async (req, res) => {
     res.json({ success: true, user: { id: newUser.id, username: newUser.username, createdAt: newUser.createdAt } });
 });
 
-// Public TURN fallback. Used only when PUBLIC_TURN_USERNAME and
-// PUBLIC_TURN_CREDENTIAL are configured as env vars. Get free
-// credentials (50 GB/month) by signing up at:
+// Public TURN fallback — REQUIRED for calls between different networks.
+//
+// The primary TURN server (TURN_CONFIG) only relays over UDP 3478; its
+// TCP/TLS ports are closed and it has no relay on port 443. Mobile carriers
+// and many home networks use symmetric/CGNAT NAT and frequently block UDP,
+// so without a TURN relay reachable over TCP/TLS on 443/80 the media never
+// flows and calls work only when both peers are on the same network.
+//
+// By default we use the free Metered "OpenRelay" project (static public
+// credentials) which relays over 80/443 and TCP/TLS. For production
+// reliability sign up for your own free key (50 GB/month) at
 //   https://dashboard.metered.ca/signup
-// Then set the two env vars on your host (e.g. on Render) — no code
-// change needed. Override PUBLIC_TURN_HOST if you use a different
-// provider (Twilio NTS / Xirsys / Cloudflare Realtime / your own).
+// and set PUBLIC_TURN_HOST / PUBLIC_TURN_USERNAME / PUBLIC_TURN_CREDENTIAL
+// env vars (works with Twilio NTS / Xirsys / Cloudflare / your own coturn too).
 const PUBLIC_TURN = {
-    host: process.env.PUBLIC_TURN_HOST || 'a.relay.metered.ca',
-    username: process.env.PUBLIC_TURN_USERNAME || '',
-    credential: process.env.PUBLIC_TURN_CREDENTIAL || ''
+    host: process.env.PUBLIC_TURN_HOST || 'openrelay.metered.ca',
+    username: process.env.PUBLIC_TURN_USERNAME || 'openrelayproject',
+    credential: process.env.PUBLIC_TURN_CREDENTIAL || 'openrelayproject'
 };
 
 // ICE server config API (DSGVO: TURN credentials only served server-side)
@@ -296,12 +303,15 @@ app.get('/api/ice-servers', (req, res) => {
     // Mobile carriers and many residential networks are behind
     // CGNAT/symmetric NAT, so a TURN relay is required for media to
     // flow. Multiple ports/transports maximize the chance that at
-    // least one path survives strict firewalls.
+    // least one path survives strict firewalls. Port 443 over TCP/TLS is
+    // the most firewall-friendly and is what lets mobile clients connect
+    // to a peer on a different network.
     if (PUBLIC_TURN.username && PUBLIC_TURN.credential) {
         iceServers.push(
             { urls: `turn:${PUBLIC_TURN.host}:80`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
             { urls: `turn:${PUBLIC_TURN.host}:80?transport=tcp`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
             { urls: `turn:${PUBLIC_TURN.host}:443`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
+            { urls: `turn:${PUBLIC_TURN.host}:443?transport=tcp`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential },
             { urls: `turns:${PUBLIC_TURN.host}:443?transport=tcp`, username: PUBLIC_TURN.username, credential: PUBLIC_TURN.credential }
         );
     }
