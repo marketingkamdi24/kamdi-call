@@ -12,6 +12,77 @@
     
     <!-- Critical iPhone/Mobile Styles - Inline for guaranteed loading -->
     <style>
+        /* Queue notification bar - leuchtende Benachrichtigung */
+        #queue-notification-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            padding: 22px 28px;
+            background: linear-gradient(90deg, #ff6a00, #ff3b3b, #ff6a00);
+            background-size: 200% 100%;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+            box-shadow: 0 0 30px rgba(255,80,0,0.85), 0 0 60px rgba(255,80,0,0.55);
+            border-bottom: 3px solid rgba(255,255,255,0.5);
+            animation: queueNotifPulse 1.2s ease-in-out infinite, queueNotifShimmer 3s linear infinite;
+            cursor: pointer;
+            user-select: none;
+        }
+        #queue-notification-bar.visible {
+            display: flex;
+        }
+        #queue-notification-bar .qn-icon {
+            font-size: 2rem;
+            animation: queueNotifShake 0.7s ease-in-out infinite;
+        }
+        #queue-notification-bar .qn-count {
+            background: rgba(255,255,255,0.25);
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            min-width: 36px;
+        }
+        @keyframes queueNotifPulse {
+            0%, 100% {
+                box-shadow: 0 0 30px rgba(255,80,0,0.85), 0 0 60px rgba(255,80,0,0.55);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 50px rgba(255,140,0,1), 0 0 100px rgba(255,80,0,0.9);
+                transform: scale(1.01);
+            }
+        }
+        @keyframes queueNotifShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        @keyframes queueNotifShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+        @media (max-width: 768px) {
+            #queue-notification-bar {
+                font-size: 1.1rem;
+                padding: 16px 18px;
+                gap: 12px;
+            }
+            #queue-notification-bar .qn-icon { font-size: 1.5rem; }
+            #queue-notification-bar .qn-count { font-size: 1rem; padding: 3px 10px; }
+        }
+
         /* Mobile: Show flip camera button + compact controls */
         @media (max-width: 1024px) {
             .control-btn.flip-camera {
@@ -83,6 +154,13 @@
     </style>
 </head>
 <body class="berater-body">
+    <!-- Leuchtende Notification Bar fuer Warteschlange -->
+    <div id="queue-notification-bar" role="alert" aria-live="assertive" title="Zur Warteschlange">
+        <span class="qn-icon">📞</span>
+        <span class="qn-text">Neuer Anruf in der Warteschlange!</span>
+        <span class="qn-count" id="queue-notification-count">1</span>
+    </div>
+
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn hidden-desktop" id="mobile-menu-btn">☰</button>
     

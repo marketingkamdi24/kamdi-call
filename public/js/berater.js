@@ -1407,7 +1407,40 @@ function refreshRemoteVideo() {
     }
 }
 
+function updateQueueNotificationBar(queueLength) {
+    const bar = document.getElementById('queue-notification-bar');
+    const countEl = document.getElementById('queue-notification-count');
+    if (!bar) return;
+
+    // Suppress during active call or while incoming-call screen is shown
+    const callSectionEl = document.getElementById('call-section');
+    const incomingSectionEl = document.getElementById('incoming-call-section');
+    const inCall = callSectionEl && !callSectionEl.classList.contains('hidden');
+    const isRinging = incomingSectionEl && !incomingSectionEl.classList.contains('hidden');
+
+    if (queueLength > 0 && !inCall && !isRinging) {
+        if (countEl) countEl.textContent = queueLength;
+        bar.classList.add('visible');
+    } else {
+        bar.classList.remove('visible');
+    }
+}
+
+// Click on notification bar -> scroll/open sidebar queue
+document.addEventListener('DOMContentLoaded', () => {
+    const bar = document.getElementById('queue-notification-bar');
+    if (bar) {
+        bar.addEventListener('click', () => {
+            const sb = document.getElementById('sidebar');
+            if (sb) sb.classList.add('open');
+            const ql = document.getElementById('queue-list');
+            if (ql) ql.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+});
+
 function updateQueueDisplay(queue) {
+    updateQueueNotificationBar(queue.length);
     if (queue.length === 0) {
         queueList.innerHTML = '<p class="empty-queue">Keine wartenden Kunden</p>';
         return;
